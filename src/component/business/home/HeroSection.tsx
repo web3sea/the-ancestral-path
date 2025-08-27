@@ -38,7 +38,7 @@ export default function HeroSection() {
           }}
         >
           <motion.h1
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight tracking-wide text-shadow w"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight tracking-wide text-shadow w"
             style={{ color: "#d8d2c6" }}
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -52,7 +52,7 @@ export default function HeroSection() {
           </motion.h1>
 
           <motion.div
-            className="space-y-1 sm:space-y-2 lg:space-y-3 text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-light mb-6 sm:mb-8 lg:mb-12"
+            className="space-y-1 sm:space-y-2 lg:space-y-3 text-sm sm:text-base lg:text-lg font-light mb-6 sm:mb-8 lg:mb-12"
             style={{ color: "#d8d2c6" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

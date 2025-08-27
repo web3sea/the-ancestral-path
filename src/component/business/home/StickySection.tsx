@@ -67,13 +67,13 @@ export default function StickySection() {
           >
             <div className="absolute inset-0 bg-black/40" />
             <div className="flex flex-col gap-2 sm:gap-3 max-w-full lg:max-w-5xl relative z-10 mb-6 lg:mb-0">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-light">
+              <h2 className="text-sm sm:text-base md:text-lg font-light">
                 {item.id}
               </h2>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light leading-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light leading-tight">
                 {item.title}
               </h2>
-              <p className="text-sm sm:text-base md:text-lg leading-relaxed font-light max-w-full lg:max-w-2xl">
+              <p className="text-sm sm:text-base lg:text-lg leading-relaxed font-light max-w-full lg:max-w-2xl">
                 {item.description}
               </p>
             </div>

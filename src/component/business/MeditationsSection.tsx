@@ -119,7 +119,7 @@ export default function MeditationsSection() {
   ];
 
   return (
-    <section id="meditations" className="pt-36 pb-24 relative">
+    <section id="meditations" className="relative w-full min-h-screen">
       {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -131,24 +131,22 @@ export default function MeditationsSection() {
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/70"></div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         {/* Header */}
         <motion.div
-          className="text-center mb-20"
+          className="text-center mb-8 sm:mb-12 lg:mb-16"
           initial={{ y: 60, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
+          animate={{ y: 0, opacity: 1 }}
           transition={{
             duration: 0.8,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
         >
           <motion.h2
-            className="text-4xl lg:text-5xl font-light mb-6 tracking-wide"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light mb-4 sm:mb-6 tracking-wide"
             style={{ color: "#d8d2c6" }}
             initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{
               duration: 0.8,
               delay: 0.2,
@@ -158,11 +156,10 @@ export default function MeditationsSection() {
             GUIDED MEDITATIONS
           </motion.h2>
           <motion.p
-            className="text-lg max-w-2xl mx-auto leading-relaxed font-light"
+            className="text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed font-light px-4"
             style={{ color: "#d8d2c6", opacity: 0.9 }}
             initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{
               duration: 0.8,
               delay: 0.4,
@@ -176,10 +173,9 @@ export default function MeditationsSection() {
 
         {/* Search and filters */}
         <motion.div
-          className="mb-12"
+          className="mb-8 sm:mb-10"
           initial={{ y: 60, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
+          animate={{ y: 0, opacity: 1 }}
           transition={{
             duration: 0.8,
             delay: 0.6,
@@ -188,23 +184,22 @@ export default function MeditationsSection() {
         >
           {/* Search bar */}
           <motion.div
-            className="max-w-md mx-auto mb-8"
+            className="max-w-md mx-auto mb-6 sm:mb-8 px-4"
             initial={{ scale: 0.95, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
+            animate={{ scale: 1, opacity: 1 }}
             transition={{
               duration: 0.6,
               delay: 0.8,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
-            <div className="relative">
+            <div className="relative w-full">
               <input
                 type="text"
                 placeholder="Search meditations..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base"
               />
               <svg
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -224,10 +219,14 @@ export default function MeditationsSection() {
 
           {/* Category filters */}
           <motion.div
-            className="flex flex-wrap justify-center gap-4"
+            className="flex flex-wrap justify-center gap-2 sm:gap-3 px-4"
             initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{
+              duration: 0.6,
+              delay: 1.0,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
           >
             {categories.map((category, index) => (
               <motion.button
@@ -242,12 +241,11 @@ export default function MeditationsSection() {
                       | "Manifestation"
                   )
                 }
-                className={
+                className={`${
                   categoryFilter === category ? "btn-primary" : "btn-secondary"
-                }
+                } text-xs sm:text-sm whitespace-nowrap`}
                 initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true, margin: "-100px" }}
+                animate={{ y: 0, opacity: 1 }}
                 transition={{
                   duration: 0.6,
                   delay: 1.2 + index * 0.1,
@@ -264,10 +262,9 @@ export default function MeditationsSection() {
 
         {/* Meditations grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
           initial={{ y: 60, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
+          animate={{ y: 0, opacity: 1 }}
           transition={{
             duration: 0.8,
             delay: 1.4,
@@ -277,7 +274,7 @@ export default function MeditationsSection() {
           {filteredMeditations.map((meditation, index) => (
             <motion.div
               key={meditation.id}
-              className="bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-black/50 transition-all duration-300 border border-primary-300/20 hover:border-primary-300/40"
+              className="bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-black/50 transition-all duration-300 border border-primary-300/20 hover:border-primary-300/40 p-4 sm:p-6"
               initial={{ y: 60, opacity: 0, scale: 0.95 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               transition={{
@@ -331,16 +328,16 @@ export default function MeditationsSection() {
               </div>
 
               {/* Content */}
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <h3
-                  className="text-xl font-bold mb-2"
+                  className="text-lg sm:text-xl font-bold mb-2"
                   style={{ color: "#d8d2c6" }}
                 >
                   {meditation.title}
                 </h3>
 
                 <p
-                  className="mb-4 line-clamp-3"
+                  className="mb-4 line-clamp-3 text-sm sm:text-base"
                   style={{ color: "#d8d2c6", opacity: 0.8 }}
                 >
                   {meditation.description}
@@ -398,20 +395,12 @@ export default function MeditationsSection() {
 
         {/* No results message */}
         {filteredMeditations.length === 0 && (
-          <motion.div
-            className="text-center py-12"
-            initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            <motion.svg
+          <div className="text-center py-12 px-4">
+            <svg
               className="w-16 h-16 text-gray-400 mx-auto mb-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              initial={{ scale: 0.8, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true, margin: "-100px" }}
             >
               <path
                 strokeLinecap="round"
@@ -419,45 +408,20 @@ export default function MeditationsSection() {
                 strokeWidth={2}
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
-            </motion.svg>
-            <motion.h3
-              className="text-lg font-semibold text-gray-900 mb-2"
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: true, margin: "-100px" }}
-            >
+            </svg>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
               No meditations found
-            </motion.h3>
-            <motion.p
-              className="text-gray-600"
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: true, margin: "-100px" }}
-            >
+            </h3>
+            <p className="text-gray-600">
               Try adjusting your search or filter criteria.
-            </motion.p>
-          </motion.div>
+            </p>
+          </div>
         )}
 
         {/* Video modal */}
         {selectedMeditation && (
-          <motion.div
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <motion.div
-              className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto"
-              initial={{ scale: 0.9, opacity: 0, y: 50 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 50 }}
-              transition={{
-                duration: 0.4,
-                ease: [0.25, 0.46, 0.45, 0.94],
-              }}
-            >
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
                   <div>
@@ -531,8 +495,8 @@ export default function MeditationsSection() {
                   ))}
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
       </div>
     </section>

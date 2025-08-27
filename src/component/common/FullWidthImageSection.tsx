@@ -12,10 +12,11 @@ const FullWidthImageSection = ({
   altText = "Sacred healing journey",
 }: FullWidthImageSectionProps) => {
   return (
-    <section className="relative w-full h-96 lg:h-[500px] overflow-hidden">
+    <section className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[500px] overflow-hidden">
       <motion.div
         initial={{ scale: 1.1, opacity: 0 }}
-        whileInView={{ scale: 1, opacity: 1 }}
+        animate={{ scale: 1, opacity: 1 }}
+        viewport={{ once: true, margin: "-100px" }}
         transition={{
           duration: 1.2,
           ease: [0.25, 0.46, 0.45, 0.94],
@@ -35,7 +36,8 @@ const FullWidthImageSection = ({
       <div className="absolute inset-0 flex items-center justify-center">
         <motion.div
           initial={{ y: 30, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 30, opacity: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{
             duration: 0.8,
@@ -45,11 +47,10 @@ const FullWidthImageSection = ({
           className="text-center"
         >
           <motion.h2
-            className="text-3xl lg:text-5xl font-light mb-4 tracking-wide"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light mb-4 tracking-wide"
             style={{ color: "#d8d2c6" }}
             initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{
               duration: 0.8,
               delay: 0.3,
@@ -59,11 +60,10 @@ const FullWidthImageSection = ({
             SACRED JOURNEY
           </motion.h2>
           <motion.p
-            className="text-lg max-w-2xl mx-auto leading-relaxed font-light px-6"
+            className="text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed font-light px-4 sm:px-6"
             style={{ color: "#d8d2c6", opacity: 0.9 }}
             initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{
               duration: 0.8,
               delay: 0.3,

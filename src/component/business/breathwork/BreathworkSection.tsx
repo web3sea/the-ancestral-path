@@ -63,7 +63,7 @@ export default function BreathworkSection() {
       : breathworkSessions.filter((session) => session.difficulty === filter);
 
   return (
-    <section id="breathwork" className="relative">
+    <section id="breathwork" className="relative p-5 lg:p-10">
       <div
         className="relative h-full pt-36"
         style={{
@@ -86,7 +86,7 @@ export default function BreathworkSection() {
           }}
         >
           <motion.h2
-            className="text-4xl lg:text-5xl font-light mb-6 tracking-wide"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light mb-6 tracking-wide"
             style={{ color: "#d8d2c6" }}
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -99,7 +99,7 @@ export default function BreathworkSection() {
             MEDICINE CONTAINERS
           </motion.h2>
           <motion.p
-            className="text-lg max-w-2xl mx-auto leading-relaxed font-light"
+            className="text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed font-light"
             style={{ color: "#d8d2c6", opacity: 0.9 }}
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -144,7 +144,7 @@ export default function BreathworkSection() {
 
         {/* Sessions grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto pb-20"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto pb-20 px-4 sm:px-6 lg:px-8"
           initial={{ y: 60, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -206,16 +206,16 @@ export default function BreathworkSection() {
               </div>
 
               {/* Content */}
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <h3
-                  className="text-xl font-bold mb-2"
+                  className="text-lg sm:text-xl font-bold mb-2"
                   style={{ color: "#d8d2c6" }}
                 >
                   {session.title}
                 </h3>
 
                 <p
-                  className="mb-4 line-clamp-3"
+                  className="mb-4 line-clamp-3 text-sm sm:text-base"
                   style={{ color: "#d8d2c6", opacity: 0.8 }}
                 >
                   {session.description}

@@ -29,7 +29,7 @@ export default function RetreatSection() {
           }}
         >
           <motion.h1
-            className="text-5xl lg:text-7xl font-light mb-8 tracking-wide"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light mb-8 tracking-wide"
             style={{ color: "#d8d2c6" }}
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -42,7 +42,7 @@ export default function RetreatSection() {
             SACRED RETREATS
           </motion.h1>
           <motion.p
-            className="text-xl max-w-3xl mx-auto leading-relaxed font-light"
+            className="text-sm sm:text-base lg:text-lg max-w-3xl mx-auto leading-relaxed font-light"
             style={{ color: "#d8d2c6", opacity: 0.9 }}
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

@@ -37,7 +37,7 @@ export default function BreathworkDetailsSection() {
     <section className="flex flex-col gap-10 p-5 lg:p-10">
       {details.map((detail, index) => (
         <motion.div
-          className="flex justify-between w-full border border-[#D8D2C6] rounded-xl p-5 gap-5 items-center"
+          className="flex flex-col lg:flex-row justify-between w-full border border-[#D8D2C6] rounded-xl p-4 sm:p-5 lg:p-6 gap-4 sm:gap-5 lg:gap-6 items-start lg:items-center"
           key={detail.id}
           initial={{ opacity: 0, y: 60, scale: 0.95 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -49,9 +49,9 @@ export default function BreathworkDetailsSection() {
           }}
           whileHover={{ scale: 1.02 }}
         >
-          <div className="flex flex-col gap-5 max-w-3xl">
+          <div className="flex flex-col gap-3 sm:gap-4 lg:gap-5 w-full lg:max-w-3xl">
             <motion.h3
-              className="text-lg font-bold"
+              className="text-base sm:text-lg font-bold"
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
@@ -66,7 +66,7 @@ export default function BreathworkDetailsSection() {
             {detail.description.map((description, descIndex) => (
               <motion.p
                 key={description}
-                className="text-lg"
+                className="text-sm sm:text-base lg:text-lg leading-relaxed"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
@@ -81,7 +81,7 @@ export default function BreathworkDetailsSection() {
             ))}
           </div>
           <motion.div
-            className="w-[600px]"
+            className="w-full lg:w-[500px] xl:w-[600px] flex-shrink-0"
             initial={{ opacity: 0, x: 60, scale: 0.9 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -97,7 +97,7 @@ export default function BreathworkDetailsSection() {
               alt={detail.title}
               width={600}
               height={600}
-              className="rounded-xl"
+              className="rounded-xl w-full h-auto object-cover"
             />
           </motion.div>
         </motion.div>

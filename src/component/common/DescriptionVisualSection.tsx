@@ -16,7 +16,7 @@ const DescriptionVisualSection = ({
   visualPosition = "right",
 }: DescriptionVisualSectionProps) => {
   return (
-    <section className="py-24 relative">
+    <section className="py-12 sm:py-16 lg:py-24 relative">
       {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -28,17 +28,16 @@ const DescriptionVisualSection = ({
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/70"></div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
-          className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${
+          className={`grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-center ${
             visualPosition === "left" ? "lg:grid-flow-col-dense" : ""
           }`}
         >
           {/* Text Content */}
           <motion.div
             initial={{ x: visualPosition === "left" ? 60 : -60, opacity: 0 }}
-            whileInView={{ x: 0, opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
+            animate={{ x: 0, opacity: 1 }}
             transition={{
               duration: 0.8,
               ease: [0.25, 0.46, 0.45, 0.94],
@@ -46,11 +45,10 @@ const DescriptionVisualSection = ({
             className={`${visualPosition === "left" ? "lg:col-start-2" : ""}`}
           >
             <motion.h2
-              className="text-4xl lg:text-5xl font-light mb-8 tracking-wide"
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light mb-6 sm:mb-8 tracking-wide"
               style={{ color: "#d8d2c6" }}
               initial={{ y: 30, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: true, margin: "-100px" }}
+              animate={{ y: 0, opacity: 1 }}
               transition={{
                 duration: 0.8,
                 delay: 0.2,
@@ -60,11 +58,10 @@ const DescriptionVisualSection = ({
               {title}
             </motion.h2>
             <motion.p
-              className="text-lg leading-relaxed font-light mb-8"
+              className="text-sm sm:text-base lg:text-lg leading-relaxed font-light mb-6 sm:mb-8"
               style={{ color: "#d8d2c6", opacity: 0.9 }}
               initial={{ y: 30, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: true, margin: "-100px" }}
+              animate={{ y: 0, opacity: 1 }}
               transition={{
                 duration: 0.8,
                 delay: 0.2,
@@ -78,10 +75,10 @@ const DescriptionVisualSection = ({
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 bg-transparent border border-primary-300/40 hover:border-primary-300/60 transition-all duration-300 rounded-lg group"
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-transparent border border-primary-300/40 hover:border-primary-300/60 transition-all duration-300 rounded-lg group"
             >
               <span
-                className="text-lg font-light tracking-wide transition-colors"
+                className="text-sm sm:text-base lg:text-lg font-light tracking-wide transition-colors"
                 style={{ color: "#d8d2c6" }}
               >
                 Begin Your Journey
@@ -92,8 +89,7 @@ const DescriptionVisualSection = ({
           {/* Visual Element */}
           <motion.div
             initial={{ x: visualPosition === "left" ? -60 : 60, opacity: 0 }}
-            whileInView={{ x: 0, opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
+            animate={{ x: 0, opacity: 1 }}
             transition={{
               duration: 0.8,
               delay: 0.2,
@@ -106,7 +102,7 @@ const DescriptionVisualSection = ({
             }`}
           >
             {visualElement || (
-              <div className="w-80 h-80 rounded-full bg-gradient-to-br from-primary-300/20 to-primary-300/5 border border-primary-300/30 flex items-center justify-center">
+              <div className="w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 rounded-full bg-gradient-to-br from-primary-300/20 to-primary-300/5 border border-primary-300/30 flex items-center justify-center">
                 <div className="text-center">
                   <div
                     className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-300/30 flex items-center justify-center"

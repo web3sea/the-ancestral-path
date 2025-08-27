@@ -27,7 +27,7 @@ export default function Overview() {
           }}
         >
           <motion.h2
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl mb-4 sm:mb-6 font-bold tracking-wide"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 font-bold tracking-wide"
             style={{ color: "#d8d2c6" }}
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -69,7 +69,7 @@ export default function Overview() {
             </motion.h3>
 
             <motion.div
-              className="space-y-4 sm:space-y-6 lg:space-y-8 text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed"
+              className="space-y-4 sm:space-y-6 lg:space-y-8 text-sm sm:text-base lg:text-lg leading-relaxed"
               style={{ color: "#d8d2c6", opacity: 0.9 }}
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}

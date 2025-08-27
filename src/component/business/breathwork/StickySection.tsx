@@ -23,7 +23,7 @@ export default function StickySection() {
           }}
         >
           <motion.h2
-            className="text-center text-4xl lg:text-6xl font-bold tracking-wide relative z-10"
+            className="text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-wide relative z-10"
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{
@@ -35,7 +35,7 @@ export default function StickySection() {
             ANCESTRAL
           </motion.h2>
           <motion.h2
-            className="text-center text-4xl lg:text-6xl font-bold tracking-wide relative z-10"
+            className="text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-wide relative z-10"
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{
@@ -47,7 +47,7 @@ export default function StickySection() {
             BREATHWORK
           </motion.h2>
           <motion.p
-            className="text-center lg:text-2xl font-light tracking-wide relative z-10"
+            className="text-center text-sm sm:text-base lg:text-lg font-light tracking-wide relative z-10"
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{
@@ -74,7 +74,7 @@ export default function StickySection() {
       </div>
 
       <div
-        className="sticky top-0 z-[12] border-y border-[#d8d2c6]"
+        className="sticky top-0 z-[12] p-5 lg:p-10 border-y border-[#d8d2c6]"
         style={{
           backgroundImage: `url('/images/stickybg1.png')`,
           backgroundRepeat: "repeat",
@@ -100,7 +100,7 @@ export default function StickySection() {
               duration: 0.8,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
-            className="flex flex-col items-center justify-center text-4xl font-light tracking-wide"
+            className="flex flex-col items-center justify-center text-2xl sm:text-3xl md:text-4xl font-light tracking-wide"
           >
             <h2>UPCOMING</h2>
             <h2>JOURNEYS</h2>
@@ -113,7 +113,7 @@ export default function StickySection() {
               duration: 0.8,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
-            className="text-center text-md font-light max-w-2xl"
+            className="text-center text-sm sm:text-base lg:text-md font-light max-w-2xl px-4 sm:px-6"
           >
             Sand is unwavering in her commitment to fostering transformation
             that is both inclusive and accessible. In alignment with the
@@ -137,11 +137,15 @@ export default function StickySection() {
             }}
             className="flex flex-col items-center justify-center font-light tracking-wide"
           >
-            <p className="text-bold text-2xl">BREATHING FOR A BETTER WORLD</p>
-            <p className="text-center text-xl">
+            <p className="text-center text-bold text-lg sm:text-xl md:text-2xl lg:text-3xl">
+              BREATHING FOR A BETTER WORLD
+            </p>
+            <p className="text-center text-sm sm:text-base lg:text-lg">
               Women Who Breathe Together - Rise Together!
             </p>
-            <p className="text-center text-xl">#NoWomanLeftBehind</p>
+            <p className="text-center text-sm sm:text-base lg:text-lg">
+              #NoWomanLeftBehind
+            </p>
           </motion.div>
           <motion.button
             onClick={() => {
@@ -150,7 +154,7 @@ export default function StickySection() {
                 "_blank"
               );
             }}
-            className="w-[30vw] h-[10vh] mt-10 btn-primary"
+            className="w-full sm:w-[80%] md:w-[60%] lg:w-[40%] xl:w-[30vw] h-[8vh] sm:h-[10vh] mt-10 btn-primary"
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             whileHover={{ scale: 1.02 }}

@@ -36,7 +36,7 @@ export default function SandSymesExperienceSection() {
           }}
         >
           <motion.h2
-            className="text-2xl font-light"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light"
             style={{ color: "#d8d2c6" }}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -50,7 +50,7 @@ export default function SandSymesExperienceSection() {
             EXPERIENCE
           </motion.h2>
           <motion.h2
-            className="text-6xl font-light"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light"
             style={{ color: "#d8d2c6" }}
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -65,7 +65,7 @@ export default function SandSymesExperienceSection() {
           </motion.h2>
         </motion.div>
         <motion.div
-          className="mt-16 flex font-light flex-col gap-10 text-sm lg:text-3xl"
+          className="mt-16 flex font-light flex-col gap-10 text-sm sm:text-base lg:text-lg"
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 export default function SandsTripleE() {
   return (
     <section
-      className="overflow-hidden py-5 lg:py-10 relative"
+      className="overflow-hidden p-5 lg:p-10 relative"
       style={{
         backgroundImage: `url('/images/bg1-image.png')`,
         backgroundSize: "cover",
@@ -16,7 +16,7 @@ export default function SandsTripleE() {
       <div className="bg-black/50 absolute inset-0" />
       <div className="flex flex-col max-w-7xl mx-auto lg:flex-row gap-4 items-center justify-center relative z-10">
         <motion.div
-          className="flex flex-col text-4xl lg:text-6xl font-light w-full lg:w-1/2 text-white"
+          className="flex flex-col text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light w-full lg:w-1/2 text-white"
           initial={{ x: -60, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -42,7 +42,7 @@ export default function SandsTripleE() {
           ))}
         </motion.div>
         <motion.div
-          className="flex flex-col items-center justify-center w-full lg:w-1/2 text-sm lg:text-lg gap-10"
+          className="flex flex-col items-center justify-center w-full lg:w-1/2 text-sm sm:text-base lg:text-lg gap-10"
           initial={{ x: 60, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 export default function TestimonialSection() {
   return (
     <section
-      className="flex items-center justify-center h-[40vh]"
+      className="flex items-center justify-center min-h-[300px] sm:h-[40vh] py-12 sm:py-0"
       style={{
         backgroundImage: `url('/images/bg-image.png')`,
         backgroundRepeat: "repeat",
@@ -20,7 +20,7 @@ export default function TestimonialSection() {
         transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         <motion.h2
-          className="text-4xl font-bold text-center mb-10"
+          className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-10"
           initial={{ y: 30, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -34,7 +34,7 @@ export default function TestimonialSection() {
         </motion.h2>
 
         <motion.div
-          className="relative text-2xl font-light text-center"
+          className="relative text-lg sm:text-xl lg:text-2xl font-light text-center px-4 sm:px-6 lg:px-8"
           initial={{ y: 40, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -44,7 +44,7 @@ export default function TestimonialSection() {
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
         >
-          <span className="absolute top-0 -left-10">
+          <span className="absolute top-0 -left-10 hidden lg:block">
             <svg
               preserveAspectRatio="xMidYMid meet"
               data-bbox="25.175 52 150.825 96"
@@ -72,7 +72,7 @@ export default function TestimonialSection() {
               </g>
             </svg>
           </span>
-          <p>
+          <p className="text-sm sm:text-base lg:text-lg">
             I love the breathwork journeys so much! I am amazed by how powerful
             they are. Having done meditation, body work, and yoga for decades
             and some medicine work in the past couple of years, I am really
@@ -80,7 +80,7 @@ export default function TestimonialSection() {
             and how to show up for the group, and seeing energy and spirits, not
             to mention your incredible playlists.
           </p>
-          <span className="absolute bottom-0 -right-10 transform rotate-180">
+          <span className="absolute bottom-0 -right-10 transform rotate-180 hidden lg:block">
             <svg
               preserveAspectRatio="xMidYMid meet"
               data-bbox="25.175 52 150.825 96"

@@ -13,25 +13,26 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-primary-300/20 flex items-center justify-center">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary-300/20 flex items-center justify-center">
               <Image
                 src="/images/logo.png"
                 alt="Sand Symes Logo"
                 width={40}
                 height={40}
+                className="w-6 h-6 sm:w-8 sm:h-8"
               />
             </div>
             <Link
               href="/"
-              className="text-2xl font-light text-primary-300 tracking-wide"
+              className="text-lg sm:text-xl lg:text-2xl font-light text-primary-300 tracking-wide"
             >
               SAND SYMES
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1">
             {/* Sacred Medicine Dropdown */}
             <div
               className="relative group"
@@ -154,7 +155,7 @@ export default function Header() {
           </nav>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-primary-300 hover:text-white focus:outline-none focus:text-white"
@@ -187,7 +188,7 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-black/95 border-t border-gray-700">
               {/* Sacred Medicine Group */}
               <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider">
