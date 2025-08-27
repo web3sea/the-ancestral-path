@@ -26,7 +26,7 @@ export default function TripleEMethodologySection() {
           }}
         >
           <motion.div
-            className="relative w-full max-w-xl h-[400px]"
+            className="relative w-full max-w-xl h-[220px] sm:h-[400px]"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{
@@ -37,7 +37,7 @@ export default function TripleEMethodologySection() {
           >
             {/* Top sphere */}
             <motion.div
-              className="absolute w-[420px] top-0 left-1/2 transform -translate-x-1/2"
+              className="absolute w-[235px] sm:w-[420px] top-0 left-1/2 transform -translate-x-1/2"
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{
@@ -51,7 +51,7 @@ export default function TripleEMethodologySection() {
                 alt="Geometric spheres representing expansion and growth"
                 width={200}
                 height={200}
-                className="w-[440px] object-contain animate-spin"
+                className="w-[235px] sm:w-[440px] object-contain animate-spin"
                 style={{ animationDuration: "10s" }}
                 priority
               />
@@ -73,7 +73,7 @@ export default function TripleEMethodologySection() {
                 alt="Geometric spheres representing expansion and growth"
                 width={200}
                 height={200}
-                className="w-[440px] object-contain animate-spin"
+                className="w-[235px] sm:w-[440px] object-contain animate-spin"
                 style={{ animationDuration: "10s" }}
                 priority
               />
@@ -95,7 +95,7 @@ export default function TripleEMethodologySection() {
                 alt="Geometric spheres representing expansion and growth"
                 width={200}
                 height={200}
-                className="w-[440px] object-contain animate-spin"
+                className="w-[235px] sm:w-[440px] object-contain animate-spin"
                 style={{ animationDuration: "10s" }}
                 priority
               />

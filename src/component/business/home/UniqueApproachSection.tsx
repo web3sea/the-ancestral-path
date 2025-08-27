@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 export default function UniqueApproachSection() {
   return (
     <section
-      className="mx-4 sm:mx-5 lg:mx-10 relative flex flex-col lg:flex-row p-4 sm:p-6 md:p-8 lg:p-10 h-[70vh] sm:h-[65vh] md:h-[60vh] lg:h-[60vh]"
+      className="mx-4 sm:mx-5 lg:mx-10 relative flex flex-col lg:flex-row p-4 sm:p-6 md:p-8 lg:p-10"
       style={{
         backgroundImage: `url('/images/bg1-image.png')`,
         backgroundSize: "cover",
@@ -16,7 +16,7 @@ export default function UniqueApproachSection() {
     >
       <div className="absolute inset-0 bg-black/40" />
       <motion.div
-        className="w-full lg:w-1/3 flex justify-center items-center relative z-10 rounded-3xl bg-gradient-to-b from-black/30 to-black/10 h-full mb-6 lg:mb-0"
+        className="w-full lg:w-1/3 flex relative justify-center items-center z-10 rounded-3xl bg-gradient-to-b from-black/30 to-black/10 min-h-[200px] sm:min-h-[500px] md:h-full mb-6 lg:mb-0"
         initial={{ x: -60, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{
@@ -29,14 +29,14 @@ export default function UniqueApproachSection() {
           alt="unique-approach-image"
           width={400}
           height={400}
-          className="absolute w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-64 lg:h-64 xl:w-80 xl:h-80 flip-horizontal-1"
+          className="absolute top-1/2 -translate-y-1/2 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-64 lg:h-64 xl:w-80 xl:h-80 flip-horizontal-1"
         />
         <Image
           src="/images/animated2.png"
           alt="unique-approach-image"
           width={420}
           height={420}
-          className="absolute w-36 h-36 sm:w-44 sm:h-44 md:w-52 md:h-52 lg:w-72 lg:h-72 xl:w-96 xl:h-96 flip-horizontal-2"
+          className="absolute top-1/2 -translate-y-1/2 w-36 h-36 sm:w-44 sm:h-44 md:w-52 md:h-52 lg:w-72 lg:h-72 xl:w-96 xl:h-96 flip-horizontal-2"
         />
 
         <Image
@@ -74,7 +74,6 @@ export default function UniqueApproachSection() {
           className="flex flex-col gap-6 sm:gap-8 lg:gap-10 text-sm sm:text-base md:text-lg font-light leading-relaxed"
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
           transition={{
             duration: 0.8,
             delay: 0.7,
@@ -90,7 +89,6 @@ export default function UniqueApproachSection() {
               style={{ color: "#d8d2c6", opacity: 0.9 }}
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              viewport={{ once: true, margin: "-100px" }}
               transition={{
                 duration: 0.6,
                 delay: 0.9 + index * 0.2,

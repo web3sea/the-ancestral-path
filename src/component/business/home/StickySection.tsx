@@ -46,7 +46,7 @@ export default function StickySection() {
       {item.map((item, index) => (
         <motion.section
           key={index}
-          className="sticky bg-black p-4 sm:p-6 md:p-8 lg:p-10 top-1/4 sm:top-1/3 w-full h-[80vh] sm:h-[75vh] md:h-[70vh] lg:h-[65.5vh] z-1 rounded-xl border-1 border-[#d8d2c6]"
+          className="sticky bg-black p-4 sm:p-6 md:p-8 lg:p-10 top-1/4 sm:top-1/3 w-full h-fit sm:h-[75vh] md:h-[70vh] lg:h-[65.5vh] z-1 rounded-xl border-1 border-[#d8d2c6]"
           initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
