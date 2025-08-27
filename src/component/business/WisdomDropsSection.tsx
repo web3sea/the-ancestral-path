@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 interface WisdomDrop {
   id: string;
@@ -182,27 +183,67 @@ export default function WisdomDropsSection() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-20">
-          <h2
+        <motion.div
+          className="text-center mb-20"
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            duration: 0.8,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
+          <motion.h2
             className="text-4xl lg:text-5xl font-light mb-6 tracking-wide"
             style={{ color: "#d8d2c6" }}
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{
+              duration: 0.6,
+              delay: 0.2,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
           >
             WISDOM DROPS
-          </h2>
-          <p
+          </motion.h2>
+          <motion.p
             className="text-lg max-w-2xl mx-auto leading-relaxed font-light"
             style={{ color: "#d8d2c6", opacity: 0.9 }}
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{
+              duration: 0.6,
+              delay: 0.4,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
           >
             Sacred insights and gentle wisdom for your spiritual journey. Each
             drop is crafted with love to support your growth, healing, and
             awakening.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {/* Search and filters */}
-        <div className="mb-12">
+        <motion.div
+          className="mb-12"
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            duration: 0.8,
+            delay: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
           {/* Search bar */}
-          <div className="max-w-md mx-auto mb-8">
+          <motion.div
+            className="max-w-md mx-auto mb-8"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{
+              duration: 0.6,
+              delay: 0.8,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+          >
             <div className="relative">
               <input
                 type="text"
@@ -226,12 +267,21 @@ export default function WisdomDropsSection() {
                 />
               </svg>
             </div>
-          </div>
+          </motion.div>
 
           {/* Category filters */}
-          <div className="flex flex-wrap justify-center gap-4">
-            {categories.map((category) => (
-              <button
+          <motion.div
+            className="flex flex-wrap justify-center gap-4"
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{
+              duration: 0.8,
+              delay: 1.0,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+          >
+            {categories.map((category, index) => (
+              <motion.button
                 key={category}
                 onClick={() =>
                   setCategoryFilter(
@@ -247,19 +297,45 @@ export default function WisdomDropsSection() {
                 className={
                   categoryFilter === category ? "btn-primary" : "btn-secondary"
                 }
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{
+                  duration: 0.6,
+                  delay: 1.2 + index * 0.1,
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 {category}
-              </button>
+              </motion.button>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Wisdom drops grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredDrops.map((drop) => (
-            <article
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            duration: 0.8,
+            delay: 1.4,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
+          {filteredDrops.map((drop, index) => (
+            <motion.article
               key={drop.id}
               className="bg-black/40 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-primary-300/20"
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{
+                duration: 0.6,
+                delay: 1.6 + index * 0.1,
+                ease: [0.25, 0.46, 0.45, 0.94],
+              }}
+              whileHover={{ y: -10, scale: 1.02 }}
             >
               {/* Image */}
               <div className="relative h-48 bg-gradient-to-br from-gold/20 to-primary-200">
@@ -362,9 +438,9 @@ export default function WisdomDropsSection() {
                   Read Wisdom Drop
                 </button>
               </div>
-            </article>
+            </motion.article>
           ))}
-        </div>
+        </motion.div>
 
         {/* No results message */}
         {filteredDrops.length === 0 && (

@@ -62,13 +62,13 @@ export default function Header() {
                 <div className="absolute top-full left-0 pt-1 w-56 z-50">
                   <div className="bg-black/95 backdrop-blur-sm rounded-lg shadow-lg border border-primary-300/20 py-2">
                     <Link
-                      href="/breathwork"
+                      href="/meditations"
                       className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
                     >
                       Medicine Containers
                     </Link>
                     <Link
-                      href="/meditations"
+                      href="/breathwork"
                       className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
                     >
                       Ancestral Breathwork
@@ -133,12 +133,12 @@ export default function Header() {
             </div>
 
             {/* Sacred Products */}
-            <Link
+            {/* <Link
               href="/products"
               className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
             >
               SACRED PRODUCTS
-            </Link>
+            </Link> */}
 
             {/* Oracle AI */}
             <Link
@@ -148,7 +148,11 @@ export default function Header() {
               ORACLE AI
             </Link>
 
-            <Link href="/contact" className="btn-secondary ml-4">
+            <Link
+              href=" https://www.sandsymes.com/contact"
+              target="_blank"
+              className="btn-secondary ml-4"
+            >
               CONTACT
             </Link>
           </nav>
@@ -242,7 +246,7 @@ export default function Header() {
               </Link>
 
               {/* Sacred Products */}
-              <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-4">
+              {/* <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-4">
                 Sacred Products
               </div>
               <Link
@@ -251,7 +255,7 @@ export default function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Sacred Products
-              </Link>
+              </Link> */}
 
               {/* Oracle AI */}
               <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-4">

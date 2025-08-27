@@ -1,3 +1,7 @@
+"use client";
+
+import { motion } from "framer-motion";
+
 export default function AstrologicalSection() {
   return (
     <section id="astrology" className="pt-36 pb-24 relative">
@@ -12,27 +16,59 @@ export default function AstrologicalSection() {
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/70"></div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
+      <div className="relative z-10 mx-auto px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-20">
-            <h2
+          <motion.div
+            className="text-center mb-20"
+            initial={{ y: 60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{
+              duration: 0.8,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+          >
+            <motion.h2
               className="text-4xl lg:text-5xl font-light mb-6 tracking-wide"
               style={{ color: "#d8d2c6" }}
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{
+                duration: 0.8,
+                delay: 0.2,
+                ease: [0.25, 0.46, 0.45, 0.94],
+              }}
             >
               ASTROLOGICAL ANCESTRAL DOWNLOAD
-            </h2>
-            <p
+            </motion.h2>
+            <motion.p
               className="text-lg max-w-2xl mx-auto leading-relaxed font-light"
               style={{ color: "#d8d2c6", opacity: 0.9 }}
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{
+                duration: 0.8,
+                delay: 0.4,
+                ease: [0.25, 0.46, 0.45, 0.94],
+              }}
             >
               Unlock the cosmic wisdom encoded in your DNA and discover the
               sacred gifts passed down through your ancestral lineage.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
           {/* Main content card */}
-          <div className="bg-black/40 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-primary-300/20">
+          <motion.div
+            className="bg-black/40 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-primary-300/20"
+            initial={{ y: 60, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{
+              duration: 0.8,
+              delay: 0.6,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+          >
             {/* Hero image section */}
             <div className="relative h-80 bg-gradient-to-br from-secondary-400 via-primary-500 to-secondary-600">
               <div className="absolute inset-0 bg-black/20"></div>
@@ -287,11 +323,31 @@ export default function AstrologicalSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Additional info section */}
-          <div className="mt-16 text-center">
-            <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 border border-primary-300/20">
+          <motion.div
+            className="mt-16 text-center"
+            initial={{ y: 60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{
+              duration: 0.8,
+              delay: 0.8,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+          >
+            <motion.div
+              className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 border border-primary-300/20"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{
+                duration: 0.6,
+                delay: 1.0,
+                ease: [0.25, 0.46, 0.45, 0.94],
+              }}
+            >
               <h3
                 className="text-xl font-bold mb-4"
                 style={{ color: "#d8d2c6" }}
@@ -381,8 +437,8 @@ export default function AstrologicalSection() {
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </section>

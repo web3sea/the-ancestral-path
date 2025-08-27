@@ -1,4 +1,7 @@
-// Extract just the product discount section from RetreatSection
+"use client";
+
+import { motion } from "framer-motion";
+
 export default function ProductDiscountSection() {
   return (
     <section className="pt-36 pb-24 relative">
@@ -15,26 +18,61 @@ export default function ProductDiscountSection() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         {/* Page Header */}
-        <div className="text-center mb-20">
-          <h1
+        <motion.div
+          className="text-center mb-20"
+          initial={{ y: 60, opacity: 0 }}
+          transition={{
+            duration: 0.8,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
+          <motion.h1
             className="text-5xl lg:text-7xl font-light mb-8 tracking-wide"
             style={{ color: "#d8d2c6" }}
+            initial={{ y: 30, opacity: 0 }}
+            transition={{
+              duration: 0.6,
+              delay: 0.2,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
           >
             SACRED COLLECTION
-          </h1>
-          <p
+          </motion.h1>
+          <motion.p
             className="text-xl max-w-3xl mx-auto leading-relaxed font-light"
             style={{ color: "#d8d2c6", opacity: 0.9 }}
+            initial={{ y: 30, opacity: 0 }}
+            transition={{
+              duration: 0.6,
+              delay: 0.4,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
           >
             Enhance your spiritual practice with our curated collection of
             sacred healing tools, crystals, oils, and ritual items chosen to
             support your transformation and awakening.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {/* Main Product Card */}
-        <div className="max-w-5xl mx-auto mb-20">
-          <div className="bg-black/40 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-primary-300/20">
+        <motion.div
+          className="max-w-5xl mx-auto mb-20"
+          initial={{ y: 60, opacity: 0 }}
+          transition={{
+            duration: 0.8,
+            delay: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
+          <motion.div
+            className="bg-black/40 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-primary-300/20"
+            initial={{ scale: 0.95, opacity: 0 }}
+            transition={{
+              duration: 1.2,
+              delay: 0.8,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+          >
             {/* Hero Section */}
             <div className="relative h-96 bg-gradient-to-br from-gold/30 via-primary-300/20 to-secondary-400/30">
               <div className="absolute inset-0 bg-black/20"></div>
@@ -295,18 +333,26 @@ export default function ProductDiscountSection() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Product Highlights Grid */}
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2
+        <motion.div
+          className="max-w-6xl mx-auto"
+          initial={{ y: 60, opacity: 0 }}
+          transition={{
+            duration: 0.8,
+            delay: 1.2,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
+          <motion.div className="text-center mb-12">
+            <motion.h2
               className="text-3xl lg:text-4xl font-light mb-6"
               style={{ color: "#d8d2c6" }}
             >
               SACRED CATEGORIES
-            </h2>
+            </motion.h2>
             <p
               className="text-lg max-w-2xl mx-auto"
               style={{ color: "#d8d2c6", opacity: 0.9 }}
@@ -315,9 +361,17 @@ export default function ProductDiscountSection() {
               each designed to support your spiritual journey and
               transformation.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            initial={{ y: 40, opacity: 0 }}
+            transition={{
+              duration: 0.8,
+              delay: 1.4,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+          >
             {[
               {
                 icon: "M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z",
@@ -416,8 +470,8 @@ export default function ProductDiscountSection() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );

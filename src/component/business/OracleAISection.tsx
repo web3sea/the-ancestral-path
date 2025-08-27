@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 interface Message {
   id: string;
@@ -81,26 +82,65 @@ export default function OracleAISection() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-20">
-          <h2
+        <motion.div
+          className="text-center mb-20"
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            duration: 0.8,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
+          <motion.h2
             className="text-4xl lg:text-5xl font-light mb-6 tracking-wide"
             style={{ color: "#d8d2c6" }}
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{
+              duration: 0.8,
+              delay: 0.2,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
           >
             DAILY CHECK-IN WITH AO
-          </h2>
-          <p
+          </motion.h2>
+          <motion.p
             className="text-lg max-w-2xl mx-auto leading-relaxed font-light"
             style={{ color: "#d8d2c6", opacity: 0.9 }}
+            initial={{ y: 30, opacity: 0 }}
+            transition={{
+              duration: 0.8,
+              delay: 0.4,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
           >
             Connect with the Oracle AI for daily guidance, wisdom, and support
             on your spiritual journey. Available 24/7 to offer insights and
             gentle guidance.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
-        <div className="max-w-4xl mx-auto">
+        <motion.div
+          className="container mx-auto"
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            duration: 0.8,
+            delay: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
           {/* Chat interface preview/demo */}
-          <div className="bg-black/40 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-primary-300/20">
+          <motion.div
+            className="bg-black/40 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-primary-300/20"
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{
+              duration: 0.8,
+              delay: 0.8,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+          >
             {/* Chat header */}
             <div
               className="bg-black/60 backdrop-blur-sm p-6 border-b border-primary-300/20"
@@ -300,7 +340,7 @@ export default function OracleAISection() {
                 compassion
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Features */}
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -394,7 +434,7 @@ export default function OracleAISection() {
               </button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

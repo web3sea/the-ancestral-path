@@ -189,3 +189,30 @@ html {
   border-color: rgba(216, 210, 198, 0.5);
   text-decoration: none;
 }
+
+@keyframes flipHorizontal {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(180deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.flip-horizontal-1 {
+  animation: flipHorizontal 9s infinite linear;
+  transform-style: preserve-3d;
+}
+
+.flip-horizontal-2 {
+  animation: flipHorizontal 8s infinite linear reverse;
+  transform-style: preserve-3d;
+}
+
+.flip-horizontal-3 {
+  animation: flipHorizontal 10s infinite linear;
+  transform-style: preserve-3d;
+}

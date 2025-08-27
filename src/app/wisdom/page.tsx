@@ -1,6 +1,6 @@
-import Header from "@/component/layout/Header";
-import WisdomDropsSection from "@/component/WisdomDropsSection";
-import Footer from "@/component/layout/Footer";
+import WisdomDropsSection from "@/component/business/WisdomDropsSection";
+import FullWidthImageSection from "@/component/common/FullWidthImageSection";
+import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 
 export const metadata = {
   title: "Wisdom Drops - Sand Symes",
@@ -11,11 +11,17 @@ export const metadata = {
 export default function WisdomPage() {
   return (
     <div className="min-h-screen">
-      <Header />
-      <main>
-        <WisdomDropsSection />
-      </main>
-      <Footer />
+      <WisdomDropsSection />
+
+      <FullWidthImageSection
+        imageUrl="/images/wisdom.png"
+        altText="Sacred insights and gentle wisdom for your spiritual journey and awakening"
+      />
+      <DescriptionVisualSection
+        title="WISDOM FOR THE SOUL"
+        description="Every word of wisdom is a gentle reminder of your divine nature and the sacred journey you're on. These teachings are not just information—they're invitations to remember who you truly are and to embrace the wisdom that has been passed down through generations of healers and wisdom keepers."
+        visualPosition="right"
+      />
     </div>
   );
 }

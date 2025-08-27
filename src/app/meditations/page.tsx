@@ -1,4 +1,6 @@
-import MeditationsSection from "@/component/MeditationsSection";
+import MeditationsSection from "@/component/business/MeditationsSection";
+import FullWidthImageSection from "@/component/common/FullWidthImageSection";
+import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 
 export const metadata = {
   title: "Guided Meditations - Sand Symes",
@@ -10,6 +12,17 @@ export default function MeditationsPage() {
   return (
     <div className="min-h-screen">
       <MeditationsSection />
+
+      <FullWidthImageSection
+        imageUrl="/images/meditations.png"
+        altText="Journey inward with guided meditations designed to bring peace and spiritual connection"
+      />
+
+      <DescriptionVisualSection
+        title="FIND PEACE WITHIN"
+        description="In the stillness of meditation, you discover the sacred space within where healing begins. Each guided journey is a gentle invitation to explore your inner landscape, release tension, and connect with the divine wisdom that resides in your heart."
+        visualPosition="left"
+      />
     </div>
   );
 }

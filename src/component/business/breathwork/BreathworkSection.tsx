@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 interface BreathworkSession {
   id: string;
@@ -62,41 +63,73 @@ export default function BreathworkSection() {
       : breathworkSessions.filter((session) => session.difficulty === filter);
 
   return (
-    <section id="breathwork" className="pt-36 pb-24 relative">
-      {/* Background image */}
+    <section id="breathwork" className="relative">
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="relative h-full pt-36"
         style={{
-          backgroundImage: `url('https://static.wixstatic.com/media/7f8caa_88ff41d59b9c4f92b725e25042ca6879~mv2.jpg/v1/fill/w_1290,h_848,al_c,q_85,enc_avif,quality_auto/7f8caa_88ff41d59b9c4f92b725e25042ca6879~mv2.jpg')`,
+          backgroundImage: `url('/images/stickybg1.png')`,
+          backgroundRepeat: "repeat",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
-      ></div>
+      >
+        <div className="absolute inset-0 bg-black/40 z-0" />
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/70"></div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-20">
-          <h2
+        <motion.div
+          className="text-center mb-20 max-w-7xl mx-auto relative z-12"
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            duration: 0.8,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
+          <motion.h2
             className="text-4xl lg:text-5xl font-light mb-6 tracking-wide"
             style={{ color: "#d8d2c6" }}
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{
+              duration: 0.8,
+              delay: 0.2,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
           >
             MEDICINE CONTAINERS
-          </h2>
-          <p
+          </motion.h2>
+          <motion.p
             className="text-lg max-w-2xl mx-auto leading-relaxed font-light"
             style={{ color: "#d8d2c6", opacity: 0.9 }}
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{
+              duration: 0.8,
+              delay: 0.4,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
           >
             Sacred spaces for transformation through conscious breathwork,
             ancestral healing practices, and guided inner journeys.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {/* Filter buttons */}
-        <div className="flex flex-wrap justify-center gap-3 mb-16">
+        <motion.div
+          className="flex flex-wrap justify-center gap-3 mb-16 max-w-7xl mx-auto relative z-10"
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            duration: 0.6,
+            delay: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
           {["All", "Beginner", "Intermediate", "Advanced"].map((level) => (
-            <button
+            <motion.button
               key={level}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() =>
                 setFilter(
                   level as "All" | "Beginner" | "Intermediate" | "Advanced"
@@ -105,15 +138,34 @@ export default function BreathworkSection() {
               className={filter === level ? "btn-primary" : "btn-secondary"}
             >
               {level}
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
 
         {/* Sessions grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredSessions.map((session) => (
-            <div
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto pb-20"
+          initial={{ y: 60, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{
+            duration: 0.8,
+            delay: 0.8,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
+          {filteredSessions.map((session, index) => (
+            <motion.div
               key={session.id}
+              initial={{ y: 50, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{
+                duration: 0.6,
+                delay: 1.0 + index * 0.1,
+                ease: [0.25, 0.46, 0.45, 0.94],
+              }}
+              whileHover={{ y: -10, scale: 1.02 }}
               className="bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-black/50 transition-all duration-300 border border-primary-300/20 hover:border-primary-300/40"
             >
               {/* Thumbnail */}
@@ -170,7 +222,17 @@ export default function BreathworkSection() {
                 </p>
 
                 {/* Benefits */}
-                <div className="mb-6">
+                <motion.div
+                  className="mb-6"
+                  initial={{ y: 20, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{
+                    duration: 0.6,
+                    delay: 0.2,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  }}
+                >
                   <h4
                     className="text-sm font-semibold mb-2"
                     style={{ color: "#d8d2c6" }}
@@ -179,33 +241,62 @@ export default function BreathworkSection() {
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {session.benefits.map((benefit, index) => (
-                      <span
+                      <motion.span
                         key={index}
                         className="px-3 py-1 text-sm rounded-full bg-primary-300/20 border border-primary-300/30"
                         style={{ color: "#d8d2c6" }}
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        whileInView={{ scale: 1, opacity: 1 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        transition={{
+                          duration: 0.4,
+                          delay: 0.3 + index * 0.1,
+                          ease: [0.25, 0.46, 0.45, 0.94],
+                        }}
+                        whileHover={{ scale: 1.05 }}
                       >
                         {benefit}
-                      </span>
+                      </motion.span>
                     ))}
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Action button */}
-                <button
+                <motion.button
                   onClick={() => setSelectedSession(session)}
                   className="w-full btn-primary"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  viewport={{ once: true, margin: "-100px" }}
                 >
                   Watch Session
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Video modal placeholder */}
         {selectedSession && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+          <motion.div
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto"
+              initial={{ scale: 0.9, opacity: 0, y: 50 }}
+              whileInView={{ scale: 1, opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              exit={{ scale: 0.9, opacity: 0, y: 50 }}
+              transition={{
+                duration: 0.4,
+                ease: [0.25, 0.46, 0.45, 0.94],
+              }}
+            >
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-2xl font-bold text-gray-900">
@@ -240,8 +331,8 @@ export default function BreathworkSection() {
 
                 <p className="text-gray-700">{selectedSession.description}</p>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
     </section>
