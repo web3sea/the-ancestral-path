@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,17 +15,12 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-primary-300/20 flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-primary-300"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <circle cx="12" cy="12" r="3" />
-                <path
-                  d="M12 1l3.09 6.26L22 9l-6.91 1.01L12 16l-3.09-6.99L2 9l6.91-1.74L12 1z"
-                  opacity="0.7"
-                />
-              </svg>
+              <Image
+                src="/images/logo.png"
+                alt="Sand Symes Logo"
+                width={40}
+                height={40}
+              />
             </div>
             <Link
               href="/"
