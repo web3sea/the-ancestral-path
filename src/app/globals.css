@@ -1,8 +1,64 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Sandsymes authentic color palette - elegant and minimalist */
+  --background: #000000;
+  --foreground: #d8d2c6;
+
+  /* Primary colors - using #d8d2c6 as the main text color */
+  --primary-50: #f9f8f6;
+  --primary-100: #f2f0ed;
+  --primary-200: #e8e5e0;
+  --primary-300: #d8d2c6;
+  --primary-400: #c8c0b0;
+  --primary-500: #b8ad9a;
+  --primary-600: #a39588;
+  --primary-700: #8b7d6f;
+  --primary-800: #73675c;
+  --primary-900: #5d544c;
+
+  /* Secondary colors - warm neutrals */
+  --secondary-50: #f9f8f7;
+  --secondary-100: #f2f0ed;
+  --secondary-200: #e8e4df;
+  --secondary-300: #ddd7d0;
+  --secondary-400: #cfc7be;
+  --secondary-500: #b8ad9f;
+  --secondary-600: #9d8f7f;
+  --secondary-700: #7d6f5f;
+  --secondary-800: #5f544a;
+  --secondary-900: #4a3f37;
+
+  /* Accent colors - sophisticated and muted */
+  --accent-sage: #8a9a7b;
+  --accent-sage-light: #a5b396;
+  --accent-gold: #c5a572;
+  --accent-gold-light: #d4b583;
+
+  /* Neutral colors */
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+
+  /* Gradient backgrounds */
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--primary-500) 0%,
+    var(--secondary-500) 100%
+  );
+  --gradient-sage: linear-gradient(
+    135deg,
+    var(--accent-sage) 0%,
+    var(--accent-sage-light) 100%
+  );
+  --gradient-sunset: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
 }
 
 @theme inline {
@@ -10,17 +66,126 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Custom color mappings for Tailwind */
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-300: var(--primary-300);
+  --color-primary-400: var(--primary-400);
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+
+  --color-sage: var(--accent-sage);
+  --color-sage-light: var(--accent-sage-light);
+  --color-gold: var(--accent-gold);
+  --color-gold-light: var(--accent-gold-light);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-400);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-600);
+}
+
+/* Utility classes */
+.gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.gradient-sage {
+  background: var(--gradient-sage);
+}
+
+.gradient-sunset {
+  background: var(--gradient-sunset);
+}
+
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.glass-effect {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Global button styles */
+.btn-primary {
+  background-color: rgba(255, 255, 255, 0.09);
+  color: #d8d2c6;
+  border: 1px solid rgba(216, 210, 198, 0.3);
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  text-align: center;
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary:hover {
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #d8d2c6;
+  border-color: rgba(216, 210, 198, 0.5);
+  text-decoration: none;
+}
+
+.btn-primary:focus {
+  outline: 2px solid rgba(216, 210, 198, 0.5);
+  outline-offset: 2px;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: #d8d2c6;
+  border: 1px solid rgba(216, 210, 198, 0.3);
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  text-align: center;
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.09);
+  color: #d8d2c6;
+  border-color: rgba(216, 210, 198, 0.5);
+  text-decoration: none;
 }
