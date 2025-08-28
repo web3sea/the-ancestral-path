@@ -8,6 +8,52 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
+  const username = "sandsymes";
+
+  //external links
+  const sacredMedicineItems = [
+    {
+      label: "Medicine Containers",
+      href: "https://www.sandsymes.com/sacred-containers",
+    },
+    {
+      label: "Ancestral Breathwork",
+      href: "https://www.sandsymes.com/ancestral-breathwork",
+    },
+    {
+      label: "Sacred Medicine Retreat 2025",
+      href: "https://www.sandsymes.com/medicine-retreats",
+    },
+  ];
+
+  //internal links
+  const sacredWisdomItems = [
+    {
+      label: "Breathwork",
+      href: "/breathwork",
+    },
+    {
+      label: "Wisdom Drops",
+      href: "/wisdom",
+    },
+    {
+      label: "Astrological Download",
+      href: "/astrology",
+    },
+    {
+      label: "Mini Challenges",
+      href: "/challenges",
+    },
+    {
+      label: "Guided Meditations",
+      href: "/meditations",
+    },
+    {
+      label: "Resources",
+      href: "/resources",
+    },
+  ];
+
   return (
     <header className="bg-transparent backdrop-blur-sm top-0 z-50 border-b border-primary-300/20 fixed w-full">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -58,24 +104,15 @@ export default function Header() {
               {activeDropdown === "medicine" && (
                 <div className="absolute top-full left-0 pt-1 w-56 z-50">
                   <div className="bg-black/95 backdrop-blur-sm rounded-lg shadow-lg border border-primary-300/20 py-2">
-                    <Link
-                      href="/meditations"
-                      className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
-                    >
-                      Medicine Containers
-                    </Link>
-                    <Link
-                      href="/breathwork"
-                      className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
-                    >
-                      Ancestral Breathwork
-                    </Link>
-                    <Link
-                      href="/retreats"
-                      className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
-                    >
-                      Sacred Medicine Retreat 2025
-                    </Link>
+                    {sacredMedicineItems.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               )}
@@ -106,36 +143,19 @@ export default function Header() {
               {activeDropdown === "wisdom" && (
                 <div className="absolute top-full left-0 pt-1 w-56 z-50">
                   <div className="bg-black/95 backdrop-blur-sm rounded-lg shadow-lg border border-primary-300/20 py-2">
-                    <Link
-                      href="/wisdom"
-                      className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
-                    >
-                      Wisdom Drops
-                    </Link>
-                    <Link
-                      href="/astrology"
-                      className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
-                    >
-                      Astrological Download
-                    </Link>
-                    <Link
-                      href="/challenges"
-                      className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
-                    >
-                      Mini Challenges
-                    </Link>
+                    {sacredWisdomItems.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
-
-            {/* Sacred Products */}
-            {/* <Link
-              href="/products"
-              className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
-            >
-              SACRED PRODUCTS
-            </Link> */}
 
             {/* Oracle AI */}
             <Link
@@ -146,7 +166,7 @@ export default function Header() {
             </Link>
 
             <Link href="#" className="btn-secondary ml-4">
-              ...Username
+              {username}
             </Link>
           </nav>
 
@@ -190,65 +210,31 @@ export default function Header() {
               <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider">
                 Sacred Medicine
               </div>
-              <Link
-                href="/breathwork"
-                className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Medicine Containers
-              </Link>
-              <Link
-                href="/meditations"
-                className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Ancestral Breathwork
-              </Link>
-              <Link
-                href="/retreats"
-                className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sacred Medicine Retreat 2025
-              </Link>
+              {sacredMedicineItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
 
               {/* Sacred Wisdom Group */}
               <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-4">
                 Sacred Wisdom
               </div>
-              <Link
-                href="/wisdom"
-                className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Wisdom Drops
-              </Link>
-              <Link
-                href="/astrology"
-                className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Astrological Download
-              </Link>
-              <Link
-                href="/challenges"
-                className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Mini Challenges
-              </Link>
-
-              {/* Sacred Products */}
-              {/* <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-4">
-                Sacred Products
-              </div>
-              <Link
-                href="/products"
-                className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sacred Products
-              </Link> */}
+              {sacredWisdomItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
 
               {/* Oracle AI */}
               <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-4">
@@ -269,7 +255,7 @@ export default function Header() {
                   className="block w-full text-center btn-secondary"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  ...Username
+                  {username}
                 </Link>
               </div>
             </div>

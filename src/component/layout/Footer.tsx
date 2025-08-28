@@ -209,14 +209,13 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/resources"
                   className="transition-colors font-light hover:opacity-100"
                   style={{ color: "#d8d2c6", opacity: 0.8 }}
-                  target="_blank"
                 >
                   Resources
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ABJ Oracle - Sandsymes Wellness Platform",
+  title: "Sandsymes Wellness AO Platform",
   description:
     "Experience guided breathwork rituals, meditations, wisdom drops, and daily check-ins with the Oracle AI. Your journey to healing and transformation starts here.",
   keywords:

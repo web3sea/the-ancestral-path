@@ -56,6 +56,30 @@ export default function StickySection() {
     },
     {
       id: "07",
+      title: "Guided Meditations",
+      description:
+        "Guided Meditations are a powerful way to connect with your inner wisdom and achieve deep relaxation. These meditations are designed to help you clear your mind, release tension, and access your inner guidance. Each meditation is crafted to help you connect with your true self and achieve a state of peace and clarity.",
+      image: "/images/guided.png",
+      backgroundImage: "/images/bg1-image.png",
+    },
+    {
+      id: "08",
+      title: "ABJ Recordings",
+      description:
+        "Ancestral Breathwork Journeys Recordings are a powerful way to connect with your inner wisdom and achieve deep relaxation. These recordings are designed to help you clear your mind, release tension, and access your inner guidance. Each recording is crafted to help you connect with your true self and achieve a state of peace and clarity.",
+      image: "/images/abj.png",
+      backgroundImage: "/images/stickybg1.png",
+    },
+    {
+      id: "09",
+      title: "Dedicated Group Workshops",
+      description:
+        "Dedicated Group Workshops are a powerful way to connect with your inner wisdom and achieve deep relaxation. These workshops are designed to help you clear your mind, release tension, and access your inner guidance. Each workshop is crafted to help you connect with your true self and achieve a state of peace and clarity.",
+      image: "/images/workshops.png",
+      backgroundImage: "/images/stickybg3.png",
+    },
+    {
+      id: "10",
       title: "AO",
       description:
         "Oracle AI is an innovative digital companion that provides personalized spiritual guidance and insights. This advanced AI system draws from ancient wisdom traditions and Sand's extensive knowledge to offer meaningful responses to your questions and challenges. Whether you need clarity on a decision, guidance through a difficult time, or insights into your spiritual journey, Oracle AI serves as your 24/7 spiritual advisor, helping you navigate life with greater wisdom and confidence.",
