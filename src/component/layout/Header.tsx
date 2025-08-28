@@ -161,7 +161,7 @@ export default function Header() {
               Resources
             </Link>
             <Link
-              href="/ao"
+              href="/oracle"
               className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
             >
               AO
@@ -250,7 +250,7 @@ export default function Header() {
 
               {/* AO */}
               <Link
-                href="/ao"
+                href="/oracle"
                 className="block px-6 py-2 bg-primary-300/20 text-primary-300 rounded-lg text-sm mx-3"
                 onClick={() => setIsMenuOpen(false)}
               >
