@@ -28,10 +28,10 @@ export default function Header() {
 
   //internal links
   const sacredWisdomItems = [
-    {
-      label: "Breathwork",
-      href: "/breathwork",
-    },
+    // {
+    //   label: "Breathwork",
+    //   href: "/breathwork",
+    // },
     {
       label: "Wisdom Drops",
       href: "/wisdom",
@@ -47,10 +47,6 @@ export default function Header() {
     {
       label: "Guided Meditations",
       href: "/meditations",
-    },
-    {
-      label: "Resources",
-      href: "/resources",
     },
   ];
 
@@ -157,12 +153,18 @@ export default function Header() {
               )}
             </div>
 
-            {/* Oracle AI */}
+            {/* AO */}
             <Link
-              href="/oracle"
+              href="/resources"
               className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
             >
-              ORACLE AI
+              Resources
+            </Link>
+            <Link
+              href="/ao"
+              className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
+            >
+              AO
             </Link>
 
             <Link href="#" className="btn-secondary ml-4">
@@ -236,12 +238,19 @@ export default function Header() {
                 </Link>
               ))}
 
-              {/* Oracle AI */}
-              <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-4">
-                Oracle
-              </div>
+              {/* Resources */}
+
               <Link
-                href="/oracle"
+                href="/resources"
+                className="block px-6 py-2 bg-primary-300/20 text-primary-300 rounded-lg text-sm mx-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Resources
+              </Link>
+
+              {/* AO */}
+              <Link
+                href="/ao"
                 className="block px-6 py-2 bg-primary-300/20 text-primary-300 rounded-lg text-sm mx-3"
                 onClick={() => setIsMenuOpen(false)}
               >

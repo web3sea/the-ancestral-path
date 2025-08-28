@@ -166,6 +166,16 @@ export default function Footer() {
                   Medicine Retreats
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/meditations"
+                  className="transition-colors font-light hover:opacity-100"
+                  style={{ color: "#d8d2c6", opacity: 0.8 }}
+                  target="_blank"
+                >
+                  Guided Meditations
+                </Link>
+              </li>
             </ul>
           </div>
 
