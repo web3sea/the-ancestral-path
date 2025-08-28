@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "breathwork, meditation, wellness, healing, oracle, astrology, spiritual guidance",
   authors: [{ name: "Sand Symes" }],
   openGraph: {
-    title: "ABJ Oracle - Sandsymes Wellness Platform",
+    title: "Sandsymes Wellness AO Platform",
     description:
       "Experience guided breathwork rituals, meditations, wisdom drops, and daily check-ins with the Oracle AI.",
     type: "website",
