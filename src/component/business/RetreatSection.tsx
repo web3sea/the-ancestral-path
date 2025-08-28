@@ -39,7 +39,7 @@ export default function RetreatSection() {
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
-            SACRED RETREATS
+            MEDICINE RETREATS
           </motion.h1>
           <motion.p
             className="text-sm sm:text-base lg:text-lg max-w-3xl mx-auto leading-relaxed font-light"
@@ -113,14 +113,14 @@ export default function RetreatSection() {
                     </svg>
                   </div>
                   <h2 className="text-4xl font-light mb-3">
-                    Sacred Healing Retreat
+                    Medicine Retreats
                   </h2>
                   <p className="text-xl opacity-90 mb-4">
                     Mystical Mountains • Costa Rica
                   </p>
                   <div className="flex items-center justify-center gap-4">
                     <span className="bg-primary-300/20 text-primary-300 px-4 py-2 rounded-full text-sm font-medium border border-primary-300/30">
-                      March 15-20, 2024
+                      March 15-20, 2025
                     </span>
                     <span className="bg-gold/20 text-gold px-4 py-2 rounded-full text-sm font-bold border border-gold/30">
                       EARLY ACCESS

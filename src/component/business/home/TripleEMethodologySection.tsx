@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 export default function TripleEMethodologySection() {
   return (
     <section
-      className="bg-black/40 backdrop-blur-sm rounded-xl mx-4 sm:mx-6 md:mx-8 lg:mx-10 my-8 sm:my-10 overflow-hidden shadow-2xl"
+      className="bg-black/40 backdrop-blur-sm mx-4 sm:mx-6 md:mx-8 lg:mx-10 overflow-hidden shadow-2xl"
       style={{
         backgroundImage: `url('/images/bg1-image.png')`,
         backgroundSize: "cover",

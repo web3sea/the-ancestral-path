@@ -116,7 +116,7 @@ export default function Header() {
                       href="/astrology"
                       className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
                     >
-                      Astrological Downloads
+                      Astrological Download
                     </Link>
                     <Link
                       href="/challenges"
@@ -145,12 +145,8 @@ export default function Header() {
               ORACLE AI
             </Link>
 
-            <Link
-              href=" https://www.sandsymes.com/contact"
-              target="_blank"
-              className="btn-secondary ml-4"
-            >
-              CONTACT
+            <Link href="#" className="btn-secondary ml-4">
+              ...Username
             </Link>
           </nav>
 
@@ -232,7 +228,7 @@ export default function Header() {
                 className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Astrological Downloads
+                Astrological Download
               </Link>
               <Link
                 href="/challenges"
@@ -263,17 +259,17 @@ export default function Header() {
                 className="block px-6 py-2 bg-primary-300/20 text-primary-300 rounded-lg text-sm mx-3"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Oracle AI Chat
+                AO
               </Link>
 
               {/* Contact */}
               <div className="mt-4 px-3">
                 <Link
-                  href="/contact"
+                  href="#"
                   className="block w-full text-center btn-secondary"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  CONTACT
+                  ...Username
                 </Link>
               </div>
             </div>

@@ -119,7 +119,7 @@ export default function MeditationsSection() {
   ];
 
   return (
-    <section id="meditations" className="relative w-full min-h-screen">
+    <section id="meditations" className="relative w-full min-h-screen pt-20">
       {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"

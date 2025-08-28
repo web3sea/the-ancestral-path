@@ -46,7 +46,7 @@ export default function OfferingsOverview() {
       ),
     },
     {
-      title: "Sacred Teachings",
+      title: "Wisdom Drops",
       description:
         "Wisdom drops enriched with text and images to support your spiritual growth and awakening.",
       href: "/wisdom",
@@ -67,7 +67,7 @@ export default function OfferingsOverview() {
       ),
     },
     {
-      title: "Astrological Downloads",
+      title: "Astrological Download",
       description:
         "Unlock cosmic wisdom encoded in your DNA and discover your ancestral gifts.",
       href: "/astrology",
@@ -109,7 +109,7 @@ export default function OfferingsOverview() {
       ),
     },
     {
-      title: "Sacred Retreats",
+      title: "Medicine Retreats",
       description:
         "Join intimate healing retreats in mystical locations for deep transformation.",
       href: "/retreats",
@@ -157,7 +157,7 @@ export default function OfferingsOverview() {
       ),
     },
     {
-      title: "Oracle AI Chat",
+      title: "AO",
       description:
         "Daily check-ins with compassionate AI guidance for your spiritual journey.",
       href: "/oracle",

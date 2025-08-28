@@ -3,14 +3,14 @@ import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 
 export const metadata = {
-  title: "Sacred Retreats - Sand Symes",
+  title: "Medicine Retreats - Sand Symes",
   description:
     "Transform your life through intimate healing journeys in sacred spaces. Join Sand for deeply transformative experiences that awaken your soul and heal your spirit.",
   keywords:
     "healing retreats, spiritual awakening, breathwork, meditation, Costa Rica, sacred ceremony, Sand Symes",
   authors: [{ name: "Sand Symes" }],
   openGraph: {
-    title: "Sacred Retreats - Sand Symes",
+    title: "Medicine Retreats - Sand Symes",
     description:
       "Transform your life through intimate healing journeys in sacred spaces.",
     type: "website",

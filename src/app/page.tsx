@@ -1,8 +1,5 @@
 "use client";
 
-import HeroSection from "@/component/business/home/HeroSection";
-import ClientAssociations from "@/component/business/home/ClientAssociationsSection";
-import Overview from "@/component/business/home/OverviewSection";
 import SandsTripleE from "@/component/business/home/SandsTripleESection";
 import TripleEMethodologySection from "@/component/business/home/TripleEMethodologySection";
 import SandSymesExperienceSection from "@/component/business/home/SandSymesExperienceSection";
@@ -10,20 +7,15 @@ import StickySection from "@/component/business/home/StickySection";
 import UniqueApproachSection from "@/component/business/home/UniqueApproachSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
-import OfferingsOverview from "@/component/business/home/OfferingsOverview";
 
 export default function Home() {
   return (
     <div className="min-h-screen">
-      <HeroSection />
-      <Overview />
-      <ClientAssociations />
-      <SandsTripleE />
-      <TripleEMethodologySection />
       <SandSymesExperienceSection />
       <StickySection />
+      <SandsTripleE />
+      <TripleEMethodologySection />
       <UniqueApproachSection />
-      <OfferingsOverview />
 
       <FullWidthImageSection
         imageUrl="https://static.wixstatic.com/media/7f8caa_88ff41d59b9c4f92b725e25042ca6879~mv2.jpg/v1/fill/w_1290,h_848,al_c,q_85,enc_avif,quality_auto/7f8caa_88ff41d59b9c4f92b725e25042ca6879~mv2.jpg"

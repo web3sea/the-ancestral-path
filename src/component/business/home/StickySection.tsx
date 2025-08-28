@@ -30,6 +30,38 @@ export default function StickySection() {
       image: "/images/sticky3.png",
       backgroundImage: "/images/stickybg3.png",
     },
+    {
+      id: "04",
+      title: "Wisdom Drops",
+      description:
+        "Wisdom Drops are bite-sized insights and teachings that deliver profound wisdom in digestible formats. These carefully curated pieces of ancestral knowledge and spiritual guidance help you integrate transformative concepts into your daily life. Each drop contains practical wisdom that supports your journey of self-discovery and personal growth, making ancient teachings accessible and applicable to modern life.",
+      image: "/images/wisdom.png",
+      backgroundImage: "/images/bg1-image.png",
+    },
+    {
+      id: "05",
+      title: "Astrological Download",
+      description:
+        "Astrological Download provides personalized cosmic insights and guidance based on your unique birth chart. This service offers deep understanding of your astrological blueprint, helping you align with your true purpose and navigate life's cycles with greater awareness. Through detailed readings and interpretations, you'll gain clarity on your strengths, challenges, and the optimal timing for important decisions and transformations.",
+      image: "/images/astrology.png",
+      backgroundImage: "/images/bg2-image.png",
+    },
+    {
+      id: "06",
+      title: "Mini Challenges",
+      description:
+        "Mini Challenges are short, focused transformational experiences designed to create meaningful shifts in your life. These bite-sized programs combine practical exercises, guided practices, and community support to help you break through limiting patterns and cultivate new habits. Each challenge is carefully crafted to deliver powerful results in a condensed timeframe, making transformation accessible even with a busy schedule.",
+      image: "/images/challenge.png",
+      backgroundImage: "/images/bg3-image.png",
+    },
+    {
+      id: "07",
+      title: "AO",
+      description:
+        "Oracle AI is an innovative digital companion that provides personalized spiritual guidance and insights. This advanced AI system draws from ancient wisdom traditions and Sand's extensive knowledge to offer meaningful responses to your questions and challenges. Whether you need clarity on a decision, guidance through a difficult time, or insights into your spiritual journey, Oracle AI serves as your 24/7 spiritual advisor, helping you navigate life with greater wisdom and confidence.",
+      image: "/images/oracle-ai.png",
+      backgroundImage: "/images/bg-image.png",
+    },
   ];
 
   return (

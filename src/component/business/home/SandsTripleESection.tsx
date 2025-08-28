@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 export default function SandsTripleE() {
   return (
     <section
-      className="overflow-hidden p-5 lg:p-10 relative"
+      className="overflow-hidden p-5 lg:p-10 relative mx-4 sm:mx-6 md:mx-8 lg:mx-10"
       style={{
         backgroundImage: `url('/images/bg1-image.png')`,
         backgroundSize: "cover",

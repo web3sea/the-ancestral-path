@@ -16,7 +16,7 @@ export default function SandSymesExperienceSection() {
     >
       <div className="bg-black/50 absolute inset-0" />
       <motion.div
-        className="w-full p-10 z-10"
+        className="w-full p-10 z-10 pt-20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         viewport={{ once: true, margin: "-100px" }}
@@ -97,7 +97,7 @@ export default function SandSymesExperienceSection() {
         </motion.div>
       </motion.div>
       <motion.div
-        className="p-5 self-end z-10"
+        className="p-5 self-end z-10 pt-20"
         initial={{ x: 60, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         viewport={{ once: true, margin: "-100px" }}

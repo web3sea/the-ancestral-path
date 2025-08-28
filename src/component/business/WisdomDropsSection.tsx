@@ -38,7 +38,7 @@ Remember, beloved: You are not meant to live in constant motion. You are a spiri
     image: "/api/placeholder/600/400",
     category: "Spiritual",
     readTime: "3 min",
-    publishedDate: "2024-01-15",
+    publishedDate: "2025-01-15",
     tags: ["mindfulness", "presence", "peace"],
   },
   {
@@ -60,7 +60,7 @@ Today, do something that would make your inner child smile. Dance to your favori
     image: "/api/placeholder/600/400",
     category: "Healing",
     readTime: "4 min",
-    publishedDate: "2024-01-12",
+    publishedDate: "2025-01-12",
     tags: ["inner child", "healing", "self-love"],
   },
   {
@@ -82,7 +82,7 @@ Your desires are not random. They are soul whispers, calling you toward your hig
     image: "/api/placeholder/600/400",
     category: "Manifestation",
     readTime: "5 min",
-    publishedDate: "2024-01-10",
+    publishedDate: "2025-01-10",
     tags: ["manifestation", "abundance", "alignment"],
   },
   {
@@ -106,7 +106,7 @@ Your boundaries are a gift to the world. They allow your authentic self to shine
     image: "/api/placeholder/600/400",
     category: "Relationships",
     readTime: "4 min",
-    publishedDate: "2024-01-08",
+    publishedDate: "2025-01-08",
     tags: ["boundaries", "relationships", "self-care"],
   },
   {
@@ -130,7 +130,7 @@ You don't need to change the world to live your purpose. You just need to be ful
     image: "/api/placeholder/600/400",
     category: "Purpose",
     readTime: "5 min",
-    publishedDate: "2024-01-05",
+    publishedDate: "2025-01-05",
     tags: ["purpose", "authenticity", "calling"],
   },
 ];
