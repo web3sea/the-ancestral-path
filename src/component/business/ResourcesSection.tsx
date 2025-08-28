@@ -338,26 +338,6 @@ export default function ResourcesSection() {
             transformation. Choose the experience that resonates with your soul
             and take the first step toward your sacred evolution.
           </p>
-          <Link
-            href="https://calendly.com/sandsymes"
-            target="_blank"
-            className="inline-flex items-center px-8 py-4 border-2 border-[#d8d2c6] text-[#d8d2c6] font-light rounded-lg transition-all duration-300 hover:bg-[#d8d2c6] hover:text-black"
-          >
-            Schedule a Consultation
-            <svg
-              className="ml-2 w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </Link>
         </div>
       </motion.section>
     </section>
