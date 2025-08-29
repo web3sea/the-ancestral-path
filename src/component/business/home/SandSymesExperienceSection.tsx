@@ -76,7 +76,7 @@ export default function SandSymesExperienceSection() {
           }}
         >
           {[
-            "Sand is dedicated to creating a transformative path that is inclusive and accessible to all women. Her Ancestral Breathwork Journeys are a powerful portal for those seeking to break generational chains and uncover profound self-discovery. They utilize the gentle yet potent medicine of one's own breath to ensure that every woman can access deep personal growth.",
+            "Sand is dedicated to creating a transformative path that is inclusive and accessible to all women. Her Ancestral Breathwork AO are a powerful portal for those seeking to break generational chains and uncover profound self-discovery. They utilize the gentle yet potent medicine of one's own breath to ensure that every woman can access deep personal growth.",
             "In her Advanced Retreats and her carefully curated one-on-one Medicine Containers, she collaborates closely with a small select cohort of creative pioneers focused on personal mastery, expansion, and growth.",
           ].map((text, index) => (
             <motion.p
@@ -97,7 +97,7 @@ export default function SandSymesExperienceSection() {
         </motion.div>
       </motion.div>
       <motion.div
-        className="p-5 self-end z-10 pt-20"
+        className="self-end z-10 pt-20"
         initial={{ x: 60, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         viewport={{ once: true, margin: "-100px" }}
@@ -120,7 +120,7 @@ export default function SandSymesExperienceSection() {
           <Image
             src="/images/sandsymes-3.png"
             alt="Sand Symes Experience"
-            width={800}
+            width={900}
             height={500}
             className="rounded-xl "
           />

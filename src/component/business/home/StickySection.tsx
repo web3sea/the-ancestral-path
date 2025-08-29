@@ -7,9 +7,9 @@ export default function StickySection() {
   const item = [
     {
       id: "01",
-      title: "Ancestral Breathwork Journeys",
+      title: "Breathwork with AO",
       description:
-        "Ancestral Breathwork Journeys provide an accessible entry point into Sand's transformational work. Through online group breathwork sessions, these bi-monthly programs help women clear generational patterns, connect with ancestral wisdom, and envision a new version of themselves.",
+        "Breathwork with AO provide an accessible entry point into Sand's transformational work. Through online group breathwork sessions, these bi-monthly programs help women clear generational patterns, connect with ancestral wisdom, and envision a new version of themselves.",
       image: "/images/sticky1.png",
       backgroundImage: "/images/stickybg1.png",
     },
@@ -124,8 +124,8 @@ export default function StickySection() {
             <div className="absolute inset-0 bg-black/40" />
             <div className="flex flex-col gap-2 sm:gap-3 max-w-full lg:max-w-5xl relative z-10 mb-6 lg:mb-0">
               <h2
-                className="text-sm sm:text-base md:text-lg font-light"
-                style={{ fontFamily: "var(--font-sora)" }}
+                className="text-sm sm:text-base md:text-lg font-medium"
+                style={{ fontFamily: "var(--font-family-sora)" }}
               >
                 {item.id}
               </h2>

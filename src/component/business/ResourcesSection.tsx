@@ -156,7 +156,7 @@ export default function ResourcesSection() {
             backgroundImage: `url('/images/stickybg1.png')`,
           }}
         />
-        <div className="absolute inset-0 bg-black/70" />
+        <div className="absolute inset-0 bg-black/40" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center">
           <motion.h1

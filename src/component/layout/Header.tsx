@@ -43,6 +43,14 @@ export default function Header() {
       label: "Guided Meditations",
       href: "/meditations",
     },
+    {
+      label: "ABJ Recordings",
+      href: "/abj-recordings",
+    },
+    {
+      label: "Group Workshops",
+      href: "/group-workshops",
+    },
   ];
 
   return (
@@ -127,8 +135,8 @@ export default function Header() {
               RESOURCES
             </Link>
             <Link
-              href="/ao"
-              className="px-4 py-2 text-sm text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
+              href="/oracle"
+              className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
             >
               AO
             </Link>
@@ -201,7 +209,7 @@ export default function Header() {
 
               {/* AO */}
               <Link
-                href="/ao"
+                href="/oracle"
                 className="block px-6 py-2 bg-primary-300/20 text-primary-300 rounded-lg text-sm mx-3"
                 onClick={() => setIsMenuOpen(false)}
               >

@@ -181,7 +181,7 @@ export default function OfferingsOverview() {
 
       {/* Overlay */}
       <motion.div
-        className="absolute inset-0 bg-black/70"
+        className="absolute inset-0 bg-black/40"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         viewport={{ once: true, margin: "-100px" }}

@@ -1,73 +1,57 @@
 @import "tailwindcss";
 
-:root {
-  /* Sandsymes authentic color palette - elegant and minimalist */
-  --background: #000000;
-  --foreground: #d8d2c6;
+@theme {
+  --color-primary-50: #f9f8f6;
+  --color-primary-100: #f2f0ed;
+  --color-primary-200: #e8e5e0;
+  --color-primary-300: #d8d2c6;
+  --color-primary-400: #c8c0b0;
+  --color-primary-500: #b8ad9a;
+  --color-primary-600: #a39588;
+  --color-primary-700: #8b7d6f;
+  --color-primary-800: #73675c;
+  --color-primary-900: #5d544c;
 
-  /* Primary colors - using #d8d2c6 as the main text color */
-  --primary-50: #f9f8f6;
-  --primary-100: #f2f0ed;
-  --primary-200: #e8e5e0;
-  --primary-300: #d8d2c6;
-  --primary-400: #c8c0b0;
-  --primary-500: #b8ad9a;
-  --primary-600: #a39588;
-  --primary-700: #8b7d6f;
-  --primary-800: #73675c;
-  --primary-900: #5d544c;
+  --color-secondary-50: #f9f8f7;
+  --color-secondary-100: #f2f0ed;
+  --color-secondary-200: #e8e4df;
+  --color-secondary-300: #ddd7d0;
+  --color-secondary-400: #cfc7be;
+  --color-secondary-500: #b8ad9f;
+  --color-secondary-600: #9d8f7f;
+  --color-secondary-700: #7d6f5f;
+  --color-secondary-800: #5f544a;
+  --color-secondary-900: #4a3f37;
 
-  /* Secondary colors - warm neutrals */
-  --secondary-50: #f9f8f7;
-  --secondary-100: #f2f0ed;
-  --secondary-200: #e8e4df;
-  --secondary-300: #ddd7d0;
-  --secondary-400: #cfc7be;
-  --secondary-500: #b8ad9f;
-  --secondary-600: #9d8f7f;
-  --secondary-700: #7d6f5f;
-  --secondary-800: #5f544a;
-  --secondary-900: #4a3f37;
+  --color-sage: #8a9a7b;
+  --color-sage-light: #a5b396;
+  --color-gold: #c5a572;
+  --color-gold-light: #d4b583;
 
-  /* Accent colors - sophisticated and muted */
-  --accent-sage: #8a9a7b;
-  --accent-sage-light: #a5b396;
-  --accent-gold: #c5a572;
-  --accent-gold-light: #d4b583;
+  --color-gray-50: #f8fafc;
+  --color-gray-100: #f1f5f9;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
+  --color-gray-500: #64748b;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #1e293b;
+  --color-gray-900: #0f172a;
 
-  /* Neutral colors */
-  --gray-50: #f8fafc;
-  --gray-100: #f1f5f9;
-  --gray-200: #e2e8f0;
-  --gray-300: #cbd5e1;
-  --gray-400: #94a3b8;
-  --gray-500: #64748b;
-  --gray-600: #475569;
-  --gray-700: #334155;
-  --gray-800: #1e293b;
-  --gray-900: #0f172a;
+  --color-background: #000000;
+  --color-foreground: #d8d2c6;
 
-  /* Gradient backgrounds */
-  --gradient-primary: linear-gradient(
-    135deg,
-    var(--primary-500) 0%,
-    var(--secondary-500) 100%
-  );
-  --gradient-sage: linear-gradient(
-    135deg,
-    var(--accent-sage) 0%,
-    var(--accent-sage-light) 100%
-  );
-  --gradient-sunset: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-  --font-alex-brush: "Alex Brush", cursive;
-  --font-noto-serif-jp: "Noto Serif JP", serif;
-  --font-sora: "Sora", sans-serif;
+  --font-family-alex-brush: "Alex Brush", cursive;
+  --font-family-noto-serif-jp: "Noto Serif JP", serif;
+  --font-family-sora: "Sora", sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-family-noto-serif-jp), system-ui, -apple-system,
+    sans-serif;
   line-height: 1.6;
 }
 
@@ -197,23 +181,23 @@ html {
 }
 
 h2 {
-  font-family: var(--font-noto-serif-jp);
+  font-family: var(--font-family-noto-serif-jp);
 }
 
 h3 {
-  font-family: var(--font-noto-serif-jp);
+  font-family: var(--font-family-noto-serif-jp);
 }
 
 button {
-  font-family: var(--font-noto-serif-jp);
+  font-family: var(--font-family-noto-serif-jp);
   color: white;
 }
 
 a {
-  font-family: var(--font-noto-serif-jp);
+  font-family: var(--font-family-noto-serif-jp);
   color: white;
 }
 
 p {
-  font-family: var(--font-noto-serif-jp);
+  font-family: var(--font-family-noto-serif-jp);
 }

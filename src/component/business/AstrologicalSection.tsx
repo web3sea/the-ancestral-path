@@ -14,7 +14,7 @@ export default function AstrologicalSection() {
       ></div>
 
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/70"></div>
+      <div className="absolute inset-0 bg-black/40"></div>
 
       <div className="relative z-10 mx-auto px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">

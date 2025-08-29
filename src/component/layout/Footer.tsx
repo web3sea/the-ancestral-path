@@ -176,6 +176,26 @@ export default function Footer() {
                   Guided Meditations
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/abj-recordings"
+                  className="transition-colors font-light hover:opacity-100"
+                  style={{ color: "#d8d2c6", opacity: 0.8 }}
+                  target="_blank"
+                >
+                  ABJ Recordings
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/group-workshops"
+                  className="transition-colors font-light hover:opacity-100"
+                  style={{ color: "#d8d2c6", opacity: 0.8 }}
+                  target="_blank"
+                >
+                  Group Workshops
+                </Link>
+              </li>
             </ul>
           </div>
 
