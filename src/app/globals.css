@@ -59,30 +59,9 @@
     var(--accent-sage-light) 100%
   );
   --gradient-sunset: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-
-  /* Custom color mappings for Tailwind */
-  --color-primary-50: var(--primary-50);
-  --color-primary-100: var(--primary-100);
-  --color-primary-200: var(--primary-200);
-  --color-primary-300: var(--primary-300);
-  --color-primary-400: var(--primary-400);
-  --color-primary-500: var(--primary-500);
-  --color-primary-600: var(--primary-600);
-  --color-primary-700: var(--primary-700);
-  --color-primary-800: var(--primary-800);
-  --color-primary-900: var(--primary-900);
-
-  --color-sage: var(--accent-sage);
-  --color-sage-light: var(--accent-sage-light);
-  --color-gold: var(--accent-gold);
-  --color-gold-light: var(--accent-gold-light);
+  --font-alex-brush: "Alex Brush", cursive;
+  --font-noto-serif-jp: "Noto Serif JP", serif;
+  --font-sora: "Sora", sans-serif;
 }
 
 body {
@@ -215,4 +194,26 @@ html {
 .flip-horizontal-3 {
   animation: flipHorizontal 10s infinite linear;
   transform-style: preserve-3d;
+}
+
+h2 {
+  font-family: var(--font-noto-serif-jp);
+}
+
+h3 {
+  font-family: var(--font-noto-serif-jp);
+}
+
+button {
+  font-family: var(--font-noto-serif-jp);
+  color: white;
+}
+
+a {
+  font-family: var(--font-noto-serif-jp);
+  color: white;
+}
+
+p {
+  font-family: var(--font-noto-serif-jp);
 }

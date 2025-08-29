@@ -3,28 +3,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Alex_Brush, Noto_Serif_JP } from "next/font/google";
+
+const alexBrush = Alex_Brush({
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const notoSerifJP = Noto_Serif_JP({
+  subsets: ["latin"],
+  weight: "200",
+});
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const username = "sandsymes";
-
-  //external links
-  const sacredMedicineItems = [
-    {
-      label: "Medicine Containers",
-      href: "https://www.sandsymes.com/sacred-containers",
-    },
-    {
-      label: "Ancestral Breathwork",
-      href: "https://www.sandsymes.com/ancestral-breathwork",
-    },
-    {
-      label: "Sacred Medicine Retreat 2025",
-      href: "https://www.sandsymes.com/medicine-retreats",
-    },
-  ];
 
   //internal links
   const sacredWisdomItems = [
@@ -55,7 +50,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary-300/20 flex items-center justify-center">
               <Image
                 src="/images/logo.png"
@@ -65,62 +60,33 @@ export default function Header() {
                 className="w-6 h-6 sm:w-8 sm:h-8"
               />
             </div>
-            <Link
-              href="/"
-              className="text-lg sm:text-xl lg:text-2xl font-light text-primary-300 tracking-wide"
+            <h1
+              className={`text-lg sm:text-xl lg:text-2xl font-light text-primary-300 tracking-wide ${notoSerifJP.className}`}
             >
-              SAND SYMES
-            </Link>
-          </div>
+              <span
+                className={`${alexBrush.className} text-xl sm:text-2xl lg:text-3xl`}
+              >
+                S
+              </span>
+              AND{" "}
+              <span
+                className={`${alexBrush.className} text-xl sm:text-2xl lg:text-3xl`}
+              >
+                S
+              </span>
+              YMES
+            </h1>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
-            {/* Sacred Medicine Dropdown */}
-            <div
-              className="relative group"
-              onMouseEnter={() => setActiveDropdown("medicine")}
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              <button className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200 flex items-center gap-1">
-                SACRED MEDICINE
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-              {activeDropdown === "medicine" && (
-                <div className="absolute top-full left-0 pt-1 w-56 z-50">
-                  <div className="bg-black/95 backdrop-blur-sm rounded-lg shadow-lg border border-primary-300/20 py-2">
-                    {sacredMedicineItems.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        className="block px-4 py-2 text-sm text-primary-300 hover:bg-white/10 transition-colors"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* Sacred Wisdom Dropdown */}
             <div
               className="relative group"
               onMouseEnter={() => setActiveDropdown("wisdom")}
               onMouseLeave={() => setActiveDropdown(null)}
             >
-              <button className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200 flex items-center gap-1">
+              <button className="px-4 py-2 text-sm text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200 flex items-center gap-1">
                 SACRED WISDOM
                 <svg
                   className="w-4 h-4"
@@ -156,13 +122,13 @@ export default function Header() {
             {/* AO */}
             <Link
               href="/resources"
-              className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
+              className="px-4 py-2 text-sm text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
             >
-              Resources
+              RESOURCES
             </Link>
             <Link
               href="/ao"
-              className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
+              className="px-4 py-2 text-sm text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
             >
               AO
             </Link>
@@ -208,22 +174,7 @@ export default function Header() {
         {isMenuOpen && (
           <div className="lg:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-black/95 border-t border-gray-700">
-              {/* Sacred Medicine Group */}
-              <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider">
-                Sacred Medicine
-              </div>
-              {sacredMedicineItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-
-              {/* Sacred Wisdom Group */}
+              {/* Sacred Wisdom */}
               <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-4">
                 Sacred Wisdom
               </div>

@@ -58,7 +58,7 @@ export default function UniqueApproachSection() {
         }}
       >
         <motion.h2
-          className="text-2xl sm:text-3xl md:text-4xl font-bold"
+          className="text-3xl sm:text-4xl md:text-5xl"
           style={{ color: "#d8d2c6" }}
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}

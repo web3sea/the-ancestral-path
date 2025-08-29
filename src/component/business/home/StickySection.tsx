@@ -123,7 +123,10 @@ export default function StickySection() {
           >
             <div className="absolute inset-0 bg-black/40" />
             <div className="flex flex-col gap-2 sm:gap-3 max-w-full lg:max-w-5xl relative z-10 mb-6 lg:mb-0">
-              <h2 className="text-sm sm:text-base md:text-lg font-light">
+              <h2
+                className="text-sm sm:text-base md:text-lg font-light"
+                style={{ fontFamily: "var(--font-sora)" }}
+              >
                 {item.id}
               </h2>
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light leading-tight">

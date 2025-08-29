@@ -127,7 +127,7 @@ export default function TripleEMethodologySection() {
             }}
           >
             <motion.h3
-              className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-4 tracking-wide group-hover:text-blue-400 transition-colors duration-300"
+              className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-light mb-4 tracking-wide group-hover:text-blue-400 transition-colors duration-300"
               style={{ color: "#d8d2c6" }}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -171,7 +171,7 @@ export default function TripleEMethodologySection() {
             }}
           >
             <motion.h3
-              className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-4 tracking-wide group-hover:text-blue-400 transition-colors duration-300"
+              className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-light mb-4 tracking-wide group-hover:text-blue-400 transition-colors duration-300"
               style={{ color: "#d8d2c6" }}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -215,7 +215,7 @@ export default function TripleEMethodologySection() {
             }}
           >
             <motion.h3
-              className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-4 tracking-wide group-hover:text-blue-400 transition-colors duration-300"
+              className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-light mb-4 tracking-wide group-hover:text-blue-400 transition-colors duration-300"
               style={{ color: "#d8d2c6" }}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}

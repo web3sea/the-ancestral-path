@@ -8,9 +8,9 @@ export default function ResourcesSection() {
   const offerings = [
     {
       id: "01",
-      title: "Ancestral Breathwork Journeys",
+      title: "Breathwork with AO",
       description:
-        "Ancestral Breathwork Journeys provide an accessible entry point into Sand's transformational work. Through online group breathwork sessions, these bi-monthly programs help women clear generational patterns, connect with ancestral wisdom, and envision a new version of themselves.",
+        "Breathwork with AO provide an accessible entry point into Sand's transformational work. Through online group breathwork sessions, these bi-monthly programs help women clear generational patterns, connect with ancestral wisdom, and envision a new version of themselves.",
       image: "/images/sticky1.png",
       backgroundImage: "/images/stickybg1.png",
       link: "https://www.sandsymes.com/ancestral-breathwork",
@@ -94,7 +94,7 @@ export default function ResourcesSection() {
       id: "08",
       title: "ABJ Recordings",
       description:
-        "Ancestral Breathwork Journeys Recordings allow you to experience the transformative power of breathwork at your own pace. These recordings guide you through powerful breathing techniques and ancestral connection practices.",
+        "Breathwork with AO Recordings allow you to experience the transformative power of breathwork at your own pace. These recordings guide you through powerful breathing techniques and ancestral connection practices.",
       image: "/images/abj.png",
       backgroundImage: "/images/stickybg1.png",
       link: "/breathwork",
@@ -116,9 +116,9 @@ export default function ResourcesSection() {
     },
     {
       id: "10",
-      title: "AO - Oracle AI",
+      title: "AO",
       description:
-        "Oracle AI is an innovative digital companion that provides personalized spiritual guidance and insights. This advanced AI system draws from ancient wisdom traditions and Sand's extensive knowledge to offer meaningful responses.",
+        "AO is an innovative digital companion that provides personalized spiritual guidance and insights. This advanced AI system draws from ancient wisdom traditions and Sand's extensive knowledge to offer meaningful responses.",
       image: "/images/oracle-ai.png",
       backgroundImage: "/images/bg-image.png",
       link: "/oracle",

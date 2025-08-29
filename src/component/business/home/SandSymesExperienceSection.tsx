@@ -35,8 +35,8 @@ export default function SandSymesExperienceSection() {
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
         >
-          <motion.h2
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light"
+          <motion.h3
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-medium"
             style={{ color: "#d8d2c6" }}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -48,7 +48,7 @@ export default function SandSymesExperienceSection() {
             }}
           >
             EXPERIENCE
-          </motion.h2>
+          </motion.h3>
           <motion.h2
             className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light"
             style={{ color: "#d8d2c6" }}

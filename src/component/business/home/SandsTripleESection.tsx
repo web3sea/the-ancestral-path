@@ -27,6 +27,7 @@ export default function SandsTripleE() {
         >
           {["SAND'S", 'TRIPLE "E"', "METHODOLOGY"].map((text, index) => (
             <motion.h2
+              className="text-[#d8d2c6]"
               key={index}
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -52,7 +53,7 @@ export default function SandsTripleE() {
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
         >
-          <p>
+          <p className="text-[#d8d2c6]">
             *Sand&apos;s Triple &quot;E&quot; Methodology* offers a
             transformative journey through Expansion, Elevation, and Expression.
             This unique approach empowers individuals to transcend their
@@ -61,7 +62,7 @@ export default function SandsTripleE() {
             methodology will elevate your understanding of self and the world
             around you, enabling a higher level of consciousness and well-being.
           </p>
-          <p>
+          <p className="text-[#d8d2c6]">
             The process encourages you to express your innate creativity and
             talents boldly and authentically, leading to a more fulfilling and
             impactful life. Ideal for those seeking to amplify their creativity
