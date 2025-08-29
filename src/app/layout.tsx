@@ -13,14 +13,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 export const metadata: Metadata = {
-  title: "Sandsymes Wellness AO Platform",
+  title: "Sand Symes Wellness AO Platform",
   description:
     "Experience guided breathwork rituals, meditations, wisdom drops, and daily check-ins with the Oracle AI. Your journey to healing and transformation starts here.",
   keywords:
     "breathwork, meditation, wellness, healing, oracle, astrology, spiritual guidance",
   authors: [{ name: "Sand Symes" }],
   openGraph: {
-    title: "Sandsymes Wellness AO Platform",
+    title: "Sand Symes Wellness AO Platform",
     description:
       "Experience guided breathwork rituals, meditations, wisdom drops, and daily check-ins with the Oracle AI.",
     type: "website",
