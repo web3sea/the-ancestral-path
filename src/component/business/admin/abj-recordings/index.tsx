@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { RecordingForm } from "./recordings-form";
-import { formatDate } from "@/share/helper/formatDate";
+import { formatDate } from "@/lib/utils";
 import { FileText, Video, Edit3, Trash2, Plus, Calendar } from "lucide-react";
 import AppModal from "@/component/common/AppModal";
 import { Recording } from "@/@types/abj-recording";

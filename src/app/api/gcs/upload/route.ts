@@ -1,42 +1,8 @@
 import { NextResponse } from "next/server";
-import { Storage } from "@google-cloud/storage";
+import { createStorageClient } from "@/lib/gcp";
+import { handleApiError } from "@/lib/utils";
 
 export const runtime = "nodejs";
-
-function normalizePrivateKey(rawKey: string | undefined): string | undefined {
-  if (!rawKey) return undefined;
-  const trimmed = rawKey.trim();
-  if (!trimmed) return undefined;
-  const looksLikeBase64 =
-    !trimmed.includes("BEGIN PRIVATE KEY") &&
-    /^(?:[A-Za-z0-9+/=\r\n]+)$/.test(trimmed);
-  if (looksLikeBase64) {
-    try {
-      const decoded = Buffer.from(trimmed, "base64").toString("utf8");
-      if (decoded.includes("BEGIN PRIVATE KEY")) return decoded;
-    } catch {}
-  }
-  return trimmed.replace(/\\n/g, "\n").replace(/\\r/g, "\r");
-}
-
-function getStorageClient(): Storage {
-  const projectId = process.env.GCP_PROJECT_ID;
-  const gcpPrivateKey = normalizePrivateKey(
-    process.env.GCP_PRIVATE_KEY || process.env.GCP_PRIVATE_KEY_B64
-  );
-  const gcpClientEmail = process.env.GCP_CLIENT_EMAIL;
-
-  if (projectId && gcpPrivateKey && gcpClientEmail) {
-    return new Storage({
-      projectId,
-      credentials: {
-        client_email: gcpClientEmail,
-        private_key: gcpPrivateKey,
-      },
-    });
-  }
-  return new Storage({ projectId });
-}
 
 export async function POST(request: Request) {
   try {
@@ -59,7 +25,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const storage = getStorageClient();
+    const storage = createStorageClient();
     const bucket = storage.bucket(bucketName);
 
     const originalName = providedFilename || file.name || "upload.bin";
@@ -80,12 +46,6 @@ export async function POST(request: Request) {
     const publicUrl = `https://storage.googleapis.com/${bucketName}/${objectName}`;
     return NextResponse.json({ publicUrl, objectName });
   } catch (error: unknown) {
-    console.error("Error uploading to GCS", error);
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

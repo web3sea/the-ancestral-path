@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { v1 as speechV1 } from "@google-cloud/speech";
+import { createSpeechClient } from "@/lib/gcp";
+import { handleApiError } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
@@ -8,28 +9,6 @@ type StartAnalysisRequest = {
   gcsUri?: string;
   languageCode?: string;
 };
-
-function normalizePrivateKey(rawKey: string | undefined): string | undefined {
-  if (!rawKey) return undefined;
-  const trimmed = rawKey.trim();
-  if (!trimmed) return undefined;
-  return trimmed.replace(/\\n/g, "\n").replace(/\\r/g, "\r");
-}
-
-function getSpeechClient(): speechV1.SpeechClient {
-  const projectId = process.env.GCP_PROJECT_ID;
-  const clientEmail = process.env.GCP_CLIENT_EMAIL;
-  const privateKey = normalizePrivateKey(process.env.GCP_PRIVATE_KEY);
-
-  if (projectId && clientEmail && privateKey) {
-    return new speechV1.SpeechClient({
-      projectId,
-      credentials: { client_email: clientEmail, private_key: privateKey },
-    });
-  }
-
-  return new speechV1.SpeechClient();
-}
 
 export async function POST(request: Request) {
   try {
@@ -52,7 +31,7 @@ export async function POST(request: Request) {
     const gcsUri = body.gcsUri || `gs://${bucketName}/${body.objectName}`;
     const languageCode = body.languageCode || "en-US";
 
-    const client = getSpeechClient();
+    const client = createSpeechClient();
 
     // Set encoding based on file extension to avoid INVALID_ARGUMENT
     type KnownEncoding = "WEBM_OPUS" | "OGG_OPUS" | "FLAC" | "LINEAR16" | "MP3";
@@ -79,11 +58,6 @@ export async function POST(request: Request) {
     // Return operation name; caller can poll with operations API or implement a status endpoint later
     return NextResponse.json({ operationName: operation.name, gcsUri });
   } catch (error: unknown) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
