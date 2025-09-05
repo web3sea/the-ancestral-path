@@ -2,7 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import AppSelect from "@/component/common/AppSelect";
 import { formatDate } from "@/lib/utils";
-import { Calendar } from "lucide-react";
+import {
+  Calendar,
+  Copy,
+  ExternalLink,
+  Check,
+  UploadCloud,
+  X,
+} from "lucide-react";
 import "react-day-picker/style.css";
 
 type Recording = {
@@ -23,16 +30,22 @@ export const RecordingForm = ({
   onSubmit: (values: Omit<Recording, "id">) => void;
 }) => {
   const [title, setTitle] = useState(initial.title);
-  const [videoUrl, setVideoUrl] = useState(initial.videoUrl);
   const [type, setType] = useState(initial.type);
+  const [videoUrl, setVideoUrl] = useState(initial.videoUrl);
   const [date, setDate] = useState(initial.date);
-  const [summary, setSummary] = useState(initial.summary ?? "");
+  const [summary] = useState(initial.summary ?? "");
   const [status] = useState(initial.status || "draft");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [analysisStatus, setAnalysisStatus] = useState<string>("");
   const [transcript, setTranscript] = useState<string>("");
+  const sseRef = useRef<EventSource | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string>("");
+  const [selectedFileSize, setSelectedFileSize] = useState<number>(0);
 
   // Date dropdown state and helpers
   const [isDateOpen, setIsDateOpen] = useState(false);
@@ -41,6 +54,27 @@ export const RecordingForm = ({
     const parsed = new Date(date);
     return isNaN(parsed.getTime()) ? undefined : parsed;
   }, [date]);
+
+  useEffect(() => {
+    // Subscribe to background analysis events
+    const es = new EventSource("/api/analysis/stream");
+    sseRef.current = es;
+    es.onmessage = (ev) => {
+      try {
+        const data = JSON.parse(ev.data);
+        if (data?.type === "stt.complete") {
+          setAnalysisStatus("Transcription complete (via webhook).");
+          if (data.transcript) setTranscript(data.transcript as string);
+        } else if (data?.type === "stt.error") {
+          setAnalysisStatus("Transcription error (see logs).");
+        }
+      } catch {}
+    };
+    return () => {
+      es.close();
+      sseRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     function handleOutsideClick(e: MouseEvent) {
@@ -65,6 +99,8 @@ export const RecordingForm = ({
     setUploadError(null);
     setIsUploading(true);
     setUploadProgress(0);
+    setSelectedFileName(file.name);
+    setSelectedFileSize(file.size);
     try {
       const startRes = await fetch("/api/gcs/resumable/start", {
         method: "POST",
@@ -172,45 +208,23 @@ export const RecordingForm = ({
         await new Promise((r) => setTimeout(r, pollIntervalMs));
       }
 
-      // 3) Start Speech-to-Text on the extracted audio
-      setAnalysisStatus("Starting transcription...");
+      // 3) Start Speech-to-Text on the extracted audio (webhook-based)
+      setAnalysisStatus("Starting transcription in background...");
       const analysisRes = await fetch("/api/analysis/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gcsUri: audioGcsUri }),
+        body: JSON.stringify({
+          gcsUri: audioGcsUri,
+          callbackUrl: `${window.location.origin}/api/analysis/webhook`,
+        }),
       });
       if (!analysisRes.ok) {
         const err = await analysisRes.json().catch(() => ({}));
         console.error("Failed to start analysis", err);
       } else {
-        const { operationName } = (await analysisRes.json()) as {
-          operationName?: string;
-        };
-        if (!operationName) {
-          setAnalysisStatus("Transcription started.");
-          return;
-        }
-        // Poll analysis status until done
-        setAnalysisStatus("Transcribing audio...");
-        const statusPollMs = 5000;
-        for (;;) {
-          const statusRes = await fetch(
-            `/api/analysis/status?operationName=${encodeURIComponent(
-              operationName
-            )}`
-          );
-          if (!statusRes.ok) break;
-          const data = (await statusRes.json()) as {
-            done?: boolean;
-            transcript?: string;
-          };
-          if (data.done) {
-            setAnalysisStatus("Transcription complete.");
-            if (data.transcript) setTranscript(data.transcript);
-            break;
-          }
-          await new Promise((r) => setTimeout(r, statusPollMs));
-        }
+        setAnalysisStatus(
+          "Transcription started in background. You'll be notified when it completes."
+        );
       }
     } catch (e: unknown) {
       const message =
@@ -221,6 +235,27 @@ export const RecordingForm = ({
     } finally {
       setIsUploading(false);
     }
+  }
+
+  function resetUpload() {
+    setUploadError(null);
+    setUploadProgress(0);
+    setAnalysisStatus("");
+    setTranscript("");
+    setVideoUrl("");
+    setSelectedFileName("");
+    setSelectedFileSize(0);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function onDropFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    if (!file.type.startsWith("video/")) {
+      setUploadError("Please select a valid video file.");
+      return;
+    }
+    handleVideoUpload(file);
   }
 
   return (
@@ -296,23 +331,99 @@ export const RecordingForm = ({
         <label className="block text-sm font-medium text-primary-300/80 mb-2">
           Upload Video
         </label>
-        <div className="flex items-center gap-3">
+        <div
+          className={`relative rounded-xl border ${
+            dragActive
+              ? "border-primary-300/60 bg-white/10"
+              : "border-primary-300/20 bg-white/5"
+          } transition-colors`}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setDragActive(true);
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setDragActive(true);
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setDragActive(false);
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setDragActive(false);
+            onDropFiles(e.dataTransfer.files);
+          }}
+        >
           <input
-            className="block w-full text-sm text-primary-300 file:mr-4 file:rounded-lg file:border file:border-primary-300/20 file:bg-white/5 file:px-4 file:py-2 file:text-primary-300 file:hover:bg-white/10"
+            ref={fileInputRef}
             type="file"
             accept="video/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleVideoUpload(file);
-            }}
+            className="hidden"
+            onChange={(e) => onDropFiles(e.target.files)}
             disabled={isUploading}
           />
+          <button
+            type="button"
+            className="w-full text-left"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+          >
+            <div className="flex flex-col items-center justify-center p-10">
+              <UploadCloud className="w-6 h-6 text-primary-300/70" />
+              <p className="mt-2 text-sm text-primary-300/80">
+                Drag and drop your video here, or
+                <span className="ml-1 underline">browse</span>
+              </p>
+              {selectedFileName && (
+                <p className="mt-2 text-xs text-primary-300/80">
+                  Selected: {selectedFileName}
+                  {selectedFileSize
+                    ? ` (${(selectedFileSize / (1024 * 1024)).toFixed(1)} MB)`
+                    : ""}
+                </p>
+              )}
+            </div>
+          </button>
+          {isUploading && (
+            <div className="absolute inset-x-0 -bottom-2 p-3">
+              <div className="h-2 w-full rounded bg-white/10 overflow-hidden">
+                <div
+                  className="h-full bg-primary-300/70 transition-all"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+              <p className="mt-1 text-xs text-primary-300/70 text-right">
+                {uploadProgress}%
+              </p>
+            </div>
+          )}
         </div>
-        {isUploading && (
-          <p className="mt-2 text-xs text-primary-300/70">
-            Uploading... {uploadProgress}%
-          </p>
-        )}
+        <div className="mt-2 flex items-center gap-3">
+          {videoUrl && (
+            <a
+              href={videoUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-primary-300/80 hover:text-primary-300 underline"
+            >
+              View uploaded video
+            </a>
+          )}
+          {(videoUrl || selectedFileName) && (
+            <button
+              type="button"
+              onClick={resetUpload}
+              className="text-xs inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 border border-primary-300/20 text-primary-300 hover:bg-white/10 transition-colors"
+            >
+              <X className="w-3 h-3" /> Reset
+            </button>
+          )}
+        </div>
         {uploadError && (
           <p className="mt-2 text-xs text-red-400">{uploadError}</p>
         )}
@@ -324,43 +435,60 @@ export const RecordingForm = ({
             {transcript}
           </div>
         )}
-        {videoUrl && (
-          <a
-            href={videoUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-2 inline-block text-xs text-primary-300/80 hover:text-primary-300 underline"
-          >
-            Uploaded video
-          </a>
-        )}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-primary-300/80 mb-2">
           Video URL
         </label>
-        <input
-          className="w-full px-4 py-3 rounded-lg bg-white/5 border border-primary-300/20 text-primary-300 focus:border-primary-300/40 focus:outline-none transition-colors"
-          type="url"
-          value={videoUrl}
-          onChange={(e) => setVideoUrl(e.target.value)}
-          required
-          placeholder="https://example.com/video"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-primary-300/80 mb-2">
-          Summary
-        </label>
-        <textarea
-          className="w-full px-4 py-3 rounded-lg bg-white/5 border border-primary-300/20 text-primary-300 focus:border-primary-300/40 focus:outline-none transition-colors resize-none"
-          rows={4}
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          placeholder="Enter a description or summary of the recording..."
-        />
+        <div className="relative">
+          <input
+            className="w-full pr-24 pl-4 py-3 rounded-lg bg-white/5 border border-primary-300/20 text-primary-300 focus:border-primary-300/40 focus:outline-none transition-colors"
+            type="url"
+            readOnly
+            value={videoUrl}
+            onChange={(e) => setVideoUrl(e.target.value)}
+            required
+            placeholder="URL will appear here after upload"
+          />
+          <div className="absolute inset-y-0 right-2 flex items-center gap-1">
+            <button
+              type="button"
+              aria-label={copied ? "Copied" : "Copy URL"}
+              className="p-2 rounded-md bg-white/5 border border-primary-300/10 text-primary-300 hover:bg-white/10 transition-colors disabled:opacity-40"
+              disabled={!videoUrl}
+              onClick={async () => {
+                if (!videoUrl) return;
+                try {
+                  await navigator.clipboard.writeText(videoUrl);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                } catch {}
+              }}
+            >
+              {copied ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+            </button>
+            <a
+              href={videoUrl || "#"}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Open video"
+              className="p-2 rounded-md bg-white/5 border border-primary-300/10 text-primary-300 hover:bg-white/10 transition-colors pointer-events-auto disabled:opacity-40"
+              onClick={(e) => {
+                if (!videoUrl) e.preventDefault();
+              }}
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+        <p className="mt-1 text-xs text-primary-300/60">
+          Generated after upload. Use the buttons to copy or open.
+        </p>
       </div>
     </form>
   );

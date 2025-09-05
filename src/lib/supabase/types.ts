@@ -15,8 +15,8 @@ export interface Account {
 export interface UserProfile {
   id: string;
   account_id: string;
-  questionnaire_responses: Record<string, any>;
-  preferred_platform: 'whatsapp' | 'sms';
+  questionnaire_responses: Record<string, unknown>;
+  preferred_platform: "whatsapp" | "sms";
   created_at: string;
   updated_at: string;
 }
@@ -24,7 +24,7 @@ export interface UserProfile {
 export interface AOSession {
   id: string;
   account_id: string;
-  session_type: 'message' | 'call';
+  session_type: "message" | "call";
   content: string;
   duration_minutes?: number;
   created_at: string;
@@ -43,7 +43,7 @@ export interface AOMessage {
   account_id: string;
   message_content: string;
   response_content?: string;
-  platform: 'whatsapp' | 'sms';
+  platform: "whatsapp" | "sms";
   created_at: string;
 }
 

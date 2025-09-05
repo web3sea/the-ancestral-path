@@ -1,3 +1,3 @@
-// Export all Supabase utilities
+// Export Supabase utilities
 export * from "./client";
-export * from "./types";
+export * from "./recordings";

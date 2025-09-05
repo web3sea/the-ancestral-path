@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { createStorageClient } from "@/lib/gcp";
 import { handleApiError } from "@/lib/utils";
 
-export const runtime = "nodejs";
-
 export async function POST(request: Request) {
   try {
     const bucketName = process.env.GCS_BUCKET_NAME;

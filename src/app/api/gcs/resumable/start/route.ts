@@ -1,37 +1,12 @@
 import { NextResponse } from "next/server";
-import { Storage } from "@google-cloud/storage";
-
-export const runtime = "nodejs";
+import { createStorageClient } from "@/lib/gcp";
+import { handleApiError } from "@/lib/utils";
 
 type StartResumableRequest = {
   filename: string;
   contentType?: string;
   prefix?: string;
 };
-
-function normalizePrivateKey(rawKey: string | undefined): string | undefined {
-  if (!rawKey) return undefined;
-  const trimmed = rawKey.trim();
-  if (!trimmed) return undefined;
-  return trimmed.replace(/\\n/g, "\n").replace(/\\r/g, "\r");
-}
-
-function getStorageClient(): Storage {
-  const projectId = process.env.GCP_PROJECT_ID;
-  const gcpPrivateKey = normalizePrivateKey(process.env.GCP_PRIVATE_KEY);
-  const gcpClientEmail = process.env.GCP_CLIENT_EMAIL;
-
-  if (projectId && gcpPrivateKey && gcpClientEmail) {
-    return new Storage({
-      projectId,
-      credentials: {
-        client_email: gcpClientEmail,
-        private_key: gcpPrivateKey,
-      },
-    });
-  }
-  return new Storage({ projectId });
-}
 
 export async function POST(request: Request) {
   try {
@@ -51,7 +26,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const storage = getStorageClient();
+    const storage = createStorageClient();
     const bucket = storage.bucket(bucketName);
 
     const originalName = body.filename;
@@ -75,11 +50,6 @@ export async function POST(request: Request) {
     const publicUrl = `https://storage.googleapis.com/${bucketName}/${objectName}`;
     return NextResponse.json({ sessionUrl, publicUrl, objectName });
   } catch (error: unknown) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

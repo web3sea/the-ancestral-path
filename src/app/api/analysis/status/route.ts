@@ -1,31 +1,9 @@
 import { NextResponse } from "next/server";
-import { v1 as speechV1 } from "@google-cloud/speech";
-
-export const runtime = "nodejs";
-
-function normalizePrivateKey(rawKey: string | undefined): string | undefined {
-  if (!rawKey) return undefined;
-  const trimmed = rawKey.trim();
-  if (!trimmed) return undefined;
-  return trimmed.replace(/\\n/g, "\n").replace(/\\r/g, "\r");
-}
-
-function getSpeechClient(): speechV1.SpeechClient {
-  const projectId = process.env.GCP_PROJECT_ID;
-  const clientEmail = process.env.GCP_CLIENT_EMAIL;
-  const privateKey = normalizePrivateKey(process.env.GCP_PRIVATE_KEY);
-
-  if (projectId && clientEmail && privateKey) {
-    return new speechV1.SpeechClient({
-      projectId,
-      credentials: { client_email: clientEmail, private_key: privateKey },
-    });
-  }
-  return new speechV1.SpeechClient();
-}
+import { createSpeechClient } from "@/lib/gcp";
+import { handleApiError } from "@/lib/utils";
 
 async function handle(operationName: string) {
-  const client = getSpeechClient();
+  const client = createSpeechClient();
   const op = await client.checkLongRunningRecognizeProgress(operationName);
   const done = !!op.done;
 
@@ -66,12 +44,7 @@ export async function GET(request: Request) {
     }
     return await handle(operationName);
   } catch (error: unknown) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -86,11 +59,6 @@ export async function POST(request: Request) {
     }
     return await handle(body.operationName);
   } catch (error: unknown) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

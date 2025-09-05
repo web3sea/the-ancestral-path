@@ -52,10 +52,11 @@ export async function POST(request: Request) {
         enableWordTimeOffsets: false,
         ...(encoding ? { encoding } : {}),
       },
-    } as Parameters<speechV1.SpeechClient["longRunningRecognize"]>[0];
+    } as import("@google-cloud/speech").protos.google.cloud.speech.v1.IRecognizeRequest;
 
-    const [operation] = await client.longRunningRecognize(requestPayload);
-    // Return operation name; caller can poll with operations API or implement a status endpoint later
+    const [operation] = await client.longRunningRecognize(
+      requestPayload as unknown as import("@google-cloud/speech").protos.google.cloud.speech.v1.IRecognizeRequest
+    );
     return NextResponse.json({ operationName: operation.name, gcsUri });
   } catch (error: unknown) {
     return handleApiError(error);

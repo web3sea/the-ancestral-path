@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { TranscoderServiceClient } from "@google-cloud/video-transcoder";
-
-export const runtime = "nodejs";
+import { createTranscoderClient } from "@/lib/gcp";
+import { handleApiError } from "@/lib/utils";
 
 type ExtractAudioRequest = {
   objectName?: string;
@@ -9,27 +8,6 @@ type ExtractAudioRequest = {
   outputPrefix?: string;
   audioBitrateBps?: number;
 };
-
-function normalizePrivateKey(rawKey: string | undefined): string | undefined {
-  if (!rawKey) return undefined;
-  const trimmed = rawKey.trim();
-  if (!trimmed) return undefined;
-  return trimmed.replace(/\\n/g, "\n").replace(/\\r/g, "\r");
-}
-
-function getTranscoderClient(): TranscoderServiceClient {
-  const projectId = process.env.GCP_PROJECT_ID;
-  const clientEmail = process.env.GCP_CLIENT_EMAIL;
-  const privateKey = normalizePrivateKey(process.env.GCP_PRIVATE_KEY);
-
-  if (projectId && clientEmail && privateKey) {
-    return new TranscoderServiceClient({
-      projectId,
-      credentials: { client_email: clientEmail, private_key: privateKey },
-    });
-  }
-  return new TranscoderServiceClient();
-}
 
 export async function POST(request: Request) {
   try {
@@ -63,7 +41,7 @@ export async function POST(request: Request) {
     const outputUri = `gs://${bucketName}/${outputFolder}/`;
     const audioFileName = `${nameWithoutExt}-${uniquePrefix}.mp3`;
 
-    const client = getTranscoderClient();
+    const client = createTranscoderClient();
     const parent = `projects/${process.env.GCP_PROJECT_ID}/locations/${location}`;
 
     const audioBitrateBps = body.audioBitrateBps || 128_000;
@@ -105,11 +83,6 @@ export async function POST(request: Request) {
       location,
     });
   } catch (error: unknown) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
