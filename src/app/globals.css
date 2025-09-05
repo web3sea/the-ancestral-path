@@ -55,6 +55,86 @@ body {
   line-height: 1.6;
 }
 
+/* DayPicker: root variables only */
+.rdp-root {
+  --rdp-accent-color: var(--color-foreground) !important;
+  --rdp-accent-background-color: #f0f0ff !important;
+  --rdp-day-height: 44px !important;
+  --rdp-day-width: 44px !important;
+  --rdp-day_button-border-radius: 8px !important;
+  --rdp-day_button-border: 2px solid transparent !important;
+  --rdp-day_button-height: 42px !important;
+  --rdp-day_button-width: 42px !important;
+  --rdp-selected-border: 2px solid var(--rdp-accent-color) !important;
+  --rdp-disabled-opacity: 0.5 !important;
+  --rdp-outside-opacity: 0.75 !important;
+  --rdp-today-color: var(--rdp-accent-color) !important;
+  --rdp-dropdown-gap: 0.5rem !important;
+  --rdp-months-gap: 2rem !important;
+  --rdp-nav_button-disabled-opacity: 0.5 !important;
+  --rdp-nav_button-height: 2.25rem !important;
+  --rdp-nav_button-width: 2.25rem !important;
+  --rdp-nav-height: 2.75rem !important;
+  --rdp-range_middle-background-color: var(
+    --rdp-accent-background-color
+  ) !important;
+  --rdp-range_middle-color: inherit !important;
+  --rdp-range_start-color: white !important;
+  --rdp-range_start-background: linear-gradient(
+    var(--rdp-gradient-direction),
+    transparent 50%,
+    var(--rdp-range_middle-background-color) 50%
+  ) !important;
+  --rdp-range_start-date-background-color: var(--rdp-accent-color) !important;
+  --rdp-range_end-background: linear-gradient(
+    var(--rdp-gradient-direction),
+    var(--rdp-range_middle-background-color) 50%,
+    transparent 50%
+  ) !important;
+  --rdp-range_end-color: white !important;
+  --rdp-range_end-date-background-color: var(--rdp-accent-color) !important;
+  --rdp-week_number-border-radius: 100% !important;
+  --rdp-week_number-border: 2px solid transparent !important;
+  --rdp-week_number-height: var(--rdp-day-height);
+  --rdp-week_number-opacity: 0.75 !important;
+  --rdp-week_number-width: var(--rdp-day-width) !important;
+  --rdp-weeknumber-text-align: center !important;
+  --rdp-weekday-opacity: 0.75 !important;
+  --rdp-weekday-padding: 0.5rem 0rem !important;
+  --rdp-weekday-text-align: center !important;
+  --rdp-gradient-direction: 90deg !important;
+  --rdp-animation_duration: 0.3s !important;
+  --rdp-animation_timing: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.rdp-custom {
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(216, 210, 198, 0.2) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: var(--color-foreground) !important;
+  font-family: var(--font-family-noto-serif-jp) !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease-in-out !important;
+  text-align: center !important;
+  backdrop-filter: blur(4px) !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+}
+
+.btn-ghost {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--color-foreground);
+  border: 1px solid rgba(216, 210, 198, 0.2);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+.btn-ghost:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;

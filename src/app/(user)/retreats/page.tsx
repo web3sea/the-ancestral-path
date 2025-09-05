@@ -1,4 +1,4 @@
-import RetreatSection from "../../component/business/RetreatSection";
+import RetreatSection from "../../../component/business/RetreatSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 

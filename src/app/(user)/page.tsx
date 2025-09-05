@@ -1,10 +1,10 @@
 "use client";
 
-import SandsTripleE from "@/component/business/home/SandsTripleESection";
-import TripleEMethodologySection from "@/component/business/home/TripleEMethodologySection";
-import SandSymesExperienceSection from "@/component/business/home/SandSymesExperienceSection";
-import StickySection from "@/component/business/home/StickySection";
-import UniqueApproachSection from "@/component/business/home/UniqueApproachSection";
+import SandsTripleE from "@/component/business/user/home/SandsTripleESection";
+import TripleEMethodologySection from "@/component/business/user/home/TripleEMethodologySection";
+import SandSymesExperienceSection from "@/component/business/user/home/SandSymesExperienceSection";
+import StickySection from "@/component/business/user/home/StickySection";
+import UniqueApproachSection from "@/component/business/user/home/UniqueApproachSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 

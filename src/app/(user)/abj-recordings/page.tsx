@@ -1,4 +1,4 @@
-import ABJRecordingsSection from "@/component/business/ABJRecordingsSection";
+import ABJRecordingsSection from "@/component/business/user/ABJRecordingsSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 

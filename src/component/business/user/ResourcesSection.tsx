@@ -193,7 +193,7 @@ export default function ResourcesSection() {
           <div className="flex flex-wrap justify-center gap-4">
             {categories.map((category, index) => (
               <button
-                key={category}
+                key={category + index}
                 className="px-6 py-3 rounded-full border border-[#d8d2c6] text-[#d8d2c6] font-light transition-all duration-300 hover:bg-[#d8d2c6] hover:text-black hover:opacity-100"
                 style={{ opacity: 0.7 }}
               >
@@ -210,7 +210,7 @@ export default function ResourcesSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {offerings.map((offering, index) => (
               <motion.div
-                key={offering.id}
+                key={offering.id + index}
                 className="group relative overflow-hidden rounded-xl border border-[#d8d2c6] bg-black"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}

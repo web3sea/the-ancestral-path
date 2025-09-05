@@ -1,4 +1,4 @@
-import AstrologicalSection from "@/component/business/AstrologicalSection";
+import AstrologicalSection from "@/component/business/user/AstrologicalSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 
