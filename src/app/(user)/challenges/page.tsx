@@ -1,4 +1,4 @@
-import MiniChallengesSection from "@/component/business/MiniChallengesSection";
+import MiniChallengesSection from "@/component/business/user/MiniChallengesSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 

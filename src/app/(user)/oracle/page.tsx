@@ -1,4 +1,4 @@
-import OracleAISection from "@/component/business/OracleAISection";
+import OracleAISection from "@/component/business/user/OracleAISection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 

@@ -1,4 +1,4 @@
-import MeditationsSection from "@/component/business/MeditationsSection";
+import MeditationsSection from "@/component/business/user/MeditationsSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 

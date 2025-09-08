@@ -1,9 +1,9 @@
-import BreathworkSection from "@/component/business/breathwork/BreathworkSection";
+import BreathworkSection from "@/component/business/user/breathwork/BreathworkSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
-import StickySection from "@/component/business/breathwork/StickySection";
-import TestimonialSection from "@/component/business/breathwork/TestimonialSection";
-import BreathworkDetailsSection from "@/component/business/breathwork/BreathworkDetailsSection";
+import StickySection from "@/component/business/user/breathwork/StickySection";
+import TestimonialSection from "@/component/business/user/breathwork/TestimonialSection";
+import BreathworkDetailsSection from "@/component/business/user/breathwork/BreathworkDetailsSection";
 
 export const metadata = {
   title: "Guided Breathwork Rituals - Sand Symes",

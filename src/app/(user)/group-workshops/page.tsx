@@ -1,4 +1,4 @@
-import GroupWorkshopsSection from "@/component/business/GroupWorkshopsSection";
+import GroupWorkshopsSection from "@/component/business/user/GroupWorkshopsSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 

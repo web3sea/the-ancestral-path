@@ -1,4 +1,4 @@
-import ProductDiscountSection from "@/component/business/ProductDiscountSection";
+import ProductDiscountSection from "@/component/business/user/ProductDiscountSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 

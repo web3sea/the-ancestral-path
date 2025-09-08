@@ -142,20 +142,20 @@ html {
 
 /* Custom scrollbar for webkit browsers */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 2px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--gray-100);
+  background: black;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-400);
-  border-radius: 4px;
+  background: #d8d2c6;
+  border-radius: 8px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-600);
+::-webkit-scrollbar-thumb:active {
+  background: #d8d2c6;
 }
 
 /* Utility classes */

@@ -11,16 +11,7 @@ import {
   X,
 } from "lucide-react";
 import "react-day-picker/style.css";
-
-type Recording = {
-  id: string;
-  type: "Full Moons" | "New Moons";
-  title: string;
-  videoUrl: string;
-  date: string;
-  summary?: string;
-  status: "published" | "draft" | "processing";
-};
+import { Recording } from "@/@types/abj-recording";
 
 export const RecordingForm = ({
   initial,
@@ -31,7 +22,7 @@ export const RecordingForm = ({
 }) => {
   const [title, setTitle] = useState(initial.title);
   const [type, setType] = useState(initial.type);
-  const [videoUrl, setVideoUrl] = useState(initial.videoUrl);
+  const [videoUrl, setVideoUrl] = useState(initial.video_url);
   const [date, setDate] = useState(initial.date);
   const [summary] = useState(initial.summary ?? "");
   const [status] = useState(initial.status || "draft");
@@ -56,22 +47,9 @@ export const RecordingForm = ({
   }, [date]);
 
   useEffect(() => {
-    // Subscribe to background analysis events
-    const es = new EventSource("/api/analysis/stream");
-    sseRef.current = es;
-    es.onmessage = (ev) => {
-      try {
-        const data = JSON.parse(ev.data);
-        if (data?.type === "stt.complete") {
-          setAnalysisStatus("Transcription complete (via webhook).");
-          if (data.transcript) setTranscript(data.transcript as string);
-        } else if (data?.type === "stt.error") {
-          setAnalysisStatus("Transcription error (see logs).");
-        }
-      } catch {}
-    };
+    // SSE removed; processing happens via server action on demand
     return () => {
-      es.close();
+      if (sseRef.current) sseRef.current.close();
       sseRef.current = null;
     };
   }, []);
@@ -117,10 +95,9 @@ export const RecordingForm = ({
           err?.error || `Failed to start upload (${startRes.status})`
         );
       }
-      const { sessionUrl, publicUrl, objectName } = (await startRes.json()) as {
+      const { sessionUrl, publicUrl } = (await startRes.json()) as {
         sessionUrl: string;
         publicUrl: string;
-        objectName: string;
       };
 
       const chunkSize = 8 * 1024 * 1024; // 8MB
@@ -164,68 +141,7 @@ export const RecordingForm = ({
       }
 
       setVideoUrl(publicUrl);
-
-      // 1) Extract audio via Transcoder
-      setAnalysisStatus("Extracting audio...");
-      const extractRes = await fetch("/api/transcode/extract-audio", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ objectName, outputPrefix: "audio" }),
-      });
-      if (!extractRes.ok) {
-        const err = await extractRes.json().catch(() => ({}));
-        throw new Error(
-          err?.error || `Audio extraction failed (${extractRes.status})`
-        );
-      }
-      const { jobName, audioGcsUri } = (await extractRes.json()) as {
-        jobName: string;
-        audioGcsUri: string;
-      };
-
-      // 2) Poll Transcoder job status until SUCCEEDED
-      setAnalysisStatus("Processing audio...");
-      const maxAttempts = 300; // ~15 minutes at 3s interval
-      const pollIntervalMs = 3000;
-      let attempt = 0;
-      while (attempt < maxAttempts) {
-        attempt += 1;
-        const statusRes = await fetch(
-          `/api/transcode/job/status?name=${encodeURIComponent(jobName)}`
-        );
-        if (!statusRes.ok) {
-          const err = await statusRes.json().catch(() => ({}));
-          throw new Error(
-            err?.error || `Status check failed (${statusRes.status})`
-          );
-        }
-        const job = (await statusRes.json()) as { state?: string };
-        const state = (job?.state || "").toUpperCase();
-        if (state === "SUCCEEDED") break;
-        if (state === "FAILED" || state === "CANCELLED") {
-          throw new Error(`Transcode job ${state.toLowerCase()}`);
-        }
-        await new Promise((r) => setTimeout(r, pollIntervalMs));
-      }
-
-      // 3) Start Speech-to-Text on the extracted audio (webhook-based)
-      setAnalysisStatus("Starting transcription in background...");
-      const analysisRes = await fetch("/api/analysis/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          gcsUri: audioGcsUri,
-          callbackUrl: `${window.location.origin}/api/analysis/webhook`,
-        }),
-      });
-      if (!analysisRes.ok) {
-        const err = await analysisRes.json().catch(() => ({}));
-        console.error("Failed to start analysis", err);
-      } else {
-        setAnalysisStatus(
-          "Transcription started in background. You'll be notified when it completes."
-        );
-      }
+      setAnalysisStatus("Ready. Click Save to create the item.");
     } catch (e: unknown) {
       const message =
         typeof e === "object" && e && "message" in e
@@ -263,7 +179,7 @@ export const RecordingForm = ({
       id={initial && "id" in initial ? "edit-form" : "create-form"}
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit({ title, videoUrl, type, date, summary, status });
+        onSubmit({ title, video_url: videoUrl, type, date, summary, status });
       }}
       className="space-y-6"
     >
@@ -299,7 +215,7 @@ export const RecordingForm = ({
         <div ref={datePopoverRef} className="relative">
           <input
             className="w-full relative pl-10 pr-4 py-3 rounded-lg bg-white/5 border border-primary-300/20 text-primary-300 focus:border-primary-300/40 focus:outline-none transition-colors cursor-pointer"
-            value={date ? formatDate(date) : ""}
+            value={date ? formatDate(date.toISOString()) : ""}
             onClick={() => setIsDateOpen(true)}
             onFocus={() => setIsDateOpen(true)}
             readOnly
@@ -318,7 +234,7 @@ export const RecordingForm = ({
                   if (!d) return;
                   const next = new Date(d);
                   next.setHours(0, 0, 0, 0);
-                  setDate(next.toISOString());
+                  setDate(next);
                   setIsDateOpen(false);
                 }}
               />

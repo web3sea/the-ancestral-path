@@ -1,4 +1,4 @@
-import WisdomDropsSection from "@/component/business/WisdomDropsSection";
+import WisdomDropsSection from "@/component/business/user/WisdomDropsSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 
