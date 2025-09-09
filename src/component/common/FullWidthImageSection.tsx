@@ -12,7 +12,7 @@ const FullWidthImageSection = ({
   altText = "Sacred healing journey",
 }: FullWidthImageSectionProps) => {
   return (
-    <section className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[500px] overflow-hidden">
+    <section className="pt-20 relative w-full h-80 md:h-96 lg:h-[500px] overflow-hidden">
       <motion.div
         initial={{ scale: 1.1, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -27,6 +27,10 @@ const FullWidthImageSection = ({
           className="w-full h-full bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url('${imageUrl}')`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            backgroundBlendMode: "overlay",
           }}
         />
         <div className="absolute inset-0 bg-black/30" />

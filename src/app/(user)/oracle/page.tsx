@@ -11,12 +11,11 @@ export const metadata = {
 export default function OraclePage() {
   return (
     <div className="min-h-screen">
-      <OracleAISection />
-
       <FullWidthImageSection
         imageUrl="/images/oracle-ai.png"
         altText="Connect with the Oracle AI for daily guidance, wisdom, and support on your spiritual journey"
       />
+      <OracleAISection />
 
       <DescriptionVisualSection
         title="DIVINE GUIDANCE AVAILABLE 24/7"

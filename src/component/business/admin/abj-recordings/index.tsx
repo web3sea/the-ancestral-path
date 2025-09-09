@@ -13,10 +13,10 @@ import {
   Mic,
   Loader2,
   Play,
-  RefreshCcw,
 } from "lucide-react";
 import AppModal from "@/component/common/AppModal";
 import { Recording } from "@/@types/abj-recording";
+import { createSupabaseClient, TABLES } from "@/lib/supabase/client";
 
 export const AbjRecordings = () => {
   const [records, setRecords] = useState<Recording[]>([]);
@@ -215,21 +215,13 @@ export const AbjRecordings = () => {
 
   async function executeTranscript(id: string) {
     try {
-      setRecords((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status: "processing" } : r))
-      );
       const res = await fetch("/api/abj-recordings/execute-transcript", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
       if (!res.ok) throw new Error("Execute transcript failed");
-      const saved = await res.json();
-      setRecords((prev) =>
-        prev.map((r) =>
-          r.id === saved.id ? { ...r, transcript: saved.transcript ?? "" } : r
-        )
-      );
+      await refreshRecords();
     } catch (e) {
       console.error(e);
       alert("Failed to execute transcript");
@@ -306,6 +298,34 @@ export const AbjRecordings = () => {
     }
   }
 
+  useEffect(() => {
+    let cleanup: (() => void) | null = null;
+    try {
+      const supabase = createSupabaseClient();
+      const channel = supabase
+        .channel("abj-recordings-realtime")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: TABLES.ABJ_RECORDINGS },
+          () => {
+            refreshRecords();
+          }
+        )
+        .subscribe();
+
+      cleanup = () => {
+        try {
+          supabase.removeChannel(channel);
+        } catch {}
+      };
+    } catch {
+      // Missing env or client; skip realtime
+    }
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Header Section */}
@@ -320,15 +340,6 @@ export const AbjRecordings = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <button
-            className="btn-secondary  gap-2 hover:bg-white/15 transition-colors"
-            onClick={() => refreshRecords()}
-          >
-            <span className="flex items-center gap-2">
-              <RefreshCcw className="w-4 h-4" />
-              Refresh
-            </span>
-          </button>
           <button
             className="btn-secondary  gap-2 hover:bg-white/15 transition-colors"
             onClick={() => setIsCreateOpen(true)}
@@ -396,7 +407,7 @@ export const AbjRecordings = () => {
                   <th className="px-6 py-4 text-left text-xs font-medium text-primary-300 uppercase tracking-wider">
                     Transcript
                   </th>
-                  <th className="px-6 py-4 text-center text-xs font-medium text-primary-300 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-center text-xs font-medium text-primary-300 uppercase tracking-wider w-[8%]">
                     Status
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-primary-300 uppercase tracking-wider w-[5%]">
@@ -509,7 +520,7 @@ export const AbjRecordings = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2 justify-end">
-                        {r.status === "failed" && r.audio_url ? (
+                        {r.audio_url && !r.transcript ? (
                           <button
                             className="p-2 rounded-lg bg-white/10 text-primary-300 hover:bg-white/20 transition-colors"
                             onClick={() => executeTranscript(r.id)}

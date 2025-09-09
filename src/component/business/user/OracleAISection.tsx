@@ -429,7 +429,7 @@ export default function OracleAISection() {
                 waiting to support your journey with wisdom, love, and practical
                 insights for your spiritual path.
               </p>
-              <button className="bg-white text-primary-700 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <button className="bg-primary-300/20 text-primary-300 px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-300/30 transition-all duration-300 transform hover:scale-105 shadow-lg">
                 Begin Your Daily Practice
               </button>
             </div>

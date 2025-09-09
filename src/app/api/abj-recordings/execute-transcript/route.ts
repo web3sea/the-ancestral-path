@@ -26,11 +26,6 @@ export async function POST(request: Request) {
     if (!audioUrl)
       return NextResponse.json({ error: "audio_url missing" }, { status: 400 });
 
-    await supabase
-      .from("abj_recordings")
-      .update({ status: "processing" })
-      .eq("id", id);
-
     const resp = await fetch(WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
