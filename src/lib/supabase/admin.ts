@@ -1,10 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
-import { getAppConfig } from "../config/env";
 
 export function createSupabaseAdmin() {
-  const config = getAppConfig();
-  const url = config.database.url;
-  const serviceKey = config.database.serviceKey;
+  const url = process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !serviceKey) {
     // In development, provide more helpful error message
