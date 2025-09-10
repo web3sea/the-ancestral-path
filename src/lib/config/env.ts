@@ -5,30 +5,32 @@
 
 export interface AppConfig {
   gcp: {
-    projectId: string;
-    clientEmail: string;
-    privateKey: string;
+    projectId?: string;
+    clientEmail?: string;
+    privateKey?: string;
     bucketName?: string;
   };
   database: {
     url?: string;
     key?: string;
+    serviceKey?: string;
   };
   app: {
     env: string;
     port: number;
   };
-}
-
-/**
- * Gets a required environment variable or throws an error
- */
-function requireEnv(key: string): string {
-  const value = process.env[key];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${key}`);
-  }
-  return value;
+  auth: {
+    secret: string;
+    google: {
+      clientId: string;
+      clientSecret: string;
+    };
+  };
+  stripe: {
+    publishableKey?: string;
+    secretKey?: string;
+    webhookSecret?: string;
+  };
 }
 
 /**
@@ -44,18 +46,31 @@ function getEnv(key: string, defaultValue: string = ""): string {
 export function getAppConfig(): AppConfig {
   return {
     gcp: {
-      projectId: requireEnv("GCP_PROJECT_ID"),
-      clientEmail: requireEnv("GCP_CLIENT_EMAIL"),
-      privateKey: requireEnv("GCP_PRIVATE_KEY"),
+      projectId: getEnv("GCP_PROJECT_ID"),
+      clientEmail: getEnv("GCP_CLIENT_EMAIL"),
+      privateKey: getEnv("GCP_PRIVATE_KEY"),
       bucketName: getEnv("GCP_BUCKET_NAME"),
     },
     database: {
       url: getEnv("SUPABASE_URL"),
       key: getEnv("SUPABASE_ANON_KEY"),
+      serviceKey: getEnv("SUPABASE_SERVICE_ROLE_KEY"),
     },
     app: {
       env: getEnv("NODE_ENV", "development"),
       port: parseInt(getEnv("PORT", "3000"), 10),
+    },
+    auth: {
+      secret: getEnv("NEXTAUTH_SECRET"),
+      google: {
+        clientId: getEnv("GOOGLE_CLIENT_ID"),
+        clientSecret: getEnv("GOOGLE_CLIENT_SECRET"),
+      },
+    },
+    stripe: {
+      publishableKey: getEnv("STRIPE_PUBLISHABLE_KEY"),
+      secretKey: getEnv("STRIPE_SECRET_KEY"),
+      webhookSecret: getEnv("STRIPE_WEBHOOK_SECRET"),
     },
   };
 }

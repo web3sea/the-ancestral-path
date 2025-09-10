@@ -1,10 +1,16 @@
 import { Storage } from "@google-cloud/storage";
-import { getGCPCredentials } from "./auth";
+import { getGCPCredentials, hasGCPCredentials } from "./auth";
 
 /**
  * Creates a Google Cloud Storage client with proper authentication
  */
 export function createStorageClient(): Storage {
+  if (!hasGCPCredentials()) {
+    throw new Error(
+      "GCP credentials not configured. Please set GCP_PROJECT_ID, GCP_CLIENT_EMAIL, and GCP_PRIVATE_KEY environment variables."
+    );
+  }
+
   const credentials = getGCPCredentials();
   return new Storage(credentials);
 }

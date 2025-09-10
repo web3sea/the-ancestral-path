@@ -1,15 +1,14 @@
-/**
- * Authentication utilities placeholder
- * Implement authentication logic here when needed
- */
-
-// Note: Add authentication library (e.g., NextAuth.js) when implementing
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./nextauth";
+import { NextRequest } from "next/server";
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
+  subscriptionTier: "tier1" | "tier2";
+  subscriptionStatus: "active" | "cancelled" | "paused" | "expired";
 }
 
 export interface Session {
@@ -18,30 +17,82 @@ export interface Session {
 }
 
 /**
- * Placeholder for user authentication
- * Implement with chosen auth provider (NextAuth, Clerk, etc.)
+ * Get the current user session on the server side
  */
 export async function getSession(): Promise<Session | null> {
-  // TODO: Implement session retrieval
-  throw new Error('Authentication not implemented');
+  const session = await getServerSession(authOptions);
+  return session as Session | null;
 }
 
 /**
- * Placeholder for user authorization
+ * Require authentication and optionally a specific role
  */
-export function requireAuth(requiredRole?: string) {
-  // TODO: Implement auth middleware
-  throw new Error('Authentication not implemented');
+export async function requireAuth(
+  requiredRole?: "user" | "admin"
+): Promise<Session> {
+  const session = await getSession();
+
+  if (!session) {
+    throw new Error("Authentication required");
+  }
+
+  // Check if user has valid subscription
+  if (!isValidSubscription(session.user)) {
+    throw new Error("Valid subscription required");
+  }
+
+  if (
+    requiredRole &&
+    session.user.role !== requiredRole &&
+    session.user.role !== "admin"
+  ) {
+    throw new Error(`Role '${requiredRole}' required`);
+  }
+
+  return session;
 }
 
 /**
- * Placeholder for protecting API routes
+ * Check if user has valid subscription (Tier 1 or Tier 2, active status)
+ */
+export function isValidSubscription(user: User): boolean {
+  return (
+    (user.subscriptionTier === "tier1" || user.subscriptionTier === "tier2") &&
+    user.subscriptionStatus === "active"
+  );
+}
+
+/**
+ * Check if user has specific subscription tier
+ */
+export function hasSubscriptionTier(
+  user: User,
+  tier: "tier1" | "tier2"
+): boolean {
+  return user.subscriptionTier === tier && user.subscriptionStatus === "active";
+}
+
+/**
+ * Protect API routes with authentication
  */
 export async function withAuth(
-  handler: (req: Request, session: Session) => Promise<Response>
+  handler: (req: NextRequest, session: Session) => Promise<Response>,
+  requiredRole?: "user" | "admin"
 ) {
-  return async (req: Request) => {
-    // TODO: Implement auth protection
-    throw new Error('Authentication not implemented');
+  return async (req: NextRequest) => {
+    try {
+      const session = await requireAuth(requiredRole);
+      return await handler(req, session);
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          error: error instanceof Error ? error.message : "Unauthorized",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
   };
 }

@@ -1,64 +1,92 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth/nextauth";
+import { SignIn } from "@/component/common/SignIn";
+import { AuthLayout } from "@/component/layout/AuthLayout";
+import { AuthError, AuthInfoCard } from "@/component/common/AuthComponents";
+import Link from "next/link";
 
-export default async function AdminLoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const params = await searchParams;
   const nextValue = typeof params?.next === "string" ? params.next : "";
-  const hasError = params?.error === "1" || params?.error === "true";
-  async function login(formData: FormData) {
-    "use server";
-    const password = formData.get("password");
-    const next = (formData.get("next") as string | null) ?? null;
+  const hasAdminError = params?.error === "admin_access_required";
 
-    if (password !== process.env.ADMIN_PASSWORD) {
-      redirect(
-        `/login${
-          next ? `?next=${encodeURIComponent(next)}&error=1` : "?error=1"
-        }`
-      );
+  // Check if user is already authenticated
+  const session = await getServerSession(authOptions);
+  if (session) {
+    // Redirect admin users to /admin, others to their intended destination or home
+    if (session.user.role === "admin") {
+      redirect("/admin");
+    } else {
+      redirect(nextValue || "/");
     }
-
-    const cookieStore = await cookies();
-    cookieStore.set("admin_auth", "1", {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 8,
-    });
-
-    redirect(next && next.startsWith("/admin") ? next : "/admin");
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-20">
-      <div className="w-full max-w-sm bg-black/80 border border-primary-300/20 rounded-xl p-6">
-        <h1 className="text-xl font-semibold text-primary-300 mb-4">
-          Admin Login
-        </h1>
-        <form action={login} className="space-y-3">
-          <input type="hidden" name="next" defaultValue={nextValue} />
-          {hasError && <p className="text-red-400 text-sm">Invalid password</p>}
-          <div>
-            <label className="block text-sm text-primary-300/80 mb-1">
-              Password
-            </label>
-            <input
-              name="password"
-              type="password"
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-primary-300/20 text-primary-300"
-              required
-            />
+    <AuthLayout
+      title="Welcome Back"
+      subtitle="Sign in to continue your wellness journey with personalized guidance and transformative experiences"
+    >
+      {/* Error Messages */}
+      {hasAdminError && (
+        <AuthError message="Admin access required. Only administrators can access this area." />
+      )}
+
+      {/* Welcome Info */}
+      <AuthInfoCard
+        title="Welcome Back"
+        description="Sign in to continue your wellness journey with personalized guidance and transformative experiences:"
+        variant="success"
+      >
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-primary-300 rounded-full"></div>
+            <span className="text-primary-300/80 text-sm">
+              Access guided breathwork sessions
+            </span>
           </div>
-          <button type="submit" className="btn-secondary w-full">
-            Sign in
-          </button>
-        </form>
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-primary-300 rounded-full"></div>
+            <span className="text-primary-300/80 text-sm">
+              Explore meditation practices
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-primary-300 rounded-full"></div>
+            <span className="text-primary-300/80 text-sm">
+              Get oracle AI guidance
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-primary-300 rounded-full"></div>
+            <span className="text-primary-300/80 text-sm">
+              Join group workshops
+            </span>
+          </div>
+        </div>
+      </AuthInfoCard>
+
+      {/* Google OAuth Sign In */}
+      <div className="mb-6">
+        <SignIn callbackUrl={nextValue || "/"} />
       </div>
-    </div>
+
+      {/* Footer Links */}
+      <div className="text-center space-y-3">
+        <p className="text-primary-300/60 text-sm">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/register"
+            className="text-primary-300 hover:text-primary-200 transition-colors"
+          >
+            Create one here
+          </Link>
+        </p>
+      </div>
+    </AuthLayout>
   );
 }

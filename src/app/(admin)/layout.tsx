@@ -1,33 +1,19 @@
-// import Link from "next/link";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { LogOut } from "lucide-react";
 import SidebarNav from "@/component/layout/admin/SidebarNav";
 import { Roboto } from "next/font/google";
+import { SignOut } from "@/component/common/SignOut";
+import { validateAdminSession } from "@/lib/auth/session-utils";
 
 const roboto = Roboto({
   subsets: ["latin"],
   weight: ["400", "700"],
 });
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const logout = async () => {
-    "use server";
-    const cookieStore = await cookies();
-    cookieStore.set("admin_auth", "", {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 0,
-      secure: process.env.NODE_ENV === "production",
-    });
-    redirect("/admin/login");
-  };
-
+  await validateAdminSession();
   return (
     <div
       className={`min-h-screen bg-black text-primary-300 ${roboto.className}`}
@@ -40,15 +26,10 @@ export default function AdminLayout({
           </div>
           <SidebarNav />
           <div className="mt-auto p-3">
-            <form action={logout}>
-              <button
-                type="submit"
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-primary-300"
-              >
-                <LogOut size={16} />
-                <span>Logout</span>
-              </button>
-            </form>
+            <SignOut
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-primary-300"
+              callbackUrl="/login"
+            />
           </div>
         </aside>
 
