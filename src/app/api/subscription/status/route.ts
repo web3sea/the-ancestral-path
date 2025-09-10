@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/nextauth";
-import { simpleSubscriptionService } from "@/lib/subscription/simple-subscription";
+import { subscriptionService } from "../service";
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const status = await simpleSubscriptionService.getSubscriptionStatus(
+    const status = await subscriptionService.getSubscriptionStatus(
       session.user.accountId
     );
 

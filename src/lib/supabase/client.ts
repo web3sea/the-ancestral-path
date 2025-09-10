@@ -4,19 +4,22 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
+import { getAppConfig } from "../config/env";
 
 /**
  * Creates a Supabase client instance
- * Uncomment and implement when Supabase is added to dependencies
  */
 export function createSupabaseClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const config = getAppConfig();
+  const url = config.database.url;
+  const anon = config.database.key;
+
   if (!url || !anon) {
     throw new Error(
-      "Missing Supabase env: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      "Missing Supabase configuration. Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables."
     );
   }
+
   return createClient(url, anon, {
     auth: { persistSession: false },
   });

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { simpleSubscriptionService } from "@/lib/subscription/simple-subscription";
+import { subscriptionService } from "../service";
 
 export async function GET(request: NextRequest) {
   try {
-    const plans = simpleSubscriptionService.getAvailablePlans();
+    const plans = subscriptionService.getAvailablePlans();
 
     return NextResponse.json({
       success: true,

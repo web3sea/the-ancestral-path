@@ -37,7 +37,7 @@ export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlan> = {
   },
 };
 
-export class SimpleSubscriptionService {
+export class SubscriptionService {
   private supabase = createSupabaseAdmin();
 
   /**
@@ -302,4 +302,4 @@ export class SimpleSubscriptionService {
   }
 }
 
-export const simpleSubscriptionService = new SimpleSubscriptionService();
+export const subscriptionService = new SubscriptionService();

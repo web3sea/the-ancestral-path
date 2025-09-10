@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/nextauth";
-import { simpleSubscriptionService } from "@/lib/subscription/simple-subscription";
+import { subscriptionService } from "../service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
     const { reason } = await request.json();
 
-    const result = await simpleSubscriptionService.cancelSubscription(
+    const result = await subscriptionService.cancelSubscription(
       session.user.accountId,
       reason
     );
