@@ -43,6 +43,7 @@ export const authOptions: NextAuthOptions = {
             .select(
               `
               id,
+              email,
               subscription_tier,
               subscription_status,
               role_id,
@@ -81,7 +82,6 @@ export const authOptions: NextAuthOptions = {
               .single();
 
             if (!userRole) {
-              console.error("Default user role not found");
               throw new Error("Default user role not found");
             }
 
@@ -125,6 +125,7 @@ export const authOptions: NextAuthOptions = {
           }
         } catch (error) {
           console.error("Error getting user subscription data:", error);
+          console.error("Error details:", error);
           token.role = Role.USER;
           token.subscriptionTier = null; // No subscription yet
           token.subscriptionStatus = null; // No subscription yet

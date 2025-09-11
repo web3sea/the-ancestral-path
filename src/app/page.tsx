@@ -29,5 +29,11 @@ export default async function HomePage() {
   }
 
   // User has valid subscription - show dashboard
-  return <UserDashboard />;
+  return (
+    <>
+      <Header />
+      <UserDashboard />
+      <Footer />
+    </>
+  );
 }

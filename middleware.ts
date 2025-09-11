@@ -7,6 +7,7 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
+  // Debug logging for admin routes
   if (request.nextUrl.pathname.startsWith("/admin")) {
     if (!token) {
       return NextResponse.redirect(
@@ -18,6 +19,7 @@ export async function middleware(request: NextRequest) {
     }
 
     const userRole = token.role as string;
+
     if (userRole !== "admin") {
       return NextResponse.redirect(
         new URL("/login?error=admin_access_required", request.url)
@@ -46,6 +48,12 @@ export async function middleware(request: NextRequest) {
   ) {
     const subscriptionTier = token.subscriptionTier as string;
     const subscriptionStatus = token.subscriptionStatus as string;
+    const userRole = token.role as string;
+
+    // Admin users bypass subscription check
+    if (userRole === "admin") {
+      return NextResponse.next();
+    }
 
     if (
       !subscriptionTier ||

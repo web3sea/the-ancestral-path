@@ -1,16 +1,19 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/nextauth";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { SubscriptionTier, SubscriptionStatus } from "@/@types/enum";
-import { SUBSCRIPTION_PLANS } from "../plans/route";
+import { STRIPE_PLANS, StripePlanId } from "@/lib/stripe/config";
+import { stripeService } from "@/lib/stripe/service";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     // Check if user is authenticated
-    const session = await getServerSession(authOptions);
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
 
-    if (!session?.user?.accountId) {
+    if (!token?.sub || !token?.accountId) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -24,7 +27,7 @@ export async function POST() {
     const { data: account, error: accountError } = await supabase
       .from("accounts")
       .select("subscription_tier, subscription_status")
-      .eq("id", session.user.accountId)
+      .eq("id", token.accountId)
       .single();
 
     if (accountError) {
@@ -42,7 +45,7 @@ export async function POST() {
       );
     }
 
-    const plan = SUBSCRIPTION_PLANS[account.subscription_tier];
+    const plan = STRIPE_PLANS[account.subscription_tier as StripePlanId];
     if (!plan) {
       return NextResponse.json(
         { error: "Invalid subscription plan" },
@@ -51,9 +54,9 @@ export async function POST() {
     }
 
     // Simulate payment processing (replace with actual payment processor)
-    const paymentSuccess = await simulatePayment(
-      session.user.accountId,
-      plan.price
+    const paymentSuccess = await stripeService.handleSuccessfulPayment(
+      token.accountId,
+      plan.price.toString()
     );
 
     if (paymentSuccess) {
@@ -65,7 +68,7 @@ export async function POST() {
         .update({
           subscription_end_date: newEndDate.toISOString(),
         })
-        .eq("id", session.user.accountId);
+        .eq("id", token.accountId);
 
       if (updateError) {
         console.error("Error updating subscription end date:", updateError);
@@ -79,7 +82,7 @@ export async function POST() {
       const { error: historyError } = await supabase
         .from("subscription_history")
         .insert({
-          account_id: session.user.accountId,
+          account_id: token.accountId,
           tier: account.subscription_tier as SubscriptionTier,
           status: SubscriptionStatus.ACTIVE,
           start_date: new Date().toISOString(),
@@ -101,7 +104,7 @@ export async function POST() {
       });
     } else {
       // Payment failed
-      await handlePaymentFailure(session.user.accountId, supabase);
+      await handlePaymentFailure(token.accountId, supabase);
       return NextResponse.json({ error: "Payment failed" }, { status: 400 });
     }
   } catch (error) {
@@ -111,18 +114,6 @@ export async function POST() {
       { status: 500 }
     );
   }
-}
-
-// Simulate payment processing (replace with actual payment processor)
-async function simulatePayment(
-  _accountId: string,
-  _amount: number
-): Promise<boolean> {
-  // This is a placeholder - replace with actual payment processing
-  // For example, using Stripe, PayPal, or other payment processors
-
-  // Simulate 95% success rate
-  return Math.random() > 0.05;
 }
 
 // Handle payment failure

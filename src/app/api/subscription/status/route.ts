@@ -1,16 +1,18 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/nextauth";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { SubscriptionStatus } from "@/@types/enum";
-import { SUBSCRIPTION_PLANS } from "../plans/route";
+import { stripeService } from "@/lib/stripe/service";
+import { STRIPE_PLANS } from "@/lib/stripe/config";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Check if user is authenticated
-    const session = await getServerSession(authOptions);
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
 
-    if (!session?.user?.accountId) {
+    if (!token?.sub || !token?.accountId) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -20,7 +22,7 @@ export async function GET() {
     // Create Supabase admin client
     const supabase = createSupabaseAdmin();
 
-    // Get subscription details
+    // Get account details
     const { data: account, error } = await supabase
       .from("accounts")
       .select(
@@ -28,10 +30,12 @@ export async function GET() {
         subscription_tier,
         subscription_status,
         subscription_start_date,
-        subscription_end_date
+        subscription_end_date,
+        stripe_customer_id,
+        stripe_subscription_id
       `
       )
-      .eq("id", session.user.accountId)
+      .eq("id", token.accountId)
       .single();
 
     if (error) {
@@ -51,8 +55,21 @@ export async function GET() {
       });
     }
 
+    // If we have a Stripe customer ID, get the latest subscription status from Stripe
+    let stripeSubscription = null;
+    if (account.stripe_customer_id) {
+      try {
+        const stripeStatus = await stripeService.getSubscriptionStatus(
+          account.stripe_customer_id
+        );
+        stripeSubscription = stripeStatus.subscription;
+      } catch (error) {
+        console.error("Error getting Stripe subscription status:", error);
+      }
+    }
+
     const isActive =
-      account.subscription_status === SubscriptionStatus.ACTIVE &&
+      account.subscription_status === "active" &&
       (!account.subscription_end_date ||
         new Date(account.subscription_end_date) > new Date());
 
@@ -65,7 +82,10 @@ export async function GET() {
         status: account.subscription_status,
         startDate: account.subscription_start_date,
         endDate: account.subscription_end_date,
-        plan: SUBSCRIPTION_PLANS[account.subscription_tier],
+        plan: STRIPE_PLANS[
+          account.subscription_tier as keyof typeof STRIPE_PLANS
+        ],
+        stripeSubscription,
       },
     });
   } catch (error) {

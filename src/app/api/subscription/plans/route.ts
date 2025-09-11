@@ -1,50 +1,16 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/nextauth";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
+import { STRIPE_PLANS } from "@/lib/stripe/config";
 
-// Subscription plans configuration
-export interface SubscriptionPlan {
-  id: string;
-  name: string;
-  price: number; // in cents
-  features: string[];
-  description: string;
-}
-
-export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlan> = {
-  tier1: {
-    id: "tier1",
-    name: "Tier 1",
-    price: 2900, // $29.00
-    description: "Essential wellness features",
-    features: [
-      "Guided breathwork sessions",
-      "Basic meditation practices",
-      "Oracle guidance",
-      "Email support",
-    ],
-  },
-  tier2: {
-    id: "tier2",
-    name: "Tier 2",
-    price: 3900, // $39.00
-    description: "Complete wellness experience",
-    features: [
-      "Everything in Tier 1",
-      "Advanced oracle AI",
-      "Astrological insights",
-      "Group workshops",
-      "Priority support",
-    ],
-  },
-};
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Check if user is authenticated
-    const session = await getServerSession(authOptions);
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
 
-    if (!session?.user) {
+    if (!token?.sub) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -52,7 +18,7 @@ export async function GET() {
     }
 
     // Get all available plans
-    const plans = Object.values(SUBSCRIPTION_PLANS);
+    const plans = Object.values(STRIPE_PLANS);
 
     return NextResponse.json({
       success: true,

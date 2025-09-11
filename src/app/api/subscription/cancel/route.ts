@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/nextauth";
+import { getToken } from "next-auth/jwt";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { SubscriptionTier, SubscriptionStatus } from "@/@types/enum";
+import { stripeService } from "@/lib/stripe/service";
 
 export async function POST(request: NextRequest) {
   try {
     // Check if user is authenticated
-    const session = await getServerSession(authOptions);
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
 
-    if (!session?.user?.accountId) {
+    if (!token?.sub || !token?.accountId) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -21,40 +23,52 @@ export async function POST(request: NextRequest) {
     // Create Supabase admin client
     const supabase = createSupabaseAdmin();
 
-    // Update subscription status to cancelled
-    const { error: updateError } = await supabase
+    // Get account details to find Stripe subscription ID
+    const { data: account, error: accountError } = await supabase
       .from("accounts")
-      .update({
-        subscription_status: SubscriptionStatus.CANCELLED,
-        subscription_end_date: new Date().toISOString(),
-      })
-      .eq("id", session.user.accountId);
+      .select("stripe_subscription_id")
+      .eq("id", token.accountId)
+      .single();
 
-    if (updateError) {
-      console.error("Error cancelling subscription:", updateError);
+    if (accountError) {
+      console.error("Error getting account details:", accountError);
       return NextResponse.json(
-        { error: "Failed to cancel subscription" },
+        { error: "Failed to get account details" },
         { status: 500 }
       );
     }
 
-    // Record cancellation history
-    const { error: historyError } = await supabase
-      .from("subscription_history")
-      .insert({
-        account_id: session.user.accountId,
-        tier: SubscriptionTier.TIER1, // Will be updated with actual tier
-        status: SubscriptionStatus.CANCELLED,
-        start_date: new Date().toISOString(),
-        payment_method: "stripe",
-        amount_paid: 0,
-        change_reason: "Subscription cancelled",
-        notes: reason || "Cancelled by user",
-      });
+    if (account?.stripe_subscription_id) {
+      try {
+        // Cancel Stripe subscription
+        await stripeService.cancelSubscription(
+          account.stripe_subscription_id,
+          token.accountId
+        );
+      } catch (error) {
+        console.error("Error cancelling Stripe subscription:", error);
+        return NextResponse.json(
+          { error: "Failed to cancel subscription" },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Fallback: just update database if no Stripe subscription
+      const { error: updateError } = await supabase
+        .from("accounts")
+        .update({
+          subscription_status: "cancelled",
+          subscription_end_date: new Date().toISOString(),
+        })
+        .eq("id", token.accountId);
 
-    if (historyError) {
-      console.error("Error recording cancellation history:", historyError);
-      // Don't fail the request, just log the error
+      if (updateError) {
+        console.error("Error cancelling subscription:", updateError);
+        return NextResponse.json(
+          { error: "Failed to cancel subscription" },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json({

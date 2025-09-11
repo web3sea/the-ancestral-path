@@ -11,6 +11,7 @@ import {
   Heart,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { StripePayment } from "@/component/common/StripePayment";
 
 interface Plan {
   id: string;
@@ -25,22 +26,27 @@ const PLANS: Plan[] = [
   {
     id: "tier1",
     name: "Tier 1",
-    price: 29,
+    price: 2900, // Price in cents for Stripe
     period: "month",
     features: [
+      "All resources access",
+      "Daily AO messaging (once per day only)",
+      "Personal dashboard",
       "Guided breathwork sessions",
-      "Meditation practices",
-      "Basic oracle guidance",
+      "Basic meditation practices",
+      "Oracle guidance",
       "Email support",
     ],
   },
   {
     id: "tier2",
     name: "Tier 2",
-    price: 39,
+    price: 3900, // Price in cents for Stripe
     period: "month",
     features: [
-      "Everything in Tier 1",
+      "Everything from Tier 1",
+      "Voice calling capability",
+      "Monthly Q&A sessions",
       "Advanced oracle AI",
       "Astrological insights",
       "Group workshops",
@@ -54,6 +60,8 @@ export function SubscriptionSection() {
   const [selectedPlan, setSelectedPlan] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
+  const [clientSecret, setClientSecret] = useState<string>("");
+  const [showPayment, setShowPayment] = useState(false);
   const [plans, setPlans] = useState<Plan[]>([]);
 
   // Load plans from API
@@ -89,10 +97,6 @@ export function SubscriptionSection() {
     setError("");
 
     try {
-      // For now, we'll use a mock payment method ID
-      // In a real implementation, you would integrate with Stripe Elements or another payment processor
-      const mockPaymentMethodId = "pm_mock_" + Date.now();
-
       const response = await fetch("/api/subscription/create", {
         method: "POST",
         headers: {
@@ -100,15 +104,15 @@ export function SubscriptionSection() {
         },
         body: JSON.stringify({
           planId: selectedPlan,
-          paymentMethodId: mockPaymentMethodId,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        // Subscription created successfully, redirect to dashboard
-        window.location.href = "/";
+        // Set client secret and show payment form
+        setClientSecret(data.clientSecret);
+        setShowPayment(true);
       } else {
         setError(data.error || "Failed to create subscription");
       }
@@ -117,6 +121,17 @@ export function SubscriptionSection() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePaymentSuccess = () => {
+    // Redirect to success page or show success message
+    window.location.href = "/subscription/success";
+  };
+
+  const handlePaymentError = (error: string) => {
+    setError(error);
+    setShowPayment(false);
+    setClientSecret("");
   };
 
   return (
@@ -210,7 +225,7 @@ export function SubscriptionSection() {
                   </h3>
                   <div className="mb-6">
                     <span className="text-5xl font-black text-primary-300 group-hover:text-primary-200 transition-colors">
-                      ${plan.price}
+                      ${(plan.price / 100).toFixed(0)}
                     </span>
                     <span className="text-primary-300/70 text-xl ml-2 font-medium">
                       /{plan.period}
@@ -293,6 +308,19 @@ export function SubscriptionSection() {
             )}
           </button>
         </div>
+
+        {/* Stripe Payment Form */}
+        {showPayment && clientSecret && (
+          <div className="mt-8 max-w-2xl mx-auto">
+            <StripePayment
+              clientSecret={clientSecret}
+              planName={plans.find((p) => p.id === selectedPlan)?.name || ""}
+              planPrice={plans.find((p) => p.id === selectedPlan)?.price || 0}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+            />
+          </div>
+        )}
 
         {/* Enhanced Additional Info */}
         <div className="mt-20 text-center">
