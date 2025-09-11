@@ -7,7 +7,6 @@ import { SubscriptionStatus } from "@/@types/enum";
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if user is authenticated
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
@@ -20,10 +19,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Create Supabase admin client
     const supabase = createSupabaseAdmin();
 
-    // Get account details
     const { data: account, error } = await supabase
       .from("accounts")
       .select(
@@ -40,7 +37,6 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Error getting subscription status:", error);
       return NextResponse.json(
         { error: "Failed to get subscription status" },
         { status: 500 }
@@ -56,7 +52,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // If we have a Stripe customer ID, get the latest subscription status from Stripe
     let stripeSubscription = null;
     if (account.stripe_customer_id) {
       try {

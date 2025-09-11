@@ -6,7 +6,6 @@ import { SubscriptionStatus } from "@/@types/enum";
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is authenticated
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
@@ -19,10 +18,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Supabase admin client
     const supabase = createSupabaseAdmin();
 
-    // Get account details to find Stripe subscription ID
     const { data: account, error: accountError } = await supabase
       .from("accounts")
       .select("stripe_subscription_id")
@@ -39,7 +36,6 @@ export async function POST(request: NextRequest) {
 
     if (account?.stripe_subscription_id) {
       try {
-        // Cancel Stripe subscription
         await stripeService.cancelSubscription(
           account.stripe_subscription_id,
           token.accountId
@@ -52,7 +48,6 @@ export async function POST(request: NextRequest) {
         );
       }
     } else {
-      // Fallback: just update database if no Stripe subscription
       const { error: updateError } = await supabase
         .from("accounts")
         .update({
@@ -62,7 +57,6 @@ export async function POST(request: NextRequest) {
         .eq("id", token.accountId);
 
       if (updateError) {
-        console.error("Error cancelling subscription:", updateError);
         return NextResponse.json(
           { error: "Failed to cancel subscription" },
           { status: 500 }
@@ -75,9 +69,8 @@ export async function POST(request: NextRequest) {
       message: "Subscription cancelled successfully",
     });
   } catch (error) {
-    console.error("Error cancelling subscription:", error);
     return NextResponse.json(
-      { error: "Failed to cancel subscription" },
+      { error: "Failed to cancel subscription: " + error },
       { status: 500 }
     );
   }

@@ -4,7 +4,6 @@ import { STRIPE_PLANS } from "@/lib/stripe/config";
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if user is authenticated
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
@@ -17,7 +16,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all available plans
     const plans = Object.values(STRIPE_PLANS);
 
     return NextResponse.json({

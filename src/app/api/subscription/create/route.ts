@@ -5,7 +5,6 @@ import { STRIPE_PLANS } from "@/lib/stripe/config";
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is authenticated
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
@@ -27,7 +26,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate plan exists
     const plan = STRIPE_PLANS[planId as keyof typeof STRIPE_PLANS];
     if (!plan) {
       return NextResponse.json(
@@ -37,7 +35,6 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Get or create Stripe customer
       let customerId = token.stripeCustomerId as string;
 
       if (!customerId) {
@@ -49,7 +46,6 @@ export async function POST(request: NextRequest) {
         customerId = customer.id;
       }
 
-      // Create Stripe subscription
       const result = await stripeService.createSubscription({
         customerId,
         planId: planId as keyof typeof STRIPE_PLANS,

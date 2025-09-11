@@ -78,7 +78,6 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Record payment history
       const { error: historyError } = await supabase
         .from("subscription_history")
         .insert({
@@ -94,7 +93,6 @@ export async function POST(request: NextRequest) {
 
       if (historyError) {
         console.error("Error recording payment history:", historyError);
-        // Don't fail the request, just log the error
       }
 
       return NextResponse.json({
@@ -103,7 +101,6 @@ export async function POST(request: NextRequest) {
         nextBillingDate: newEndDate,
       });
     } else {
-      // Payment failed
       await handlePaymentFailure(token.accountId, supabase);
       return NextResponse.json({ error: "Payment failed" }, { status: 400 });
     }
@@ -116,13 +113,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handle payment failure
 async function handlePaymentFailure(
   accountId: string,
   supabase: ReturnType<typeof createSupabaseAdmin>
 ) {
   try {
-    // Update subscription status to failed
     await supabase
       .from("accounts")
       .update({
@@ -130,10 +125,9 @@ async function handlePaymentFailure(
       })
       .eq("id", accountId);
 
-    // Record failure history
     await supabase.from("subscription_history").insert({
       account_id: accountId,
-      tier: SubscriptionTier.TIER1, // Will be updated with actual tier
+      tier: SubscriptionTier.TIER1,
       status: SubscriptionStatus.EXPIRED,
       start_date: new Date().toISOString(),
       payment_method: "stripe",
