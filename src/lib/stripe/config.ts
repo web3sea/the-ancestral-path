@@ -8,7 +8,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 // Client-side Stripe instance
 export const getStripePublishableKey = () => {
-  return process.env.STRIPE_PUBLISHABLE_KEY;
+  return process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 };
 
 // Subscription plans based on AO Platform Architecture

@@ -56,13 +56,6 @@ export async function POST(request: NextRequest) {
         accountId: token.accountId,
       });
 
-      console.log("Subscription creation result:", {
-        success: result.success,
-        hasClientSecret: !!result.clientSecret,
-        subscriptionId: result.subscription?.id,
-        error: result.error,
-      });
-
       if (!result.success) {
         return NextResponse.json(
           { error: result.error || "Failed to create subscription" },

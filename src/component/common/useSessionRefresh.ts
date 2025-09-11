@@ -8,36 +8,19 @@ export function useSessionRefresh() {
 
   const refreshSession = useCallback(async () => {
     try {
-      const response = await fetch("/api/auth/refresh-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      console.log("Refreshing session...");
 
-      if (!response.ok) {
-        throw new Error("Failed to refresh session");
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Update the session with the new data
-        await update({
-          ...session,
-          user: {
-            ...session?.user,
-            ...data.session,
-          },
-        });
-
-        return data.session;
-      }
+      // Simple session update without complex triggers
+      await update();
+      console.log("Session updated successfully");
     } catch (error) {
       console.error("Error refreshing session:", error);
       throw error;
     }
-  }, [session, update]);
+  }, [update]);
 
-  return { refreshSession };
+  return {
+    session,
+    refreshSession,
+  };
 }

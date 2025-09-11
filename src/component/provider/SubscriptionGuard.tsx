@@ -30,7 +30,8 @@ export async function SubscriptionGuard({
   }
 
   // Check subscription for regular users
-  if (!hasValidSubscription(session)) {
+  const hasValidSub = await hasValidSubscription(session);
+  if (!hasValidSub) {
     redirect(redirectTo);
   }
 

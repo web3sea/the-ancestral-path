@@ -8,7 +8,6 @@ import Stripe from "stripe";
 // Function to trigger session refresh for a user
 async function triggerSessionRefresh(accountId: string) {
   try {
-    // Store a flag in the database to indicate subscription was updated
     const supabase = createSupabaseAdmin();
     await supabase
       .from("accounts")
@@ -16,10 +15,92 @@ async function triggerSessionRefresh(accountId: string) {
         last_subscription_update: new Date().toISOString(),
       })
       .eq("id", accountId);
-
-    console.log("Session refresh triggered for account:", accountId);
   } catch (error) {
     console.error("Error triggering session refresh:", error);
+  }
+}
+
+async function handlePaymentIntentSucceeded(
+  paymentIntent: Stripe.PaymentIntent
+) {
+  try {
+    console.log("Processing payment_intent.succeeded event");
+    console.log("Payment intent metadata:", paymentIntent.metadata);
+
+    const accountId = paymentIntent.metadata?.accountId;
+    const planId = paymentIntent.metadata?.planId;
+    const subscriptionId = paymentIntent.metadata?.subscriptionId;
+
+    if (!accountId || !planId) {
+      console.error("Missing accountId or planId in payment intent metadata");
+      console.error("Available metadata:", paymentIntent.metadata);
+      return;
+    }
+
+    console.log("Processing payment for account:", accountId, "plan:", planId);
+
+    if (subscriptionId) {
+      // Get the actual subscription from Stripe to get correct dates
+      try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+        const subscription = (await stripe.subscriptions.retrieve(
+          subscriptionId
+        )) as unknown as SubscriptionWithPeriods;
+
+        const startDate = subscription.current_period_start
+          ? new Date(subscription.current_period_start * 1000).toISOString()
+          : new Date().toISOString();
+
+        const endDate = subscription.current_period_end
+          ? new Date(subscription.current_period_end * 1000).toISOString()
+          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+        console.log("Subscription dates from Stripe:", { startDate, endDate });
+
+        await subscriptionService.updateSubscriptionData(
+          accountId,
+          planId as SubscriptionTier,
+          SubscriptionStatus.ACTIVE,
+          paymentIntent.customer as string,
+          subscriptionId,
+          startDate,
+          endDate
+        );
+      } catch (stripeError) {
+        console.error(
+          "Error retrieving subscription from Stripe:",
+          stripeError
+        );
+        // Fallback to hardcoded dates
+        await subscriptionService.updateSubscriptionData(
+          accountId,
+          planId as SubscriptionTier,
+          SubscriptionStatus.ACTIVE,
+          paymentIntent.customer as string,
+          subscriptionId,
+          new Date().toISOString(),
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        );
+      }
+
+      // Create subscription history record
+      const supabase = createSupabaseAdmin();
+      await supabase.from("subscription_history").insert({
+        account_id: accountId,
+        tier: planId as SubscriptionTier,
+        status: SubscriptionStatus.ACTIVE,
+        start_date: new Date().toISOString(),
+        payment_method: "stripe",
+        amount_paid: paymentIntent.amount / 100,
+        currency: paymentIntent.currency.toUpperCase(),
+        change_reason: "Payment completed via standalone payment intent",
+      });
+
+      // Trigger session refresh
+      await triggerSessionRefresh(accountId);
+    }
+  } catch (error) {
+    console.error("Error handling payment intent success:", error);
   }
 }
 
@@ -54,13 +135,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
-    console.log("Received Stripe webhook:", event.type);
-    console.log(
-      "Webhook event data:",
-      JSON.stringify(event.data.object, null, 2)
-    );
-
     const supabase = createSupabaseAdmin();
+
+    console.log("Webhook received event:", event.type);
+    console.log("Event data:", JSON.stringify(event.data.object, null, 2));
 
     switch (event.type) {
       case "invoice.payment_succeeded":
@@ -93,6 +171,12 @@ export async function POST(request: NextRequest) {
         );
         break;
 
+      case "payment_intent.succeeded":
+        await handlePaymentIntentSucceeded(
+          event.data.object as Stripe.PaymentIntent
+        );
+        break;
+
       default:
     }
 
@@ -111,15 +195,6 @@ async function handlePaymentSucceeded(
   supabase: ReturnType<typeof createSupabaseAdmin>
 ) {
   try {
-    console.log("Payment succeeded - invoice data:", {
-      id: invoice.id,
-      period_start: invoice.period_start,
-      period_end: invoice.period_end,
-      metadata: invoice.metadata,
-      subscription: (invoice as Stripe.Invoice & { subscription?: string })
-        .subscription,
-    });
-
     const accountId = invoice.metadata?.accountId;
 
     if (!accountId) {
@@ -232,20 +307,6 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 
 async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   try {
-    console.log(
-      "Subscription created - full subscription data:",
-      JSON.stringify(subscription, null, 2)
-    );
-    console.log("Subscription created - subscription data:", {
-      id: subscription.id,
-      current_period_start: (subscription as SubscriptionWithPeriods)
-        .current_period_start,
-      current_period_end: (subscription as SubscriptionWithPeriods)
-        .current_period_end,
-      status: subscription.status,
-      metadata: subscription.metadata,
-    });
-
     const accountId = subscription.metadata?.accountId;
 
     if (!accountId) {
@@ -292,14 +353,58 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     const subscriptionWithPeriods = subscription as SubscriptionWithPeriods;
     const rawSubscription = subscription as unknown as Record<string, unknown>;
 
-    const startTimestamp =
+    // For incomplete subscriptions, dates might be in items.data[0]
+    let startTimestamp: number | undefined =
       subscriptionWithPeriods.current_period_start ||
       (rawSubscription.current_period_start as number) ||
       (rawSubscription.start_date as number);
-    const endTimestamp =
+
+    let endTimestamp: number | undefined =
       subscriptionWithPeriods.current_period_end ||
       (rawSubscription.current_period_end as number) ||
       (rawSubscription.end_date as number);
+
+    // If dates are not found at subscription level, try to get from items.data[0]
+    if (!startTimestamp || !endTimestamp) {
+      const items = rawSubscription.items as unknown as {
+        data?: Array<{
+          current_period_start?: number;
+          current_period_end?: number;
+        }>;
+      };
+
+      console.log("Items data for date extraction:", {
+        items: rawSubscription.items,
+        itemsData: items?.data,
+        firstItem: items?.data?.[0],
+      });
+
+      if (items?.data?.[0]) {
+        const firstItem = items.data[0];
+        console.log("First item data:", {
+          current_period_start: firstItem.current_period_start,
+          current_period_end: firstItem.current_period_end,
+        });
+
+        startTimestamp =
+          startTimestamp || firstItem.current_period_start || undefined;
+        endTimestamp =
+          endTimestamp || firstItem.current_period_end || undefined;
+
+        console.log("After items extraction:", {
+          startTimestamp,
+          endTimestamp,
+        });
+      }
+    }
+
+    // Fallback to start_date if still no dates found
+    if (!startTimestamp) {
+      startTimestamp = rawSubscription.start_date as number;
+    }
+
+    const startDate = safeTimestampToISO(startTimestamp);
+    const endDate = safeTimestampToISO(endTimestamp);
 
     console.log("Subscription timestamp extraction:", {
       current_period_start: subscriptionWithPeriods.current_period_start,
@@ -308,10 +413,20 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
       raw_current_period_end: rawSubscription.current_period_end,
       extracted_start: startTimestamp,
       extracted_end: endTimestamp,
+      final_start_date: startDate,
+      final_end_date: endDate,
     });
 
-    const startDate = safeTimestampToISO(startTimestamp);
-    const endDate = safeTimestampToISO(endTimestamp);
+    console.log("About to update subscription data with:", {
+      accountId,
+      subscriptionTier:
+        (subscription.metadata?.planId as SubscriptionTier) ||
+        SubscriptionTier.TIER1,
+      subscriptionStatus: SubscriptionStatus.ACTIVE,
+      stripeSubscriptionId: subscription.id,
+      subscriptionStartDate: startDate,
+      subscriptionEndDate: endDate,
+    });
 
     // Update account with subscription details using subscription service
     await subscriptionService.updateSubscriptionData(
@@ -380,17 +495,39 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     const subscriptionWithPeriods = subscription as SubscriptionWithPeriods;
     const rawSubscription = subscription as unknown as Record<string, unknown>;
 
-    const endTimestamp =
+    let startTimestamp: number | undefined =
+      subscriptionWithPeriods.current_period_start ||
+      (rawSubscription.current_period_start as number) ||
+      (rawSubscription.start_date as number);
+
+    let endTimestamp: number | undefined =
       subscriptionWithPeriods.current_period_end ||
       (rawSubscription.current_period_end as number) ||
       (rawSubscription.end_date as number);
 
-    console.log("Subscription update timestamp extraction:", {
-      current_period_end: subscriptionWithPeriods.current_period_end,
-      raw_current_period_end: rawSubscription.current_period_end,
-      extracted_end: endTimestamp,
-    });
+    // If dates are not found at subscription level, try to get from items.data[0]
+    if (!startTimestamp || !endTimestamp) {
+      const items = rawSubscription.items as unknown as {
+        data?: Array<{
+          current_period_start?: number;
+          current_period_end?: number;
+        }>;
+      };
+      if (items?.data?.[0]) {
+        const firstItem = items.data[0];
+        startTimestamp =
+          startTimestamp || firstItem.current_period_start || undefined;
+        endTimestamp =
+          endTimestamp || firstItem.current_period_end || undefined;
+      }
+    }
 
+    // Fallback to start_date if still no dates found
+    if (!startTimestamp) {
+      startTimestamp = rawSubscription.start_date as number;
+    }
+
+    const startDate = safeTimestampToISO(startTimestamp);
     const endDate = safeTimestampToISO(endTimestamp);
 
     // Update subscription details using subscription service
@@ -403,7 +540,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         : SubscriptionStatus.CANCELLED,
       undefined, // stripeCustomerId
       subscription.id, // stripeSubscriptionId
-      undefined, // subscriptionStartDate
+      startDate || undefined, // subscriptionStartDate
       endDate || undefined // subscriptionEndDate
     );
 

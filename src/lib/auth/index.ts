@@ -1,14 +1,15 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./nextauth";
 import { NextRequest } from "next/server";
+import { SubscriptionTier, SubscriptionStatus, Role } from "@/@types/enum";
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: "user" | "admin";
-  subscriptionTier: "tier1" | "tier2";
-  subscriptionStatus: "active" | "cancelled" | "paused" | "expired";
+  role: Role;
+  subscriptionTier: SubscriptionTier;
+  subscriptionStatus: SubscriptionStatus;
 }
 
 export interface Session {
@@ -27,9 +28,7 @@ export async function getSession(): Promise<Session | null> {
 /**
  * Require authentication and optionally a specific role
  */
-export async function requireAuth(
-  requiredRole?: "user" | "admin"
-): Promise<Session> {
+export async function requireAuth(requiredRole?: Role): Promise<Session> {
   const session = await getSession();
 
   if (!session) {
@@ -44,7 +43,7 @@ export async function requireAuth(
   if (
     requiredRole &&
     session.user.role !== requiredRole &&
-    session.user.role !== "admin"
+    session.user.role !== Role.ADMIN
   ) {
     throw new Error(`Role '${requiredRole}' required`);
   }
@@ -57,8 +56,9 @@ export async function requireAuth(
  */
 export function isValidSubscription(user: User): boolean {
   return (
-    (user.subscriptionTier === "tier1" || user.subscriptionTier === "tier2") &&
-    user.subscriptionStatus === "active"
+    (user.subscriptionTier === SubscriptionTier.TIER1 ||
+      user.subscriptionTier === SubscriptionTier.TIER2) &&
+    user.subscriptionStatus === SubscriptionStatus.ACTIVE
   );
 }
 
@@ -67,9 +67,12 @@ export function isValidSubscription(user: User): boolean {
  */
 export function hasSubscriptionTier(
   user: User,
-  tier: "tier1" | "tier2"
+  tier: SubscriptionTier
 ): boolean {
-  return user.subscriptionTier === tier && user.subscriptionStatus === "active";
+  return (
+    user.subscriptionTier === tier &&
+    user.subscriptionStatus === SubscriptionStatus.ACTIVE
+  );
 }
 
 /**
@@ -77,7 +80,7 @@ export function hasSubscriptionTier(
  */
 export async function withAuth(
   handler: (req: NextRequest, session: Session) => Promise<Response>,
-  requiredRole?: "user" | "admin"
+  requiredRole?: Role
 ) {
   return async (req: NextRequest) => {
     try {

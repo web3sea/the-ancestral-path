@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "./nextauth";
 import { Role, SubscriptionTier, SubscriptionStatus } from "@/@types/enum";
 import type { Session } from "next-auth";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 /**
  * Validates session and redirects to login if not authenticated

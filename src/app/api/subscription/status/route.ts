@@ -3,6 +3,7 @@ import { getToken } from "next-auth/jwt";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { stripeService } from "@/lib/stripe/service";
 import { STRIPE_PLANS } from "@/lib/stripe/config";
+import { SubscriptionStatus } from "@/@types/enum";
 
 export async function GET(request: NextRequest) {
   try {
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
     }
 
     const isActive =
-      account.subscription_status === "active" &&
+      account.subscription_status === SubscriptionStatus.ACTIVE &&
       (!account.subscription_end_date ||
         new Date(account.subscription_end_date) > new Date());
 

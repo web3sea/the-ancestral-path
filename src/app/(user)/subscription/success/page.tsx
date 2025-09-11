@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle, Loader2, AlertCircle } from "lucide-react";
+import { CheckCircle, Loader2, AlertCircle, ArrowRight } from "lucide-react";
 import { useSessionRefresh } from "@/component/common/useSessionRefresh";
 
 export default function SubscriptionSuccessPage() {
@@ -31,12 +31,24 @@ export default function SubscriptionSuccessPage() {
         "Payment confirmation not found. Please check your subscription status."
       );
     }
-  }, [searchParams, refreshSession]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-300/5 via-primary-300/3 to-primary-300/1 flex items-center justify-center p-4">
+    <div
+      style={{
+        backgroundImage: "url(/images/bg-image.png)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+      className="min-h-screen bg-gradient-to-br from-primary-300/5 via-primary-300/3 to-primary-300/1 flex items-center justify-center p-4"
+    >
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-primary-300/10 to-black/60" />
+
       <div className="max-w-md w-full">
-        <div className="bg-primary-300/5 border border-primary-300/20 rounded-3xl p-8 text-center backdrop-blur-sm">
+        <div className="bg-primary-300/5 border border-primary-300/30 rounded-3xl p-8 text-center backdrop-blur-sm">
           {status === "loading" && (
             <>
               <Loader2 className="w-16 h-16 text-primary-300 animate-spin mx-auto mb-6" />
@@ -58,9 +70,9 @@ export default function SubscriptionSuccessPage() {
               <p className="text-primary-300/70 mb-6">{message}</p>
               <Link
                 href="/"
-                className="inline-block bg-primary-300 text-black hover:bg-primary-200 px-6 py-3 rounded-full font-semibold transition-colors"
+                className="flex items-center justify-center px-12 py-4 bg-primary-300/10 text-black rounded-full font-semibold text-lg hover:bg-primary-300/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed gap-3 mx-auto shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
               >
-                Go to Dashboard
+                Go to Dashboard <ArrowRight className="w-4 h-4" />
               </Link>
             </>
           )}
@@ -74,9 +86,9 @@ export default function SubscriptionSuccessPage() {
               <p className="text-primary-300/70 mb-6">{message}</p>
               <Link
                 href="/"
-                className="inline-block bg-primary-300 text-black hover:bg-primary-200 px-6 py-3 rounded-full font-semibold transition-colors"
+                className="flex items-center justify-center px-12 py-4 bg-primary-300/10 text-black rounded-full font-semibold text-lg hover:bg-primary-300/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed gap-3 mx-auto shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
               >
-                Go to Dashboard
+                Go to Dashboard <ArrowRight className="w-4 h-4" />
               </Link>
             </>
           )}

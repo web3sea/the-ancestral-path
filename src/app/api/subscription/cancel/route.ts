@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { stripeService } from "@/lib/stripe/service";
+import { SubscriptionStatus } from "@/@types/enum";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,8 +18,6 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    const { reason } = await request.json();
 
     // Create Supabase admin client
     const supabase = createSupabaseAdmin();
@@ -57,7 +56,7 @@ export async function POST(request: NextRequest) {
       const { error: updateError } = await supabase
         .from("accounts")
         .update({
-          subscription_status: "cancelled",
+          subscription_status: SubscriptionStatus.CANCELLED,
           subscription_end_date: new Date().toISOString(),
         })
         .eq("id", token.accountId);

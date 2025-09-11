@@ -32,7 +32,75 @@ export const authOptions: NextAuthOptions = {
       // Subscription validation will be handled by middleware
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger }) {
+      // Handle session refresh triggers
+      if (trigger === "update") {
+        console.log("JWT callback - session refresh triggered");
+
+        try {
+          const supabase = createSupabaseAdmin();
+
+          // Re-fetch user data from database
+          const { data: existingAccount, error } = await supabase
+            .from("accounts")
+            .select(
+              `
+              id,
+              email,
+              subscription_tier,
+              subscription_status,
+              subscription_start_date,
+              subscription_end_date,
+              stripe_customer_id,
+              stripe_subscription_id,
+              last_subscription_update,
+              role_id,
+              profile_completed,
+              onboarding_completed,
+              user_roles(name, permissions)
+            `
+            )
+            .eq("id", token.accountId)
+            .is("deleted_at", null)
+            .single();
+
+          if (error) {
+            console.error("Error refreshing user data:", error);
+            return token; // Return existing token if refresh fails
+          }
+
+          if (existingAccount) {
+            const userRole = existingAccount.user_roles;
+            if (
+              userRole &&
+              typeof userRole === "object" &&
+              "name" in userRole
+            ) {
+              token.role = userRole.name as Role;
+            } else {
+              token.role = Role.USER;
+            }
+
+            // Update token with fresh data
+            token.subscriptionTier =
+              existingAccount.subscription_tier as SubscriptionTier;
+            token.subscriptionStatus =
+              existingAccount.subscription_status as SubscriptionStatus;
+            token.accountId = existingAccount.id;
+
+            console.log("JWT callback - session refreshed:", {
+              email: existingAccount.email,
+              role: token.role,
+              subscriptionTier: token.subscriptionTier,
+              subscriptionStatus: token.subscriptionStatus,
+              accountId: token.accountId,
+            });
+          }
+        } catch (error) {
+          console.error("Error refreshing session data:", error);
+          return token; // Return existing token if refresh fails
+        }
+      }
       if (user && account?.provider === "google") {
         // Get user subscription details using Supabase admin client
         try {

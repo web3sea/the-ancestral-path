@@ -53,10 +53,6 @@ export class StripeService {
         throw new Error(`Failed to update account: ${updateError.message}`);
       }
 
-      console.log(
-        `Successfully updated account ${accountId} with Stripe customer ID: ${customer.id}`
-      );
-
       return customer;
     } catch (error) {
       console.error("Error creating Stripe customer:", error);
@@ -81,38 +77,111 @@ export class StripeService {
       // Create Stripe price if it doesn't exist
       const price = await this.getOrCreatePrice(plan);
 
-      // Create subscription
+      // Create subscription with payment intent
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: price.id }],
         payment_behavior: "default_incomplete",
-        payment_settings: { save_default_payment_method: "on_subscription" },
+        payment_settings: {
+          save_default_payment_method: "on_subscription",
+          payment_method_types: ["card"],
+        },
         expand: ["latest_invoice.payment_intent"],
         metadata: {
           accountId,
           planId,
         },
+        collection_method: "charge_automatically",
       });
 
-      // Type guard for expanded subscription.latest_invoice
-      type ExpandedInvoice = {
-        payment_intent?: {
-          client_secret?: string;
+      console.log(
+        "Created subscription:",
+        subscription.id,
+        "with metadata:",
+        subscription.metadata
+      );
+
+      let clientSecret: string | undefined;
+
+      if (subscription.latest_invoice) {
+        const invoice = subscription.latest_invoice as Stripe.Invoice & {
+          payment_intent?: Stripe.PaymentIntent;
         };
-      };
 
-      const invoice = subscription.latest_invoice as ExpandedInvoice | null;
-      const paymentIntent = invoice?.payment_intent;
+        if (invoice.payment_intent) {
+          const paymentIntent = invoice.payment_intent;
+          clientSecret = paymentIntent.client_secret || undefined;
 
-      console.log("Subscription created successfully:", {
-        subscriptionId: subscription.id,
-        status: subscription.status,
-        hasInvoice: !!invoice,
-        hasPaymentIntent: !!paymentIntent,
-        hasClientSecret: !!paymentIntent?.client_secret,
-      });
+          // Ensure payment intent has subscription ID in metadata
+          if (!paymentIntent.metadata?.subscriptionId) {
+            try {
+              await stripe.paymentIntents.update(paymentIntent.id, {
+                metadata: {
+                  ...paymentIntent.metadata,
+                  accountId,
+                  planId,
+                  subscriptionId: subscription.id,
+                },
+              });
+              console.log(
+                "Updated payment intent metadata with subscription ID"
+              );
+            } catch (error) {
+              console.error("Error updating payment intent metadata:", error);
+            }
+          }
+        } else {
+          try {
+            if (invoice.id) {
+              const fullInvoice = await stripe.invoices.retrieve(invoice.id, {
+                expand: ["payment_intent"],
+              });
 
-      if (!paymentIntent?.client_secret) {
+              const expandedInvoice = fullInvoice as Stripe.Invoice & {
+                payment_intent?: Stripe.PaymentIntent;
+              };
+              if (expandedInvoice.payment_intent) {
+                const paymentIntent = expandedInvoice.payment_intent;
+                clientSecret = paymentIntent.client_secret || undefined;
+              }
+            }
+          } catch (error) {
+            console.error("Error retrieving invoice:", error);
+          }
+        }
+      }
+
+      if (!clientSecret) {
+        try {
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount: plan.price,
+            currency: "usd",
+            customer: customerId,
+            metadata: {
+              accountId,
+              planId,
+              subscriptionId: subscription.id,
+            },
+            automatic_payment_methods: {
+              enabled: true,
+            },
+          });
+
+          clientSecret = paymentIntent.client_secret || undefined;
+          console.log(
+            "Created standalone payment intent with metadata:",
+            paymentIntent.metadata
+          );
+        } catch (error) {
+          console.error("Error creating standalone payment intent:", error);
+          return {
+            success: false,
+            error: "Failed to create payment intent",
+          };
+        }
+      }
+
+      if (!clientSecret) {
         console.error("No client secret found in payment intent");
         return {
           success: false,
@@ -120,10 +189,28 @@ export class StripeService {
         };
       }
 
+      // Create subscription history record
+      try {
+        await this.supabase.from("subscription_history").insert({
+          account_id: accountId,
+          tier: planId as SubscriptionTier,
+          status: SubscriptionStatus.ACTIVE,
+          start_date: new Date().toISOString(),
+          payment_method: "stripe",
+          amount_paid: plan.price / 100,
+          currency: "USD",
+          change_reason: "Subscription created",
+        });
+        console.log("Subscription history created for account:", accountId);
+      } catch (error) {
+        console.error("Error creating subscription history:", error);
+        // Don't fail the entire operation if history creation fails
+      }
+
       return {
         success: true,
         subscription,
-        clientSecret: paymentIntent.client_secret,
+        clientSecret,
       };
     } catch (error) {
       console.error("Error creating subscription:", error);
@@ -224,32 +311,18 @@ export class StripeService {
         timestamp: number | undefined | null
       ): string | null => {
         if (timestamp === undefined || timestamp === null) {
-          console.warn("Timestamp is undefined or null");
           return null;
         }
         if (typeof timestamp !== "number" || timestamp <= 0) {
-          console.warn(
-            "Invalid timestamp:",
-            timestamp,
-            "type:",
-            typeof timestamp
-          );
           return null;
         }
         try {
           const date = new Date(timestamp * 1000);
           if (isNaN(date.getTime())) {
-            console.warn("Invalid date created from timestamp:", timestamp);
             return null;
           }
           return date.toISOString();
-        } catch (error) {
-          console.error(
-            "Error converting timestamp to ISO:",
-            error,
-            "timestamp:",
-            timestamp
-          );
+        } catch {
           return null;
         }
       };
@@ -339,22 +412,14 @@ export class StripeService {
         timestamp: number | undefined | null
       ): string | null => {
         if (timestamp === undefined || timestamp === null) {
-          console.warn("Timestamp is undefined or null");
           return null;
         }
         if (typeof timestamp !== "number" || timestamp <= 0) {
-          console.warn(
-            "Invalid timestamp:",
-            timestamp,
-            "type:",
-            typeof timestamp
-          );
           return null;
         }
         try {
           const date = new Date(timestamp * 1000);
           if (isNaN(date.getTime())) {
-            console.warn("Invalid date created from timestamp:", timestamp);
             return null;
           }
           return date.toISOString();

@@ -10,27 +10,24 @@ import {
 } from "@stripe/react-stripe-js";
 import { Loader2, CreditCard, Shield, CheckCircle } from "lucide-react";
 
-// Make sure to call `loadStripe` outside of a component's render to avoid
-// recreating the `Stripe` object on every render.
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
+const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+
+const stripePromise = loadStripe(stripePublishableKey!);
 
 interface StripePaymentProps {
   clientSecret: string;
   planName: string;
   planPrice: number;
-  onSuccess: () => void;
+  onSuccess: (paymentIntent: { id: string; client_secret?: string }) => void;
   onError: (error: string) => void;
 }
 
 function CheckoutForm({
-  clientSecret,
   planName,
   planPrice,
   onSuccess,
   onError,
-}: StripePaymentProps) {
+}: Omit<StripePaymentProps, "clientSecret">) {
   const stripe = useStripe();
   const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);
@@ -46,8 +43,6 @@ function CheckoutForm({
     setIsLoading(true);
 
     try {
-      console.log("Confirming payment with client secret:", clientSecret);
-
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -56,16 +51,12 @@ function CheckoutForm({
         redirect: "if_required",
       });
 
-      console.log("Payment confirmation result:", { error, paymentIntent });
-
       if (error) {
         console.error("Payment error:", error);
         onError(error.message || "Payment failed");
       } else if (paymentIntent?.status === "succeeded") {
-        console.log("Payment succeeded, calling onSuccess");
-        onSuccess();
+        onSuccess(paymentIntent as { id: string; client_secret?: string });
       } else {
-        console.log("Payment status:", paymentIntent?.status);
         onError("Payment was not completed. Please try again.");
       }
     } catch (err) {
@@ -115,7 +106,7 @@ function CheckoutForm({
       <button
         type="submit"
         disabled={!stripe || isLoading}
-        className="w-full bg-primary-300 text-black hover:bg-primary-200 py-4 text-lg font-semibold rounded-full flex items-center justify-center gap-3"
+        className="group relative px-12 py-4 bg-primary-300/10 text-black rounded-full font-semibold text-lg hover:bg-primary-300/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 mx-auto shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
       >
         {isLoading ? (
           <>
@@ -150,9 +141,9 @@ export function StripePayment({
     appearance: {
       theme: "night" as const,
       variables: {
-        colorPrimary: "#fbbf24",
+        colorPrimary: "#d8d2c6",
         colorBackground: "#1a1a1a",
-        colorText: "#fbbf24",
+        colorText: "#d8d2c6",
         colorDanger: "#ef4444",
         fontFamily: "system-ui, sans-serif",
         spacingUnit: "4px",
@@ -164,7 +155,6 @@ export function StripePayment({
   return (
     <Elements options={options} stripe={stripePromise}>
       <CheckoutForm
-        clientSecret={clientSecret}
         planName={planName}
         planPrice={planPrice}
         onSuccess={onSuccess}
