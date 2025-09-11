@@ -39,13 +39,16 @@ function CheckoutForm({
     event.preventDefault();
 
     if (!stripe || !elements) {
+      onError("Stripe is not loaded. Please refresh the page and try again.");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const { error } = await stripe.confirmPayment({
+      console.log("Confirming payment with client secret:", clientSecret);
+
+      const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/subscription/success`,
@@ -53,13 +56,21 @@ function CheckoutForm({
         redirect: "if_required",
       });
 
+      console.log("Payment confirmation result:", { error, paymentIntent });
+
       if (error) {
+        console.error("Payment error:", error);
         onError(error.message || "Payment failed");
-      } else {
+      } else if (paymentIntent?.status === "succeeded") {
+        console.log("Payment succeeded, calling onSuccess");
         onSuccess();
+      } else {
+        console.log("Payment status:", paymentIntent?.status);
+        onError("Payment was not completed. Please try again.");
       }
     } catch (err) {
-      onError("An unexpected error occurred: " + err);
+      console.error("Payment exception:", err);
+      onError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }

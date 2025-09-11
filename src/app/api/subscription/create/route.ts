@@ -56,9 +56,23 @@ export async function POST(request: NextRequest) {
         accountId: token.accountId,
       });
 
+      console.log("Subscription creation result:", {
+        success: result.success,
+        hasClientSecret: !!result.clientSecret,
+        subscriptionId: result.subscription?.id,
+        error: result.error,
+      });
+
       if (!result.success) {
         return NextResponse.json(
           { error: result.error || "Failed to create subscription" },
+          { status: 500 }
+        );
+      }
+
+      if (!result.clientSecret) {
+        return NextResponse.json(
+          { error: "Payment intent not created properly" },
           { status: 500 }
         );
       }

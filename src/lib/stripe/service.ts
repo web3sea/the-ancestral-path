@@ -40,10 +40,22 @@ export class StripeService {
       });
 
       // Update account with Stripe customer ID
-      await this.supabase
+      const { error: updateError } = await this.supabase
         .from("accounts")
         .update({ stripe_customer_id: customer.id })
         .eq("id", accountId);
+
+      if (updateError) {
+        console.error(
+          "Error updating account with Stripe customer ID:",
+          updateError
+        );
+        throw new Error(`Failed to update account: ${updateError.message}`);
+      }
+
+      console.log(
+        `Successfully updated account ${accountId} with Stripe customer ID: ${customer.id}`
+      );
 
       return customer;
     } catch (error) {
@@ -92,10 +104,26 @@ export class StripeService {
       const invoice = subscription.latest_invoice as ExpandedInvoice | null;
       const paymentIntent = invoice?.payment_intent;
 
+      console.log("Subscription created successfully:", {
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        hasInvoice: !!invoice,
+        hasPaymentIntent: !!paymentIntent,
+        hasClientSecret: !!paymentIntent?.client_secret,
+      });
+
+      if (!paymentIntent?.client_secret) {
+        console.error("No client secret found in payment intent");
+        return {
+          success: false,
+          error: "Payment intent not created properly",
+        };
+      }
+
       return {
         success: true,
         subscription,
-        clientSecret: paymentIntent?.client_secret,
+        clientSecret: paymentIntent.client_secret,
       };
     } catch (error) {
       console.error("Error creating subscription:", error);

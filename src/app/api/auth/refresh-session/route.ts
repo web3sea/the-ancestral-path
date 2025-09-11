@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
     const supabase = createSupabaseAdmin();
 
     // Get the latest subscription data from the database
-    const { data: account, error } = await supabase
+    // First try by accountId, then by email as fallback
+    let { data: account, error } = await supabase
       .from("accounts")
       .select(
         `
@@ -40,10 +41,39 @@ export async function POST(request: NextRequest) {
       .eq("id", token.accountId)
       .single();
 
+    // If accountId query fails, try by email
+    if (error && token.email) {
+      console.log("AccountId query failed, trying by email:", token.email);
+      const emailResult = await supabase
+        .from("accounts")
+        .select(
+          `
+          id,
+          email,
+          subscription_tier,
+          subscription_status,
+          subscription_start_date,
+          subscription_end_date,
+          stripe_customer_id,
+          stripe_subscription_id,
+          last_subscription_update,
+          role_id,
+          user_roles(name, permissions)
+        `
+        )
+        .eq("email", token.email)
+        .single();
+
+      account = emailResult.data;
+      error = emailResult.error;
+    }
+
     if (error) {
       console.error("Error getting updated account data:", error);
+      console.error("Token accountId:", token.accountId);
+      console.error("Error details:", JSON.stringify(error, null, 2));
       return NextResponse.json(
-        { error: "Failed to get account data" },
+        { error: "Failed to get account data", details: error.message },
         { status: 500 }
       );
     }
@@ -71,7 +101,7 @@ export async function POST(request: NextRequest) {
       stripeCustomerId: account.stripe_customer_id,
       stripeSubscriptionId: account.stripe_subscription_id,
       lastSubscriptionUpdate: account.last_subscription_update,
-      accountId: account.id,
+      accountId: account.id, // Use the actual account ID from database
     };
 
     return NextResponse.json({

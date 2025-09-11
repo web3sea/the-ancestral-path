@@ -232,6 +232,10 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 
 async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   try {
+    console.log(
+      "Subscription created - full subscription data:",
+      JSON.stringify(subscription, null, 2)
+    );
     console.log("Subscription created - subscription data:", {
       id: subscription.id,
       current_period_start: (subscription as SubscriptionWithPeriods)

@@ -111,10 +111,21 @@ export function SubscriptionSection() {
 
       const data = await response.json();
 
+      console.log("Subscription creation response:", {
+        success: data.success,
+        hasClientSecret: !!data.clientSecret,
+        error: data.error,
+        subscriptionId: data.subscription?.id,
+      });
+
       if (data.success) {
-        // Set client secret and show payment form
-        setClientSecret(data.clientSecret);
-        setShowPayment(true);
+        if (data.clientSecret) {
+          // Set client secret and show payment form
+          setClientSecret(data.clientSecret);
+          setShowPayment(true);
+        } else {
+          setError("Payment form not available. Please try again.");
+        }
       } else {
         setError(data.error || "Failed to create subscription");
       }
@@ -127,8 +138,12 @@ export function SubscriptionSection() {
 
   const handlePaymentSuccess = async () => {
     try {
+      console.log("Payment success callback triggered");
+
       // Refresh the session to get updated subscription data
       await refreshSession();
+
+      console.log("Payment successful! Subscription activated.");
 
       // Redirect to success page or show success message
       window.location.href = "/subscription/success";
@@ -140,6 +155,7 @@ export function SubscriptionSection() {
   };
 
   const handlePaymentError = (error: string) => {
+    console.error("Payment error:", error);
     setError(error);
     setShowPayment(false);
     setClientSecret("");
