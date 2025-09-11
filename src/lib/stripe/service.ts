@@ -190,14 +190,48 @@ export class StripeService {
         cancel_at_period_end: true,
       })) as Stripe.Subscription;
 
+      // Helper function to safely convert timestamp to ISO string
+      const safeTimestampToISO = (
+        timestamp: number | undefined
+      ): string | null => {
+        if (!timestamp || typeof timestamp !== "number" || timestamp <= 0) {
+          console.warn("Invalid timestamp:", timestamp);
+          return null;
+        }
+        try {
+          const date = new Date(timestamp * 1000);
+          if (isNaN(date.getTime())) {
+            console.warn("Invalid date created from timestamp:", timestamp);
+            return null;
+          }
+          return date.toISOString();
+        } catch (error) {
+          console.error(
+            "Error converting timestamp to ISO:",
+            error,
+            "timestamp:",
+            timestamp
+          );
+          return null;
+        }
+      };
+
+      const subscriptionWithPeriods = subscription as SubscriptionWithPeriods;
+      const endDate = safeTimestampToISO(
+        subscriptionWithPeriods.current_period_end
+      );
+
+      console.log("Cancel subscription timestamps:", {
+        current_period_end: subscriptionWithPeriods.current_period_end,
+        endDate,
+      });
+
       // Update database
       await this.supabase
         .from("accounts")
         .update({
           subscription_status: SubscriptionStatus.CANCELLED,
-          subscription_end_date: new Date(
-            (subscription as SubscriptionWithPeriods).current_period_end * 1000
-          ).toISOString(),
+          subscription_end_date: endDate,
         })
         .eq("id", accountId);
 
@@ -265,19 +299,48 @@ export class StripeService {
         throw new Error("Invalid plan ID in subscription metadata");
       }
 
+      // Helper function to safely convert timestamp to ISO string
+      const safeTimestampToISO = (
+        timestamp: number | undefined
+      ): string | null => {
+        if (!timestamp || typeof timestamp !== "number" || timestamp <= 0) {
+          console.warn("Invalid timestamp:", timestamp);
+          return null;
+        }
+        try {
+          const date = new Date(timestamp * 1000);
+          if (isNaN(date.getTime())) {
+            console.warn("Invalid date created from timestamp:", timestamp);
+            return null;
+          }
+          return date.toISOString();
+        } catch (error) {
+          console.error(
+            "Error converting timestamp to ISO:",
+            error,
+            "timestamp:",
+            timestamp
+          );
+          return null;
+        }
+      };
+
+      const subscriptionWithPeriods = subscription as SubscriptionWithPeriods;
+      const startDate = safeTimestampToISO(
+        subscriptionWithPeriods.current_period_start
+      );
+      const endDate = safeTimestampToISO(
+        subscriptionWithPeriods.current_period_end
+      );
+
       // Update account with subscription details
       await this.supabase
         .from("accounts")
         .update({
           subscription_tier: planId as SubscriptionTier,
           subscription_status: SubscriptionStatus.ACTIVE,
-          subscription_start_date: new Date(
-            (subscription as SubscriptionWithPeriods).current_period_start *
-              1000
-          ).toISOString(),
-          subscription_end_date: new Date(
-            (subscription as SubscriptionWithPeriods).current_period_end * 1000
-          ).toISOString(),
+          subscription_start_date: startDate,
+          subscription_end_date: endDate,
           stripe_subscription_id: subscriptionId,
         })
         .eq("id", accountId);

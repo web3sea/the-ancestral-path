@@ -40,8 +40,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
-    console.log("Received Stripe webhook:", event.type);
-
     const supabase = createSupabaseAdmin();
 
     switch (event.type) {
@@ -81,7 +79,6 @@ export async function POST(request: NextRequest) {
         break;
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
     }
 
     return NextResponse.json({ received: true });
@@ -99,8 +96,6 @@ async function handlePaymentSucceeded(
   supabase: ReturnType<typeof createSupabaseAdmin>
 ) {
   try {
-    const subscriptionId = (invoice as InvoiceWithSubscription)
-      .subscription as string;
     const accountId = invoice.metadata?.accountId;
 
     if (!accountId) {
@@ -108,16 +103,41 @@ async function handlePaymentSucceeded(
       return;
     }
 
-    console.log("Payment succeeded for subscription:", subscriptionId);
+    // Helper function to safely convert timestamp to ISO string
+    const safeTimestampToISO = (
+      timestamp: number | undefined
+    ): string | null => {
+      if (!timestamp || typeof timestamp !== "number" || timestamp <= 0) {
+        console.warn("Invalid timestamp:", timestamp);
+        return null;
+      }
+      try {
+        const date = new Date(timestamp * 1000);
+        if (isNaN(date.getTime())) {
+          console.warn("Invalid date created from timestamp:", timestamp);
+          return null;
+        }
+        return date.toISOString();
+      } catch (error) {
+        console.error(
+          "Error converting timestamp to ISO:",
+          error,
+          "timestamp:",
+          timestamp
+        );
+        return null;
+      }
+    };
+
+    const endDate = safeTimestampToISO(invoice.period_end);
+    const startDate = safeTimestampToISO(invoice.period_start);
 
     // Update subscription status
     await supabase
       .from("accounts")
       .update({
         subscription_status: SubscriptionStatus.ACTIVE,
-        subscription_end_date: new Date(
-          invoice.period_end * 1000
-        ).toISOString(),
+        subscription_end_date: endDate,
       })
       .eq("id", accountId);
 
@@ -126,14 +146,12 @@ async function handlePaymentSucceeded(
       account_id: accountId,
       tier: invoice.metadata?.planId || "tier1",
       status: SubscriptionStatus.ACTIVE,
-      start_date: new Date(invoice.period_start * 1000).toISOString(),
+      start_date: startDate,
       payment_method: "stripe",
       amount_paid: invoice.amount_paid / 100,
       change_reason: "Monthly payment processed",
       notes: "Payment processed via Stripe webhook",
     });
-
-    console.log("Payment success handled for account:", accountId);
   } catch (error) {
     console.error("Error handling payment success:", error);
   }
@@ -150,8 +168,6 @@ async function handlePaymentFailed(
       console.error("No accountId in invoice metadata");
       return;
     }
-
-    console.log("Payment failed for account:", accountId);
 
     // Update subscription status to expired
     await supabase
@@ -172,8 +188,6 @@ async function handlePaymentFailed(
       change_reason: "Payment failed",
       notes: "Payment failed via Stripe webhook",
     });
-
-    console.log("Payment failure handled for account:", accountId);
   } catch (error) {
     console.error("Error handling payment failure:", error);
   }
@@ -191,7 +205,39 @@ async function handleSubscriptionCreated(
       return;
     }
 
-    console.log("Subscription created for account:", accountId);
+    // Helper function to safely convert timestamp to ISO string
+    const safeTimestampToISO = (
+      timestamp: number | undefined
+    ): string | null => {
+      if (!timestamp || typeof timestamp !== "number" || timestamp <= 0) {
+        console.warn("Invalid timestamp:", timestamp);
+        return null;
+      }
+      try {
+        const date = new Date(timestamp * 1000);
+        if (isNaN(date.getTime())) {
+          console.warn("Invalid date created from timestamp:", timestamp);
+          return null;
+        }
+        return date.toISOString();
+      } catch (error) {
+        console.error(
+          "Error converting timestamp to ISO:",
+          error,
+          "timestamp:",
+          timestamp
+        );
+        return null;
+      }
+    };
+
+    const subscriptionWithPeriods = subscription as SubscriptionWithPeriods;
+    const startDate = safeTimestampToISO(
+      subscriptionWithPeriods.current_period_start
+    );
+    const endDate = safeTimestampToISO(
+      subscriptionWithPeriods.current_period_end
+    );
 
     // Update account with subscription details
     await supabase
@@ -200,16 +246,10 @@ async function handleSubscriptionCreated(
         stripe_subscription_id: subscription.id,
         subscription_tier: subscription.metadata?.planId || "tier1",
         subscription_status: SubscriptionStatus.ACTIVE,
-        subscription_start_date: new Date(
-          (subscription as SubscriptionWithPeriods).current_period_start * 1000
-        ).toISOString(),
-        subscription_end_date: new Date(
-          (subscription as SubscriptionWithPeriods).current_period_end * 1000
-        ).toISOString(),
+        subscription_start_date: startDate,
+        subscription_end_date: endDate,
       })
       .eq("id", accountId);
-
-    console.log("Subscription creation handled for account:", accountId);
   } catch (error) {
     console.error("Error handling subscription creation:", error);
   }
@@ -227,7 +267,36 @@ async function handleSubscriptionUpdated(
       return;
     }
 
-    console.log("Subscription updated for account:", accountId);
+    // Helper function to safely convert timestamp to ISO string
+    const safeTimestampToISO = (
+      timestamp: number | undefined
+    ): string | null => {
+      if (!timestamp || typeof timestamp !== "number" || timestamp <= 0) {
+        console.warn("Invalid timestamp:", timestamp);
+        return null;
+      }
+      try {
+        const date = new Date(timestamp * 1000);
+        if (isNaN(date.getTime())) {
+          console.warn("Invalid date created from timestamp:", timestamp);
+          return null;
+        }
+        return date.toISOString();
+      } catch (error) {
+        console.error(
+          "Error converting timestamp to ISO:",
+          error,
+          "timestamp:",
+          timestamp
+        );
+        return null;
+      }
+    };
+
+    const subscriptionWithPeriods = subscription as SubscriptionWithPeriods;
+    const endDate = safeTimestampToISO(
+      subscriptionWithPeriods.current_period_end
+    );
 
     // Update subscription details
     await supabase
@@ -237,13 +306,9 @@ async function handleSubscriptionUpdated(
           subscription.status === "active"
             ? SubscriptionStatus.ACTIVE
             : SubscriptionStatus.CANCELLED,
-        subscription_end_date: new Date(
-          (subscription as SubscriptionWithPeriods).current_period_end * 1000
-        ).toISOString(),
+        subscription_end_date: endDate,
       })
       .eq("id", accountId);
-
-    console.log("Subscription update handled for account:", accountId);
   } catch (error) {
     console.error("Error handling subscription update:", error);
   }
@@ -260,8 +325,6 @@ async function handleSubscriptionDeleted(
       console.error("No accountId in subscription metadata");
       return;
     }
-
-    console.log("Subscription deleted for account:", accountId);
 
     // Update subscription status to cancelled
     await supabase
@@ -283,8 +346,6 @@ async function handleSubscriptionDeleted(
       change_reason: "Subscription cancelled",
       notes: "Subscription cancelled via Stripe webhook",
     });
-
-    console.log("Subscription deletion handled for account:", accountId);
   } catch (error) {
     console.error("Error handling subscription deletion:", error);
   }
