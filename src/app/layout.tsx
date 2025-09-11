@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/component/provider/SessionProvider";
+import { SubscriptionStatusProvider } from "@/component/common/SubscriptionStatusProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -24,6 +25,9 @@ export const metadata: Metadata = {
       "Experience guided breathwork rituals, meditations, wisdom drops, and daily check-ins with the Oracle AI.",
     type: "website",
   },
+  icons: {
+    icon: "/logo.ico",
+  },
 };
 
 export default function RootLayout({
@@ -37,7 +41,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider>
-          <main className="min-h-screen">{children}</main>
+          <SubscriptionStatusProvider>
+            <main className="min-h-screen">{children}</main>
+          </SubscriptionStatusProvider>
         </SessionProvider>
       </body>
     </html>

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { StripePayment } from "@/component/common/StripePayment";
+import { useSessionRefresh } from "@/component/common/useSessionRefresh";
 
 interface Plan {
   id: string;
@@ -63,6 +64,7 @@ export function SubscriptionSection() {
   const [clientSecret, setClientSecret] = useState<string>("");
   const [showPayment, setShowPayment] = useState(false);
   const [plans, setPlans] = useState<Plan[]>([]);
+  const { refreshSession } = useSessionRefresh();
 
   // Load plans from API
   useEffect(() => {
@@ -123,9 +125,18 @@ export function SubscriptionSection() {
     }
   };
 
-  const handlePaymentSuccess = () => {
-    // Redirect to success page or show success message
-    window.location.href = "/subscription/success";
+  const handlePaymentSuccess = async () => {
+    try {
+      // Refresh the session to get updated subscription data
+      await refreshSession();
+
+      // Redirect to success page or show success message
+      window.location.href = "/subscription/success";
+    } catch (error) {
+      console.error("Error refreshing session after payment:", error);
+      // Still redirect even if session refresh fails
+      window.location.href = "/subscription/success";
+    }
   };
 
   const handlePaymentError = (error: string) => {

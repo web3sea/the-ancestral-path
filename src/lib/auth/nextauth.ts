@@ -46,6 +46,11 @@ export const authOptions: NextAuthOptions = {
               email,
               subscription_tier,
               subscription_status,
+              subscription_start_date,
+              subscription_end_date,
+              stripe_customer_id,
+              stripe_subscription_id,
+              last_subscription_update,
               role_id,
               profile_completed,
               onboarding_completed,
@@ -96,6 +101,9 @@ export const authOptions: NextAuthOptions = {
                 auth_provider_id: account.providerAccountId,
                 subscription_tier: null, // No subscription yet
                 subscription_status: null, // No subscription yet
+                stripe_customer_id: null,
+                stripe_subscription_id: null,
+                last_subscription_update: null,
               })
               .select("id")
               .single();

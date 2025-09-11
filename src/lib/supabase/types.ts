@@ -6,10 +6,49 @@
 export interface Account {
   id: string;
   name: string;
-  phone: string;
+  phone?: string;
   email: string;
+  role_id?: string;
+
+  // Subscription information
+  subscription_tier?: "tier1" | "tier2" | null;
+  subscription_status?: "active" | "cancelled" | "paused" | "expired" | null;
+  subscription_start_date?: string | null;
+  subscription_end_date?: string | null;
+
+  // Stripe integration
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
+  last_subscription_update?: string | null;
+
+  // User preferences
+  preferred_platform?: "web" | "sms" | "whatsapp";
+  timezone?: string;
+  language?: string;
+
+  // Authentication
+  auth_provider?: "google" | "email" | "phone";
+  auth_provider_id?: string;
+
+  // Profile completion
+  profile_completed?: boolean;
+  onboarding_completed?: boolean;
+
+  // Engagement tracking
+  last_active_at?: string | null;
+  total_sessions?: number;
+  streak_days?: number;
+  last_streak_date?: string | null;
+
+  // Communication preferences
+  email_notifications?: boolean;
+  sms_notifications?: boolean;
+  whatsapp_notifications?: boolean;
+
+  // Timestamps
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 export interface UserProfile {
@@ -81,4 +120,19 @@ export interface RetreatAttendance {
   account_id: string;
   attended: boolean;
   created_at: string;
+}
+
+// Database function return types
+export interface SubscriptionDataForRefresh {
+  subscription_tier: "tier1" | "tier2" | null;
+  subscription_status: "active" | "cancelled" | "paused" | "expired" | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  last_subscription_update: string | null;
+}
+
+export interface UserSubscriptionData {
+  subscription_tier: "tier1" | "tier2" | null;
+  subscription_status: "active" | "cancelled" | "paused" | "expired" | null;
+  role_name: string;
 }

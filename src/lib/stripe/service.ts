@@ -1,5 +1,6 @@
 import { stripe, STRIPE_PLANS, type StripePlanId } from "./config";
 import { createSupabaseAdmin } from "../supabase/admin";
+import { subscriptionService } from "../supabase/subscription";
 import { SubscriptionTier, SubscriptionStatus } from "@/@types/enum";
 import Stripe from "stripe";
 
@@ -192,10 +193,19 @@ export class StripeService {
 
       // Helper function to safely convert timestamp to ISO string
       const safeTimestampToISO = (
-        timestamp: number | undefined
+        timestamp: number | undefined | null
       ): string | null => {
-        if (!timestamp || typeof timestamp !== "number" || timestamp <= 0) {
-          console.warn("Invalid timestamp:", timestamp);
+        if (timestamp === undefined || timestamp === null) {
+          console.warn("Timestamp is undefined or null");
+          return null;
+        }
+        if (typeof timestamp !== "number" || timestamp <= 0) {
+          console.warn(
+            "Invalid timestamp:",
+            timestamp,
+            "type:",
+            typeof timestamp
+          );
           return null;
         }
         try {
@@ -221,19 +231,16 @@ export class StripeService {
         subscriptionWithPeriods.current_period_end
       );
 
-      console.log("Cancel subscription timestamps:", {
-        current_period_end: subscriptionWithPeriods.current_period_end,
-        endDate,
-      });
-
-      // Update database
-      await this.supabase
-        .from("accounts")
-        .update({
-          subscription_status: SubscriptionStatus.CANCELLED,
-          subscription_end_date: endDate,
-        })
-        .eq("id", accountId);
+      // Update database using the subscription service
+      await subscriptionService.updateSubscriptionData(
+        accountId,
+        SubscriptionTier.TIER1, // Will be updated with actual tier
+        SubscriptionStatus.CANCELLED,
+        undefined, // stripeCustomerId
+        undefined, // stripeSubscriptionId
+        undefined, // subscriptionStartDate
+        endDate || undefined // subscriptionEndDate
+      );
 
       // Record cancellation history
       await this.supabase.from("subscription_history").insert({
@@ -301,10 +308,19 @@ export class StripeService {
 
       // Helper function to safely convert timestamp to ISO string
       const safeTimestampToISO = (
-        timestamp: number | undefined
+        timestamp: number | undefined | null
       ): string | null => {
-        if (!timestamp || typeof timestamp !== "number" || timestamp <= 0) {
-          console.warn("Invalid timestamp:", timestamp);
+        if (timestamp === undefined || timestamp === null) {
+          console.warn("Timestamp is undefined or null");
+          return null;
+        }
+        if (typeof timestamp !== "number" || timestamp <= 0) {
+          console.warn(
+            "Invalid timestamp:",
+            timestamp,
+            "type:",
+            typeof timestamp
+          );
           return null;
         }
         try {
@@ -333,17 +349,16 @@ export class StripeService {
         subscriptionWithPeriods.current_period_end
       );
 
-      // Update account with subscription details
-      await this.supabase
-        .from("accounts")
-        .update({
-          subscription_tier: planId as SubscriptionTier,
-          subscription_status: SubscriptionStatus.ACTIVE,
-          subscription_start_date: startDate,
-          subscription_end_date: endDate,
-          stripe_subscription_id: subscriptionId,
-        })
-        .eq("id", accountId);
+      // Update account with subscription details using the subscription service
+      await subscriptionService.updateSubscriptionData(
+        accountId,
+        planId as SubscriptionTier,
+        SubscriptionStatus.ACTIVE,
+        undefined, // stripeCustomerId (will be set separately)
+        subscriptionId, // stripeSubscriptionId
+        startDate || undefined, // subscriptionStartDate
+        endDate || undefined // subscriptionEndDate
+      );
 
       // Record subscription history
       await this.supabase.from("subscription_history").insert({
