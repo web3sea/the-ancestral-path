@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { authOptions } from "./nextauth";
 import { Role, SubscriptionTier, SubscriptionStatus } from "@/@types/enum";
 import type { Session } from "next-auth";
-import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 /**
  * Validates session and redirects to login if not authenticated
@@ -31,6 +30,10 @@ export async function validateAdminSession(): Promise<Session> {
  * Checks if user has valid subscription (TIER1 or TIER2 with ACTIVE status)
  */
 export function hasValidSubscription(session: Session): boolean {
+  if (!session?.user) {
+    return false;
+  }
+
   const subscriptionTier = session.user.subscriptionTier as SubscriptionTier;
   const subscriptionStatus = session.user
     .subscriptionStatus as SubscriptionStatus;

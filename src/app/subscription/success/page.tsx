@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Loader2, AlertCircle, ArrowRight } from "lucide-react";
-import { useSessionRefresh } from "@/component/common/useSessionRefresh";
+import { useSessionRefresh } from "@/component/hook/useSessionRefresh";
 
 export default function SubscriptionSuccessPage() {
   const searchParams = useSearchParams();
@@ -21,7 +21,6 @@ export default function SubscriptionSuccessPage() {
     );
 
     if (paymentIntent && paymentIntentClientSecret) {
-      // Payment was successful, refresh the session
       refreshSession();
       setStatus("success");
       setMessage("Your subscription has been activated successfully!");

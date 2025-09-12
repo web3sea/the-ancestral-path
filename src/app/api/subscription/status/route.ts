@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
         success: true,
         hasSubscription: false,
         isActive: false,
+        subscription: null,
         details: null,
       });
     }
@@ -73,6 +74,14 @@ export async function GET(request: NextRequest) {
       success: true,
       hasSubscription: true,
       isActive,
+      subscription: {
+        subscription_tier: account.subscription_tier,
+        subscription_status: account.subscription_status,
+        subscription_start_date: account.subscription_start_date,
+        subscription_end_date: account.subscription_end_date,
+        stripe_subscription_id: account.stripe_subscription_id,
+        stripe_customer_id: account.stripe_customer_id,
+      },
       details: {
         tier: account.subscription_tier,
         status: account.subscription_status,

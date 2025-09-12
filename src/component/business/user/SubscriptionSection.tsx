@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { StripePayment } from "@/component/common/StripePayment";
-import { useSessionUpdate } from "@/component/common/useSessionUpdate";
+import { useSessionUpdate } from "@/component/hook/useSessionUpdate";
 import { useRouter } from "next/navigation";
 
 interface Plan {

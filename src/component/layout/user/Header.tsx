@@ -80,6 +80,14 @@ export default function Header() {
       label: "Group Workshops",
       href: "/group-workshops",
     },
+    {
+      label: "Retreats",
+      href: "/retreats",
+    },
+    {
+      label: "Products",
+      href: "/products",
+    },
   ];
 
   return (
@@ -117,8 +125,8 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
-            {/* Only show navigation items if user has valid subscription */}
-            {hasValidSubscription && (
+            {/* Show different navigation based on user status */}
+            {session && hasValidSubscription ? (
               <>
                 {/* Sacred Wisdom Dropdown */}
                 <div
@@ -171,6 +179,37 @@ export default function Header() {
                   className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
                 >
                   AO
+                </Link>
+              </>
+            ) : session && !hasValidSubscription ? (
+              <>
+                {/* Navigation for non-logged-in users or users without subscription */}
+                <Link
+                  href="/subscription"
+                  className="px-4 py-2 text-sm text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
+                >
+                  SUBSCRIPTION
+                </Link>
+                <Link
+                  href="/about"
+                  className="px-4 py-2 text-sm text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
+                >
+                  ABOUT
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/pricing"
+                  className="px-4 py-2 text-sm text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
+                >
+                  PRICING
+                </Link>
+                <Link
+                  href="/about"
+                  className="px-4 py-2 text-sm text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
+                >
+                  ABOUT
                 </Link>
               </>
             )}
@@ -271,8 +310,8 @@ export default function Header() {
         {isMenuOpen && (
           <div className="lg:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-black/95 border-t border-gray-700">
-              {/* Only show navigation items if user has valid subscription */}
-              {hasValidSubscription && (
+              {/* Show different navigation based on user status */}
+              {session && hasValidSubscription ? (
                 <>
                   {/* Sacred Wisdom */}
                   <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-4">
@@ -289,7 +328,10 @@ export default function Header() {
                     </Link>
                   ))}
 
-                  {/* Resources */}
+                  {/* Main Features */}
+                  <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-6">
+                    Main Features
+                  </div>
                   <Link
                     href="/resources"
                     className="block px-6 py-2 bg-primary-300/20 text-primary-300 rounded-lg text-sm mx-3"
@@ -297,8 +339,6 @@ export default function Header() {
                   >
                     Resources
                   </Link>
-
-                  {/* AO */}
                   <Link
                     href="/oracle"
                     className="block px-6 py-2 bg-primary-300/20 text-primary-300 rounded-lg text-sm mx-3"
@@ -307,16 +347,53 @@ export default function Header() {
                     AO
                   </Link>
                 </>
+              ) : session && !hasValidSubscription ? (
+                <>
+                  {/* Show subscription prompt for logged-in users without subscription */}
+                  <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-4">
+                    Get Access
+                  </div>
+                  <Link
+                    href="/subscription"
+                    className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm mx-3"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Subscribe Now
+                  </Link>
+                </>
+              ) : (
+                <>
+                  {/* Show public navigation for non-logged-in users */}
+                  <div className="px-3 py-2 text-xs font-semibold text-primary-300/60 uppercase tracking-wider mt-4">
+                    Explore
+                  </div>
+                  <Link
+                    href="/pricing"
+                    className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm mx-3"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Pricing
+                  </Link>
+                  <Link
+                    href="/about"
+                    className="block px-6 py-2 text-primary-300 hover:bg-white/10 rounded-lg text-sm mx-3"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    About
+                  </Link>
+                </>
               )}
 
               {/* User Actions */}
-              <div className="mt-4 px-3">
+              <div className="mt-6 px-3 border-t border-primary-300/10 pt-4">
                 {session ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3 w-full flex flex-col items-center">
                     <div className="text-center text-primary-300 text-sm py-2">
                       {username}
                     </div>
-                    <SignOut />
+                    <div className="space-y-2">
+                      <SignOut />
+                    </div>
                   </div>
                 ) : (
                   <Link

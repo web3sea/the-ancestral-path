@@ -4,6 +4,9 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { SubscriptionTier, SubscriptionStatus } from "@/@types/enum";
 import { STRIPE_PLANS, StripePlanId } from "@/lib/stripe/config";
 import { stripeService } from "@/lib/stripe/service";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,7 +29,9 @@ export async function POST(request: NextRequest) {
     // Get account subscription details
     const { data: account, error: accountError } = await supabase
       .from("accounts")
-      .select("subscription_tier, subscription_status")
+      .select(
+        "subscription_tier, subscription_status, stripe_customer_id, stripe_subscription_id"
+      )
       .eq("id", token.accountId)
       .single();
 
@@ -63,11 +68,42 @@ export async function POST(request: NextRequest) {
       // Update subscription end date (extend by 30 days)
       const newEndDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
+      // Ensure stripe_customer_id is stored - get it from Stripe if missing
+      let customerId = account.stripe_customer_id;
+
+      if (!customerId && account.stripe_subscription_id) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(
+            account.stripe_subscription_id
+          );
+          customerId = subscription.customer as string;
+        } catch (error) {
+          console.error("Error retrieving customer ID from Stripe:", error);
+        }
+      }
+
+      if (!customerId) {
+        try {
+          const customer = await stripeService.createCustomer(
+            token.email!,
+            token.name || "",
+            token.accountId
+          );
+          customerId = customer.id;
+          console.log("Created new Stripe customer:", customerId);
+        } catch (error) {
+          console.error("Error creating Stripe customer:", error);
+        }
+      }
+
+      const updateData: Record<string, string | null> = {
+        subscription_end_date: newEndDate.toISOString(),
+        stripe_customer_id: customerId,
+      };
+
       const { error: updateError } = await supabase
         .from("accounts")
-        .update({
-          subscription_end_date: newEndDate.toISOString(),
-        })
+        .update(updateData)
         .eq("id", token.accountId);
 
       if (updateError) {
@@ -99,6 +135,8 @@ export async function POST(request: NextRequest) {
         success: true,
         message: "Monthly payment processed successfully",
         nextBillingDate: newEndDate,
+        customerId: customerId,
+        customerIdUpdated: !!customerId && !account.stripe_customer_id,
       });
     } else {
       await handlePaymentFailure(token.accountId, supabase);

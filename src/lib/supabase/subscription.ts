@@ -18,16 +18,6 @@ export class SubscriptionService {
     subscriptionEndDate?: string
   ): Promise<boolean> {
     try {
-      console.log("SubscriptionService.updateSubscriptionData called with:", {
-        accountId,
-        subscriptionTier,
-        subscriptionStatus,
-        stripeCustomerId,
-        stripeSubscriptionId,
-        subscriptionStartDate,
-        subscriptionEndDate,
-      });
-
       const { data, error } = await this.supabase.rpc(
         "update_subscription_data",
         {

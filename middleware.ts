@@ -29,24 +29,42 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const publicRoutes = ["/login", "/register"];
-  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname);
+  const publicRoutes = ["/", "/login", "/register", "/pricing", "/about"];
+  const loggedInUserRoutes = ["/subscription", "/subscription/settings"];
+  // Routes that require subscription (all content routes except subscription)
+  const subscriptionRequiredRoutes = [
+    "/abj-recordings",
+    "/astrology",
+    "/breathwork",
+    "/challenges",
+    "/group-workshops",
+    "/meditations",
+    "/oracle",
+    "/products",
+    "/retreats",
+    "/wisdom",
+    "/resources",
+  ];
 
-  if (!token && !isPublicRoute) {
-    return NextResponse.redirect(
-      new URL(
-        "/login?next=" + encodeURIComponent(request.nextUrl.pathname),
-        request.url
-      )
-    );
+  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname);
+  const isLoggedInUserRoute = loggedInUserRoutes.includes(
+    request.nextUrl.pathname
+  );
+  const isSubscriptionRequiredRoute = subscriptionRequiredRoutes.some((route) =>
+    request.nextUrl.pathname.startsWith(route)
+  );
+
+  if (!token && !isPublicRoute && !isLoggedInUserRoute) {
+    // Redirect to home page for non-logged-in users trying to access protected routes
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Check if user needs to complete subscription setup
+  // Check if user needs subscription for specific routes (Resource Part and AO only)
+  // Only check subscription for routes that actually require it
   if (
     token &&
-    !isPublicRoute &&
-    !request.nextUrl.pathname.startsWith("/admin") &&
-    request.nextUrl.pathname !== "/"
+    isSubscriptionRequiredRoute &&
+    !request.nextUrl.pathname.startsWith("/admin")
   ) {
     const userRole = token.role as string;
 
@@ -67,7 +85,7 @@ export async function middleware(request: NextRequest) {
         ) ||
         subscriptionStatus !== SubscriptionStatus.ACTIVE
       ) {
-        return NextResponse.redirect(new URL("/", request.url));
+        return NextResponse.redirect(new URL("/pricing", request.url));
       }
     } else {
       // Fallback to database query only if token doesn't have subscription data
@@ -81,7 +99,7 @@ export async function middleware(request: NextRequest) {
 
         if (error || !account) {
           console.error("Error checking subscription in middleware:", error);
-          return NextResponse.redirect(new URL("/", request.url));
+          return NextResponse.redirect(new URL("/pricing", request.url));
         }
 
         const dbSubscriptionTier = account.subscription_tier;
@@ -95,11 +113,11 @@ export async function middleware(request: NextRequest) {
           ) ||
           dbSubscriptionStatus !== SubscriptionStatus.ACTIVE
         ) {
-          return NextResponse.redirect(new URL("/", request.url));
+          return NextResponse.redirect(new URL("/pricing", request.url));
         }
       } catch (error) {
         console.error("Error in middleware subscription check:", error);
-        return NextResponse.redirect(new URL("/", request.url));
+        return NextResponse.redirect(new URL("/pricing", request.url));
       }
     }
   }
@@ -124,6 +142,8 @@ export const config = {
     "/products/:path*",
     "/login",
     "/register",
+    "/pricing",
+    "/about",
     "/",
   ],
 };
