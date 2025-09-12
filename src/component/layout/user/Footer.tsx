@@ -1,7 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 export default function Footer() {
+  const { data: session } = useSession();
+  // Check if user has valid subscription
+  const hasValidSubscription =
+    session?.user?.subscriptionTier &&
+    session?.user?.subscriptionStatus === "active" &&
+    ["tier1", "tier2"].includes(session.user.subscriptionTier as string);
   return (
     <footer className="relative py-20 bg-transparent backdrop-blur-sm">
       {/* Background image */}
@@ -18,7 +27,13 @@ export default function Footer() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand */}
-          <div className="col-span-1 md:col-span-2">
+          <div
+            className={`${
+              session && hasValidSubscription
+                ? "col-span-1 md:col-span-2"
+                : "col-span-3"
+            }`}
+          >
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-10 h-10 rounded-full bg-primary-300/20 flex items-center justify-center">
                 <Image
@@ -98,109 +113,111 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h4
-              className="text-lg font-medium mb-6"
-              style={{ color: "#d8d2c6" }}
-            >
-              Offerings
-            </h4>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="https://www.sandsymes.com/sacred-containers"
-                  className="transition-colors font-light hover:opacity-100"
-                  style={{ color: "#d8d2c6", opacity: 0.8 }}
-                  target="_blank"
-                >
-                  Sacred Containers
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="https://www.sandsymes.com/ancestral-breathwork"
-                  className="transition-colors font-light hover:opacity-100"
-                  style={{ color: "#d8d2c6", opacity: 0.8 }}
-                  target="_blank"
-                >
-                  Ancestral Breathwork
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/wisdom"
-                  className="transition-colors font-light hover:opacity-100"
-                  style={{ color: "#d8d2c6", opacity: 0.8 }}
-                  target="_blank"
-                >
-                  Wisdom Drops
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/astrology"
-                  className="transition-colors font-light hover:opacity-100"
-                  style={{ color: "#d8d2c6", opacity: 0.8 }}
-                  target="_blank"
-                >
-                  Astrological Download
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/challenges"
-                  className="transition-colors font-light hover:opacity-100"
-                  style={{ color: "#d8d2c6", opacity: 0.8 }}
-                  target="_blank"
-                >
-                  Mini Challenges
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="https://www.sandsymes.com/medicine-retreats"
-                  className="transition-colors font-light hover:opacity-100"
-                  style={{ color: "#d8d2c6", opacity: 0.8 }}
-                  target="_blank"
-                >
-                  Medicine Retreats
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/meditations"
-                  className="transition-colors font-light hover:opacity-100"
-                  style={{ color: "#d8d2c6", opacity: 0.8 }}
-                  target="_blank"
-                >
-                  Guided Meditations
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/abj-recordings"
-                  className="transition-colors font-light hover:opacity-100"
-                  style={{ color: "#d8d2c6", opacity: 0.8 }}
-                  target="_blank"
-                >
-                  ABJ Recordings
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/group-workshops"
-                  className="transition-colors font-light hover:opacity-100"
-                  style={{ color: "#d8d2c6", opacity: 0.8 }}
-                  target="_blank"
-                >
-                  Group Workshops
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {session && hasValidSubscription && (
+            <div>
+              <h4
+                className="text-lg font-medium mb-6"
+                style={{ color: "#d8d2c6" }}
+              >
+                Offerings
+              </h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link
+                    href="https://www.sandsymes.com/sacred-containers"
+                    className="transition-colors font-light hover:opacity-100"
+                    style={{ color: "#d8d2c6", opacity: 0.8 }}
+                    target="_blank"
+                  >
+                    Sacred Containers
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="https://www.sandsymes.com/ancestral-breathwork"
+                    className="transition-colors font-light hover:opacity-100"
+                    style={{ color: "#d8d2c6", opacity: 0.8 }}
+                    target="_blank"
+                  >
+                    Ancestral Breathwork
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/wisdom"
+                    className="transition-colors font-light hover:opacity-100"
+                    style={{ color: "#d8d2c6", opacity: 0.8 }}
+                    target="_blank"
+                  >
+                    Wisdom Drops
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/astrology"
+                    className="transition-colors font-light hover:opacity-100"
+                    style={{ color: "#d8d2c6", opacity: 0.8 }}
+                    target="_blank"
+                  >
+                    Astrological Download
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/challenges"
+                    className="transition-colors font-light hover:opacity-100"
+                    style={{ color: "#d8d2c6", opacity: 0.8 }}
+                    target="_blank"
+                  >
+                    Mini Challenges
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="https://www.sandsymes.com/medicine-retreats"
+                    className="transition-colors font-light hover:opacity-100"
+                    style={{ color: "#d8d2c6", opacity: 0.8 }}
+                    target="_blank"
+                  >
+                    Medicine Retreats
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/meditations"
+                    className="transition-colors font-light hover:opacity-100"
+                    style={{ color: "#d8d2c6", opacity: 0.8 }}
+                    target="_blank"
+                  >
+                    Guided Meditations
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/abj-recordings"
+                    className="transition-colors font-light hover:opacity-100"
+                    style={{ color: "#d8d2c6", opacity: 0.8 }}
+                    target="_blank"
+                  >
+                    ABJ Recordings
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/group-workshops"
+                    className="transition-colors font-light hover:opacity-100"
+                    style={{ color: "#d8d2c6", opacity: 0.8 }}
+                    target="_blank"
+                  >
+                    Group Workshops
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
 
           {/* Support */}
-          <div>
+          <div className="col-span-1">
             <h4
               className="text-lg font-medium mb-6"
               style={{ color: "#d8d2c6" }}
@@ -208,16 +225,18 @@ export default function Footer() {
               Connect
             </h4>
             <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/oracle"
-                  className="transition-colors font-light hover:opacity-100"
-                  style={{ color: "#d8d2c6", opacity: 0.8 }}
-                  target="_blank"
-                >
-                  AO
-                </Link>
-              </li>
+              {session && hasValidSubscription && (
+                <li>
+                  <Link
+                    href="/oracle"
+                    className="transition-colors font-light hover:opacity-100"
+                    style={{ color: "#d8d2c6", opacity: 0.8 }}
+                    target="_blank"
+                  >
+                    AO
+                  </Link>
+                </li>
+              )}
               <li>
                 <a
                   href="https://www.sandsymes.com/contact"
@@ -238,15 +257,16 @@ export default function Footer() {
                   About Sand
                 </a>
               </li>
-              <li>
-                <Link
-                  href="/resources"
-                  className="transition-colors font-light hover:opacity-100"
-                  style={{ color: "#d8d2c6", opacity: 0.8 }}
-                >
-                  Resources
-                </Link>
-              </li>
+              {session && hasValidSubscription && (
+                <li>
+                  <Link
+                    href="/resources"
+                    className="transition-colors font-light hover:opacity-100"
+                  >
+                    Resources
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
         </div>
