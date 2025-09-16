@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       const { error: updateError } = await supabase
         .from("accounts")
         .update({
-          subscription_status: SubscriptionStatus.ACTIVE,
+          subscription_status: SubscriptionStatus.CANCELLED,
           subscription_end_date: new Date().toISOString(),
         })
         .eq("id", token.accountId);
