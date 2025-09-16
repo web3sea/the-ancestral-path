@@ -92,14 +92,8 @@ export class StripeService {
           planId,
         },
         collection_method: "charge_automatically",
+        default_payment_method: undefined,
       });
-
-      console.log(
-        "Created subscription:",
-        subscription.id,
-        "with metadata:",
-        subscription.metadata
-      );
 
       let clientSecret: string | undefined;
 
@@ -123,9 +117,6 @@ export class StripeService {
                   subscriptionId: subscription.id,
                 },
               });
-              console.log(
-                "Updated payment intent metadata with subscription ID"
-              );
             } catch (error) {
               console.error("Error updating payment intent metadata:", error);
             }
@@ -168,10 +159,6 @@ export class StripeService {
           });
 
           clientSecret = paymentIntent.client_secret || undefined;
-          console.log(
-            "Created standalone payment intent with metadata:",
-            paymentIntent.metadata
-          );
         } catch (error) {
           console.error("Error creating standalone payment intent:", error);
           return {
@@ -189,23 +176,8 @@ export class StripeService {
         };
       }
 
-      // Create subscription history record
-      try {
-        await this.supabase.from("subscription_history").insert({
-          account_id: accountId,
-          tier: planId as SubscriptionTier,
-          status: SubscriptionStatus.ACTIVE,
-          start_date: new Date().toISOString(),
-          payment_method: "stripe",
-          amount_paid: plan.price / 100,
-          currency: "USD",
-          change_reason: "Subscription created",
-        });
-        console.log("Subscription history created for account:", accountId);
-      } catch (error) {
-        console.error("Error creating subscription history:", error);
-        // Don't fail the entire operation if history creation fails
-      }
+      // Note: Subscription history will be created by webhooks when payment is completed
+      // This prevents duplicate records and ensures accurate payment amounts
 
       return {
         success: true,
@@ -298,13 +270,121 @@ export class StripeService {
   }
 
   /**
+   * Find subscription ID from payment intent ID
+   */
+  async findSubscriptionFromPaymentIntent(
+    paymentIntentId: string
+  ): Promise<string | null> {
+    try {
+      // Retrieve the payment intent
+      const paymentIntent = await stripe.paymentIntents.retrieve(
+        paymentIntentId
+      );
+
+      if (paymentIntent.metadata?.subscriptionId) {
+        return paymentIntent.metadata.subscriptionId;
+      }
+
+      // If no subscription ID in metadata, try to find it by customer
+      if (paymentIntent.customer) {
+        const subscriptions = await stripe.subscriptions.list({
+          customer: paymentIntent.customer as string,
+          status: "all",
+          limit: 10,
+        });
+
+        // Look for the most recent subscription
+        if (subscriptions.data.length > 0) {
+          const latestSubscription = subscriptions.data[0];
+          return latestSubscription.id;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error(
+        `🔍 STRIPE SERVICE: Error finding subscription from payment intent: ${paymentIntentId}`,
+        error
+      );
+      return null;
+    }
+  }
+
+  /**
    * Cancel a subscription
    */
   async cancelSubscription(subscriptionId: string, accountId: string) {
     try {
-      const subscription = (await stripe.subscriptions.update(subscriptionId, {
-        cancel_at_period_end: true,
-      })) as Stripe.Subscription;
+      // Validate subscription ID format
+      if (!subscriptionId.startsWith("sub_")) {
+        throw new Error(
+          `Invalid subscription ID format: ${subscriptionId}. Expected format: sub_XXX`
+        );
+      }
+
+      // First, verify the subscription exists and get its current state
+      const existingSubscription = await stripe.subscriptions.retrieve(
+        subscriptionId
+      );
+
+      // Check if subscription is already cancelled
+      if (existingSubscription.status === "canceled") {
+        throw new Error(`Subscription ${subscriptionId} is already cancelled`);
+      }
+
+      // Check if subscription is already set to cancel at period end
+      if (existingSubscription.cancel_at_period_end) {
+        // Update database to reflect current state with grace period
+        const subscriptionWithPeriods =
+          existingSubscription as unknown as SubscriptionWithPeriods;
+        const endDate = subscriptionWithPeriods.current_period_end
+          ? new Date(
+              subscriptionWithPeriods.current_period_end * 1000
+            ).toISOString()
+          : new Date().toISOString();
+
+        await subscriptionService.updateSubscriptionData(
+          accountId,
+          SubscriptionTier.TIER1,
+          SubscriptionStatus.ACTIVE, // Keep ACTIVE until end_date for grace period
+          undefined,
+          undefined,
+          undefined,
+          endDate // subscriptionEndDate
+        );
+
+        return {
+          success: true,
+          subscription: existingSubscription,
+          message:
+            "Subscription was already set to cancel at period end - access continues until end date",
+        };
+      }
+
+      let subscription: Stripe.Subscription;
+      try {
+        subscription = (await stripe.subscriptions.update(subscriptionId, {
+          cancel_at_period_end: true,
+        })) as Stripe.Subscription;
+      } catch (updateError) {
+        console.error(
+          `🔍 STRIPE SERVICE: Failed to update subscription ${subscriptionId}:`,
+          updateError
+        );
+
+        // Log specific error details
+        if (updateError instanceof Error) {
+          console.error(
+            `🔍 STRIPE SERVICE: Error message: ${updateError.message}`
+          );
+          console.error(`🔍 STRIPE SERVICE: Error stack: ${updateError.stack}`);
+        }
+
+        throw new Error(
+          `Failed to cancel subscription in Stripe: ${
+            updateError instanceof Error ? updateError.message : "Unknown error"
+          }`
+        );
+      }
 
       // Helper function to safely convert timestamp to ISO string
       const safeTimestampToISO = (
@@ -332,32 +412,62 @@ export class StripeService {
         subscriptionWithPeriods.current_period_end
       );
 
+      // Verify the subscription was actually updated in Stripe
+      const verifySubscription = await stripe.subscriptions.retrieve(
+        subscriptionId
+      );
+
+      if (!verifySubscription.cancel_at_period_end) {
+        console.error(
+          `🔍 STRIPE SERVICE: WARNING - Subscription ${subscriptionId} was not properly cancelled in Stripe!`
+        );
+        throw new Error(
+          `Subscription ${subscriptionId} was not properly cancelled in Stripe`
+        );
+      }
+
       // Update database using the subscription service
+      // Keep status as ACTIVE until end_date for grace period
       await subscriptionService.updateSubscriptionData(
         accountId,
         SubscriptionTier.TIER1, // Will be updated with actual tier
-        SubscriptionStatus.CANCELLED,
+        SubscriptionStatus.ACTIVE, // Keep ACTIVE until end_date
         undefined, // stripeCustomerId
         undefined, // stripeSubscriptionId
         undefined, // subscriptionStartDate
         endDate || undefined // subscriptionEndDate
       );
 
-      // Record cancellation history
+      // Record cancellation history with ACTIVE status (grace period)
       await this.supabase.from("subscription_history").insert({
         account_id: accountId,
         tier: SubscriptionTier.TIER1, // Will be updated with actual tier
-        status: SubscriptionStatus.CANCELLED,
+        status: SubscriptionStatus.ACTIVE, // ACTIVE during grace period
         start_date: new Date().toISOString(),
+        end_date: endDate || new Date().toISOString(),
         payment_method: "stripe",
         amount_paid: 0,
-        change_reason: "Subscription cancelled",
-        notes: "Cancelled by user via Stripe",
+        change_reason: "Subscription cancelled - grace period until end date",
+        notes: "Cancelled by user via Stripe - access continues until end date",
       });
 
       return { success: true, subscription };
     } catch (error) {
-      console.error("Error cancelling subscription:", error);
+      console.error("🔍 STRIPE SERVICE: Error cancelling subscription:", error);
+
+      // Provide more specific error information
+      if (error instanceof Error) {
+        if (error.message.includes("No such subscription")) {
+          throw new Error(`Subscription ${subscriptionId} not found in Stripe`);
+        } else if (error.message.includes("Invalid request")) {
+          throw new Error(
+            `Invalid request to cancel subscription ${subscriptionId}: ${error.message}`
+          );
+        } else if (error.message.includes("API key")) {
+          throw new Error("Stripe API key configuration issue");
+        }
+      }
+
       throw error;
     }
   }

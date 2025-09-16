@@ -51,10 +51,10 @@ export function SubscriptionRenewalReminder({
 
   const getReminderMessage = () => {
     if (daysUntilExpiry <= 1) {
-      return `Your subscription expires today! Please ensure your payment method is up to date.`;
+      return `Your subscription expires today! Please ensure your original payment method is up to date.`;
     }
     if (daysUntilExpiry <= 3) {
-      return `Your subscription expires in ${daysUntilExpiry} days. Please check your payment method.`;
+      return `Your subscription expires in ${daysUntilExpiry} days. Please check your original payment method.`;
     }
     return `Your subscription expires in ${daysUntilExpiry} days.`;
   };
@@ -79,7 +79,7 @@ export function SubscriptionRenewalReminder({
   };
 
   return (
-    <div className="bg-black border border-gray-200 rounded-lg p-4 mb-4">
+    <div className="rounded-lg p-4 mb-4">
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

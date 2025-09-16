@@ -140,17 +140,43 @@ async function handlePaymentIntentSucceeded(
         console.log("Customer ID updated successfully for account:", accountId);
       }
 
-      await supabase.from("subscription_history").insert({
-        account_id: accountId,
-        tier: planId as SubscriptionTier,
-        status: SubscriptionStatus.ACTIVE,
-        start_date: new Date().toISOString(),
-        payment_method: "stripe",
-        amount_paid: paymentIntent.amount / 100,
-        currency: paymentIntent.currency.toUpperCase(),
-        change_reason: "Payment completed via standalone payment intent",
-        customer_id: customerId,
-      });
+      // Check if a history record already exists for this subscription
+      const { data: existingHistory, error: checkError } = await supabase
+        .from("subscription_history")
+        .select("id")
+        .eq("account_id", accountId)
+        .eq("tier", planId as SubscriptionTier)
+        .eq("status", SubscriptionStatus.ACTIVE)
+        .in("change_reason", [
+          "New subscription created",
+          "Subscription created",
+          "Payment completed for subscription",
+        ])
+        .limit(1);
+
+      if (checkError) {
+        console.error("Error checking existing history:", checkError);
+      }
+
+      // Only create history record if this is a standalone payment (no subscription)
+      // OR if no subscription history exists yet (payment_intent fires before subscription.created)
+      if (!subscriptionId || !existingHistory || existingHistory.length === 0) {
+        const changeReason = subscriptionId
+          ? "Payment completed for subscription"
+          : "Payment completed via standalone payment intent";
+
+        await supabase.from("subscription_history").insert({
+          account_id: accountId,
+          tier: planId as SubscriptionTier,
+          status: SubscriptionStatus.ACTIVE,
+          start_date: new Date().toISOString(),
+          payment_method: "stripe",
+          amount_paid: paymentIntent.amount / 100,
+          currency: paymentIntent.currency.toUpperCase(),
+          change_reason: changeReason,
+          customer_id: customerId,
+        });
+      }
 
       // Update user role based on subscription tier
       await updateUserRole(accountId, planId as SubscriptionTier);
@@ -607,30 +633,100 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
       console.log("Customer ID updated successfully for account:", accountId);
     }
 
-    const { error: historyError } = await supabase
+    // Check if a history record already exists for this subscription
+    const { data: existingHistory, error: checkError } = await supabase
       .from("subscription_history")
-      .insert({
-        account_id: accountId,
-        tier:
-          (subscription.metadata?.planId as SubscriptionTier) ||
-          SubscriptionTier.TIER1,
-        status: SubscriptionStatus.ACTIVE,
-        start_date: startDate || new Date().toISOString(),
-        end_date:
-          endDate ||
-          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        payment_method: "stripe",
-        amount_paid: 0,
-        change_reason: "New subscription created",
-        notes: `Subscribed to ${
-          subscription.metadata?.planId || "tier1"
-        } via Stripe webhook`,
-      });
+      .select("id")
+      .eq("account_id", accountId)
+      .eq(
+        "tier",
+        (subscription.metadata?.planId as SubscriptionTier) ||
+          SubscriptionTier.TIER1
+      )
+      .eq("status", SubscriptionStatus.ACTIVE)
+      .in("change_reason", [
+        "New subscription created",
+        "Subscription created",
+        "Payment completed for subscription",
+      ])
+      .limit(1);
 
-    if (historyError) {
-      console.error("Failed to create subscription history:", historyError);
+    if (checkError) {
+      console.error("Error checking existing history:", checkError);
+    }
+
+    // Only create history record if one doesn't already exist
+    if (!existingHistory || existingHistory.length === 0) {
+      // Get the latest invoice to get the actual payment amount
+      let paymentAmount = 0;
+      let currency = "USD";
+
+      if (subscription.latest_invoice) {
+        try {
+          const invoice = await stripe.invoices.retrieve(
+            subscription.latest_invoice as string
+          );
+          paymentAmount = invoice.amount_paid / 100; // Convert from cents to dollars
+          currency = invoice.currency.toUpperCase();
+
+          // If amount_paid is 0, try to get the amount from the invoice total
+          if (paymentAmount === 0 && invoice.amount_due > 0) {
+            paymentAmount = invoice.amount_due / 100;
+          }
+        } catch (invoiceError) {
+          console.error(
+            "Error retrieving invoice for payment amount:",
+            invoiceError
+          );
+        }
+      }
+
+      // Fallback: Get amount from subscription items if invoice amount is still 0
+      if (paymentAmount === 0 && subscription.items?.data?.[0]) {
+        try {
+          const price = await stripe.prices.retrieve(
+            subscription.items.data[0].price.id
+          );
+          paymentAmount = price.unit_amount ? price.unit_amount / 100 : 0;
+          currency = price.currency.toUpperCase();
+        } catch (priceError) {
+          console.error(
+            "Error retrieving price for payment amount:",
+            priceError
+          );
+        }
+      }
+
+      const { error: historyError } = await supabase
+        .from("subscription_history")
+        .insert({
+          account_id: accountId,
+          tier:
+            (subscription.metadata?.planId as SubscriptionTier) ||
+            SubscriptionTier.TIER1,
+          status: SubscriptionStatus.ACTIVE,
+          start_date: startDate || new Date().toISOString(),
+          end_date:
+            endDate ||
+            new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          payment_method: "stripe",
+          amount_paid: paymentAmount,
+          currency: currency,
+          change_reason: "New subscription created",
+          notes: `Subscribed to ${
+            subscription.metadata?.planId || "tier1"
+          } via Stripe webhook`,
+        });
+
+      if (historyError) {
+        console.error("Failed to create subscription history:", historyError);
+      } else {
+        console.log("Subscription history created successfully");
+      }
     } else {
-      console.log("Subscription history created successfully");
+      console.log(
+        "Subscription history record already exists, skipping creation"
+      );
     }
 
     // Update user role based on subscription tier
@@ -789,6 +885,25 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       console.log("Customer ID updated successfully for account:", accountId);
     }
 
+    // Get the latest invoice to get the actual payment amount
+    let paymentAmount = 0;
+    let currency = "USD";
+
+    if (subscription.latest_invoice) {
+      try {
+        const invoice = await stripe.invoices.retrieve(
+          subscription.latest_invoice as string
+        );
+        paymentAmount = invoice.amount_paid / 100; // Convert from cents to dollars
+        currency = invoice.currency.toUpperCase();
+      } catch (invoiceError) {
+        console.error(
+          "Error retrieving invoice for payment amount:",
+          invoiceError
+        );
+      }
+    }
+
     const { error: historyError } = await supabase
       .from("subscription_history")
       .insert({
@@ -805,7 +920,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
           endDate ||
           new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         payment_method: "stripe",
-        amount_paid: 0,
+        amount_paid: paymentAmount,
+        currency: currency,
         change_reason: "Subscription updated",
         notes: `Subscription ${subscription.status} via Stripe webhook`,
       });

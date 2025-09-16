@@ -121,7 +121,7 @@ function CheckoutForm({
         )}
       </button>
 
-      <div className="flex items-center gap-3 text-sm text-primary-300/70">
+      <div className="flex items-center justify-center w-full gap-3 text-sm text-primary-300/70">
         <CheckCircle className="w-4 h-4 text-green-400" />
         <span>Your payment information is secure and encrypted</span>
       </div>
