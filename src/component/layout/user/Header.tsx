@@ -134,15 +134,21 @@ export default function Header() {
               <span
                 className={`${alexBrush.className} text-xl sm:text-2xl lg:text-3xl`}
               >
-                S
+                T
               </span>
-              AND{" "}
+              HE{" "}
               <span
                 className={`${alexBrush.className} text-xl sm:text-2xl lg:text-3xl`}
               >
-                S
+                A
               </span>
-              YMES
+              NCESTRAL{" "}
+              <span
+                className={`${alexBrush.className} text-xl sm:text-2xl lg:text-3xl`}
+              >
+                P
+              </span>
+              ATH
             </h1>
           </Link>
 

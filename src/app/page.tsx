@@ -14,14 +14,14 @@ import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
 
 export const metadata: Metadata = {
-  title: "Sand Symes Wellness AO Platform",
+  title: "The Ancestral Path - Sand Symes Wellness AO Platform",
   description:
     "Experience guided breathwork rituals, meditations, wisdom drops, and daily check-ins with the Oracle AI. Your journey to healing and transformation starts here.",
   keywords:
     "breathwork, meditation, wellness, healing, oracle, astrology, spiritual guidance",
   authors: [{ name: "Sand Symes" }],
   openGraph: {
-    title: "Sand Symes Wellness AO Platform",
+    title: "The Ancestral Path - Sand Symes Wellness AO Platform",
     description:
       "Experience guided breathwork rituals, meditations, wisdom drops, and daily check-ins with the Oracle AI.",
     type: "website",
