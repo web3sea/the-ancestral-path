@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/component/provider/SessionProvider";
+import { ToastProvider } from "@/component/common/Toast";
+import { ConfirmDialogProvider } from "@/component/common/ConfirmDialog";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -40,7 +42,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider>
-          <main className="min-h-screen">{children}</main>
+          <ToastProvider>
+            <ConfirmDialogProvider>
+              <main className="min-h-screen">{children}</main>
+            </ConfirmDialogProvider>
+          </ToastProvider>
         </SessionProvider>
       </body>
     </html>

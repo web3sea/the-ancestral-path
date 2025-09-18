@@ -29,12 +29,14 @@ export function PaymentFailureNotification({
 
       if (data.success && data.renewed) {
         alert(
-          "Payment processed successfully! Your subscription has been renewed."
+          "Payment processed successfully using your original payment method! Your subscription has been renewed."
         );
         await refreshSubscription();
         onClose();
       } else if (data.paymentFailed) {
-        alert("Payment failed. Please update your payment method.");
+        alert(
+          "Payment failed using your original payment method. Please update your payment method."
+        );
         onUpdatePaymentMethod();
       } else {
         alert(data.message || "Unable to process payment at this time.");
@@ -87,8 +89,9 @@ export function PaymentFailureNotification({
               <span className="font-medium text-yellow-800">Payment Issue</span>
             </div>
             <p className="text-yellow-700 text-sm">
-              We were unable to process your monthly subscription payment. Your
-              subscription is currently in a grace period.
+              We were unable to process your monthly subscription payment using
+              your original payment method. Your subscription is currently in a
+              grace period.
             </p>
           </div>
 
@@ -115,7 +118,7 @@ export function PaymentFailureNotification({
           <div className="space-y-3">
             <p className="text-gray-600">
               To continue using our service, please update your payment method
-              or retry the payment.
+              or retry the payment using your original payment method.
             </p>
 
             <div className="flex gap-3">
@@ -144,7 +147,9 @@ export function PaymentFailureNotification({
                 disabled={updating}
                 className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
-                {updating ? "Retrying..." : "Retry Payment"}
+                {updating
+                  ? "Retrying with Original Payment Method..."
+                  : "Retry with Original Payment Method"}
               </button>
             </div>
           </div>
@@ -154,7 +159,10 @@ export function PaymentFailureNotification({
               <strong>What happens next?</strong>
             </p>
             <ul className="list-disc list-inside mt-1 space-y-1">
-              <li>We&apos;ll automatically retry your payment</li>
+              <li>
+                We&apos;ll automatically retry your payment using your original
+                payment method
+              </li>
               <li>You have 7 days to resolve the payment issue</li>
               <li>
                 Your subscription will be suspended if payment isn&apos;t

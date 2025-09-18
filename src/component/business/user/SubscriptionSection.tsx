@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { StripePayment } from "@/component/common/StripePayment";
 import { useSessionUpdate } from "@/component/hook/useSessionUpdate";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/component/common/Toast";
 
 interface Plan {
   id: string;
@@ -67,6 +68,7 @@ export function SubscriptionSection() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const { updateSession } = useSessionUpdate();
   const router = useRouter();
+  const { success } = useToast();
   // Load plans from API
   useEffect(() => {
     const loadPlans = async () => {
@@ -130,34 +132,15 @@ export function SubscriptionSection() {
     }
   };
 
-  const handlePaymentSuccess = async (paymentIntent: {
-    id: string;
-    client_secret?: string;
-  }) => {
+  const handlePaymentSuccess = async () => {
     try {
-      console.log("Payment success - updating session and redirecting...");
-      console.log("Payment intent data:", paymentIntent);
+      await updateSession();
 
-      // Update the session to reflect the new subscription
-      try {
-        await updateSession();
-        console.log("Session updated successfully");
-      } catch (error) {
-        console.error("Error updating session:", error);
-        // Continue anyway - session will update on next page load
-      }
-
-      // Wait a moment for session to propagate
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Use the payment intent data from the API response
-      const paymentIntentId = paymentIntent?.id || "";
-      const paymentIntentClientSecret =
-        paymentIntent?.client_secret || clientSecret;
+      success("Subscription successful");
 
-      router.push(
-        `/subscription/success?payment_intent=${paymentIntentId}&payment_intent_client_secret=${paymentIntentClientSecret}`
-      );
+      router.push(`/settings`);
     } catch (error) {
       console.error("Error after payment:", error);
     }

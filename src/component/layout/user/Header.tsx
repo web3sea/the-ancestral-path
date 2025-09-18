@@ -7,6 +7,8 @@ import { Alex_Brush, Noto_Serif_JP } from "next/font/google";
 import { useSession } from "next-auth/react";
 import { SignOut } from "@/component/common/SignOut";
 import { ChevronDown, User, Settings } from "lucide-react";
+import { hasValidSubscriptionClient } from "@/lib/auth/session-utils";
+import { useSubscriptionStatus } from "@/component/hook/useSubscriptionStatus";
 
 const alexBrush = Alex_Brush({
   subsets: ["latin"],
@@ -24,16 +26,37 @@ export default function Header() {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
+  const {
+    data: subscriptionData,
+    isActive,
+    isExpired,
+  } = useSubscriptionStatus();
 
   const username = session?.user?.name || "sandsymes";
 
-  // Check if user has valid subscription
-  const hasValidSubscription =
-    session?.user?.subscriptionTier &&
-    session?.user?.subscriptionStatus === "active" &&
-    ["tier1", "tier2"].includes(session.user.subscriptionTier as string);
+  const hasValidSubscription = (() => {
+    if (!hasValidSubscriptionClient(session)) {
+      return false;
+    }
 
-  // Close dropdown when clicking outside
+    if (subscriptionData) {
+      // If subscription is cancelled, check if it's still within the end date
+      if (subscriptionData.subscription_status === "cancelled") {
+        const endDate = subscriptionData.subscription_end_date;
+        if (endDate) {
+          const now = new Date();
+          const subscriptionEnd = new Date(endDate);
+          return now <= subscriptionEnd;
+        }
+        return false;
+      }
+
+      return isActive && !isExpired;
+    }
+
+    return true;
+  })();
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -111,15 +134,21 @@ export default function Header() {
               <span
                 className={`${alexBrush.className} text-xl sm:text-2xl lg:text-3xl`}
               >
-                S
+                T
               </span>
-              AND{" "}
+              HE{" "}
               <span
                 className={`${alexBrush.className} text-xl sm:text-2xl lg:text-3xl`}
               >
-                S
+                A
               </span>
-              YMES
+              NCESTRAL{" "}
+              <span
+                className={`${alexBrush.className} text-xl sm:text-2xl lg:text-3xl`}
+              >
+                P
+              </span>
+              ATH
             </h1>
           </Link>
 

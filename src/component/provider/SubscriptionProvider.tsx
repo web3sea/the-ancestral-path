@@ -115,8 +115,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       />
 
       <UpdatePaymentMethod
-        visible={showPaymentMethodModal}
-        onClose={() => setShowPaymentMethodModal(false)}
+        onCancel={() => setShowPaymentMethodModal(false)}
         onSuccess={handlePaymentMethodSuccess}
       />
     </SubscriptionContext.Provider>

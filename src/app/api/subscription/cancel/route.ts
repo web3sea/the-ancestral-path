@@ -35,11 +35,28 @@ export async function POST(request: NextRequest) {
     }
 
     if (account?.stripe_subscription_id) {
+      // Check if it's actually a payment intent ID instead of subscription ID
+      let subscriptionId = account.stripe_subscription_id;
+
+      if (subscriptionId.startsWith("pi_")) {
+        const foundSubscriptionId =
+          await stripeService.findSubscriptionFromPaymentIntent(subscriptionId);
+
+        if (foundSubscriptionId) {
+          subscriptionId = foundSubscriptionId;
+        } else {
+          console.error(
+            `🔍 CANCEL: Could not find subscription for payment intent: ${subscriptionId}`
+          );
+          return NextResponse.json(
+            { error: "Could not find subscription for this payment intent" },
+            { status: 400 }
+          );
+        }
+      }
+
       try {
-        await stripeService.cancelSubscription(
-          account.stripe_subscription_id,
-          token.accountId
-        );
+        await stripeService.cancelSubscription(subscriptionId, token.accountId);
       } catch (error) {
         console.error("Error cancelling Stripe subscription:", error);
         return NextResponse.json(
