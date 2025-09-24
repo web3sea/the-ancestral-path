@@ -90,7 +90,6 @@ export async function POST(request: NextRequest) {
             token.accountId
           );
           customerId = customer.id;
-          console.log("Created new Stripe customer:", customerId);
         } catch (error) {
           console.error("Error creating Stripe customer:", error);
         }

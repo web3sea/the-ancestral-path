@@ -36,7 +36,6 @@ export class SubscriptionService {
         return false;
       }
 
-      console.log("Database function update_subscription_data result:", data);
       return data;
     } catch (error) {
       console.error("Error calling update_subscription_data function:", error);

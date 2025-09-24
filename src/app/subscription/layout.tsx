@@ -1,19 +1,19 @@
 import Header from "@/component/layout/user/Header";
 import Footer from "@/component/layout/user/Footer";
-import SubscriptionGuard from "@/component/provider/SubscriptionGuard";
+import { ClientAuthGuard } from "@/component/provider/ClientAuthGuard";
 
-export default async function SubscriptionLayout({
+export default function SubscriptionLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <SubscriptionGuard allowNonSubscribed={true}>
+    <ClientAuthGuard>
       <main className="min-h-screen">
         <Header />
         {children}
         <Footer />
       </main>
-    </SubscriptionGuard>
+    </ClientAuthGuard>
   );
 }

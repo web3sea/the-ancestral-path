@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Loader2, AlertCircle, ArrowRight } from "lucide-react";
-import { useSessionRefresh } from "@/component/hook/useSessionRefresh";
 
 export default function SubscriptionSuccessPage() {
   const searchParams = useSearchParams();
@@ -12,7 +11,6 @@ export default function SubscriptionSuccessPage() {
     "loading"
   );
   const [message, setMessage] = useState("");
-  const { refreshSession } = useSessionRefresh();
 
   useEffect(() => {
     const paymentIntent = searchParams.get("payment_intent");
@@ -21,7 +19,6 @@ export default function SubscriptionSuccessPage() {
     );
 
     if (paymentIntent && paymentIntentClientSecret) {
-      refreshSession();
       setStatus("success");
       setMessage("Your subscription has been activated successfully!");
     } else {
@@ -30,7 +27,6 @@ export default function SubscriptionSuccessPage() {
         "Payment confirmation not found. Please check your subscription status."
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   return (

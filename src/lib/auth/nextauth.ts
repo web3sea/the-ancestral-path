@@ -35,8 +35,6 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account, trigger }) {
       // Handle session refresh triggers
       if (trigger === "update") {
-        console.log("JWT callback - session refresh triggered");
-
         try {
           const supabase = createSupabaseAdmin();
 
