@@ -11,7 +11,7 @@ export default async function SubscriptionLayout({
 }) {
   return (
     <AuthGuard allowedRoles={[Role.USER]}>
-      <SubscriptionGuard>
+      <SubscriptionGuard allowNonSubscribed={true}>
         <main className="min-h-screen">
           <Header />
           {children}
