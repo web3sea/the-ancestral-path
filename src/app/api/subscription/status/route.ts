@@ -19,7 +19,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseAdmin();
+    let supabase;
+    try {
+      supabase = createSupabaseAdmin();
+    } catch (error) {
+      // Return a mock response for development when database is not configured
+      return NextResponse.json({
+        success: true,
+        hasSubscription: false,
+        isActive: false,
+        subscription: null,
+        details: null,
+        _mock: true,
+        _message: "Database not configured - using mock response",
+      });
+    }
 
     const { data: account, error } = await supabase
       .from("accounts")
@@ -37,8 +51,20 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error) {
+      // Handle case where account doesn't exist in database
+      if (error.code === "PGRST116" && error.message.includes("0 rows")) {
+        return NextResponse.json({
+          success: true,
+          hasSubscription: false,
+          isActive: false,
+          subscription: null,
+          details: null,
+          _message: "Account not found in database",
+        });
+      }
+
       return NextResponse.json(
-        { error: "Failed to get subscription status" },
+        { error: "Failed to get subscription status", details: error.message },
         { status: 500 }
       );
     }
@@ -61,14 +87,30 @@ export async function GET(request: NextRequest) {
         );
         stripeSubscription = stripeStatus.subscription;
       } catch (error) {
-        console.error("Error getting Stripe subscription status:", error);
+        // Continue without Stripe data - don't fail the entire request
       }
     }
 
-    const isActive =
+    // Check if subscription is active based on database status
+    const now = new Date();
+    const endDate = account.subscription_end_date
+      ? new Date(account.subscription_end_date)
+      : null;
+    const isEndDateValid = !endDate || endDate > now;
+
+    const dbIsActive =
       account.subscription_status === SubscriptionStatus.ACTIVE &&
-      (!account.subscription_end_date ||
-        new Date(account.subscription_end_date) > new Date());
+      isEndDateValid;
+
+    // Check if Stripe subscription exists and is in a valid state
+    const stripeIsActive =
+      stripeSubscription &&
+      (stripeSubscription.status === "active" ||
+        stripeSubscription.status === "incomplete" ||
+        stripeSubscription.status === "trialing");
+
+    // Consider subscription active if either database or Stripe indicates active status
+    const isActive = dbIsActive || stripeIsActive;
 
     return NextResponse.json({
       success: true,
@@ -96,7 +138,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error getting subscription status:", error);
     return NextResponse.json(
-      { error: "Failed to get subscription status" },
+      {
+        error: "Failed to get subscription status",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }

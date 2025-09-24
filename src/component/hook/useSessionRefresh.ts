@@ -8,11 +8,7 @@ export function useSessionRefresh() {
 
   const refreshSession = useCallback(async () => {
     try {
-      console.log("Refreshing session...");
-
-      // Simple session update without complex triggers
       await update();
-      console.log("Session updated successfully");
     } catch (error) {
       console.error("Error refreshing session:", error);
       throw error;

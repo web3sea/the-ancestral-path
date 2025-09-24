@@ -57,8 +57,6 @@ async function updateUserRole(
         `Error updating role for account ${accountId}:`,
         updateError
       );
-    } else {
-      console.log(`Updated role to ${roleName} for account ${accountId}`);
     }
   } catch (error) {
     console.error(`Error updating user role for account ${accountId}:`, error);
@@ -136,8 +134,6 @@ async function handlePaymentIntentSucceeded(
 
       if (updateError) {
         console.error("Error updating customer ID:", updateError);
-      } else {
-        console.log("Customer ID updated successfully for account:", accountId);
       }
 
       // Check if a history record already exists for this subscription
@@ -191,8 +187,6 @@ async function handlePaymentIntentSucceeded(
 
       if (updateError) {
         console.error("Error updating customer ID:", updateError);
-      } else {
-        console.log("Customer ID updated successfully for account:", accountId);
       }
 
       await triggerSessionRefresh(accountId);
@@ -234,26 +228,6 @@ export async function POST(request: NextRequest) {
         bodyPreview: body?.substring(0, 100) + "...",
         webhookSecretExists: !!webhookSecret,
       });
-
-      // For development/testing: try to parse the body as JSON to see if it's a valid Stripe event
-      try {
-        const parsedBody = JSON.parse(body);
-        console.log("Body can be parsed as JSON:", {
-          type: parsedBody.type,
-          id: parsedBody.id,
-          created: parsedBody.created,
-        });
-
-        // If it looks like a Stripe event, log more details
-        if (parsedBody.type && parsedBody.id) {
-          console.log(
-            "This appears to be a Stripe event but signature verification failed"
-          );
-          console.log("Check your STRIPE_WEBHOOK_SECRET environment variable");
-        }
-      } catch (parseErr) {
-        console.log("Body cannot be parsed as JSON:", parseErr);
-      }
 
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
@@ -410,8 +384,6 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
         "Error updating customer ID in payment failure:",
         updateError
       );
-    } else {
-      console.log("Customer ID updated successfully for account:", accountId);
     }
 
     if (newStatus === SubscriptionStatus.EXPIRED) {
@@ -599,11 +571,6 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
       return;
     }
 
-    console.log("Account verified for subscription creation:", {
-      accountId,
-      accountEmail: account.email,
-    });
-
     // Update subscription data using the service (handles all fields properly including customer ID)
     await subscriptionService.updateSubscriptionData(
       accountId,
@@ -629,8 +596,6 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
         "Error updating customer ID in accounts table:",
         updateError
       );
-    } else {
-      console.log("Customer ID updated successfully for account:", accountId);
     }
 
     // Check if a history record already exists for this subscription
@@ -720,13 +685,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
 
       if (historyError) {
         console.error("Failed to create subscription history:", historyError);
-      } else {
-        console.log("Subscription history created successfully");
       }
-    } else {
-      console.log(
-        "Subscription history record already exists, skipping creation"
-      );
     }
 
     // Update user role based on subscription tier
@@ -852,8 +811,6 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       return;
     }
 
-    console.log("Account verified for subscription update:", accountId);
-
     // Update subscription data using the service (handles all fields properly including customer ID)
     await subscriptionService.updateSubscriptionData(
       accountId,
@@ -881,8 +838,6 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         "Error updating customer ID in accounts table:",
         updateError
       );
-    } else {
-      console.log("Customer ID updated successfully for account:", accountId);
     }
 
     // Get the latest invoice to get the actual payment amount
@@ -931,8 +886,6 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         "Failed to create subscription history for update:",
         historyError
       );
-    } else {
-      console.log("Subscription history created for update");
     }
 
     // Update user role based on subscription tier
@@ -1006,7 +959,7 @@ async function handleCustomerCreated(customer: Stripe.Customer) {
     const accountId = customer.metadata?.accountId;
 
     if (!accountId) {
-      console.log(
+      console.error(
         "No accountId in customer metadata, skipping customer.created webhook"
       );
       return;
@@ -1025,8 +978,6 @@ async function handleCustomerCreated(customer: Stripe.Customer) {
         "Error updating customer ID in accounts table:",
         updateError
       );
-    } else {
-      console.log("Customer ID updated successfully for account:", accountId);
     }
 
     await triggerSessionRefresh(accountId);

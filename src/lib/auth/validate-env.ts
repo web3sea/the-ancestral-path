@@ -58,28 +58,3 @@ export function validateOAuthEnvironment() {
     warnings,
   };
 }
-
-/**
- * Log environment validation results
- */
-export function logEnvironmentValidation() {
-  const validation = validateOAuthEnvironment();
-
-  console.log("🔍 OAuth Environment Validation:");
-
-  if (validation.errors.length > 0) {
-    console.error("❌ Errors found:");
-    validation.errors.forEach((error) => console.error(`  - ${error}`));
-  }
-
-  if (validation.warnings.length > 0) {
-    console.warn("⚠️  Warnings:");
-    validation.warnings.forEach((warning) => console.warn(`  - ${warning}`));
-  }
-
-  if (validation.isValid) {
-    console.log("✅ Environment configuration looks good!");
-  }
-
-  return validation;
-}

@@ -13,20 +13,8 @@ async function getFirstPaymentMethod(
   subscriptionId?: string
 ): Promise<string | null> {
   try {
-    console.log(
-      `Debug: Looking for payment methods for customer ${customerId}`
-    );
-
     // First, try to get the customer's default payment method
     const customer = await stripe.customers.retrieve(customerId);
-    console.log(`Debug: Customer retrieved:`, {
-      id: customer.id,
-      default_source:
-        customer && typeof customer === "object" && !customer.deleted
-          ? customer.default_source
-          : null,
-      deleted: customer.deleted,
-    });
 
     if (
       customer &&
@@ -34,7 +22,6 @@ async function getFirstPaymentMethod(
       !customer.deleted &&
       customer.default_source
     ) {
-      console.log(`Debug: Found default source: ${customer.default_source}`);
       return customer.default_source as string;
     }
 
@@ -44,43 +31,25 @@ async function getFirstPaymentMethod(
         const subscription = await stripe.subscriptions.retrieve(
           subscriptionId
         );
-        console.log(`Debug: Subscription retrieved:`, {
-          id: subscription.id,
-          status: subscription.status,
-          latest_invoice: subscription.latest_invoice,
-        });
 
         // Check if subscription has a payment intent with payment method
         if (subscription.latest_invoice) {
           const invoice = (await stripe.invoices.retrieve(
             subscription.latest_invoice as string
           )) as Stripe.Invoice & { payment_intent?: string };
-          console.log(`Debug: Invoice retrieved:`, {
-            id: invoice.id,
-            payment_intent: invoice.payment_intent,
-            status: invoice.status,
-          });
 
           if (invoice.payment_intent) {
             const paymentIntent = await stripe.paymentIntents.retrieve(
               invoice.payment_intent as string
             );
-            console.log(`Debug: Payment intent retrieved:`, {
-              id: paymentIntent.id,
-              status: paymentIntent.status,
-              payment_method: paymentIntent.payment_method,
-            });
 
             if (paymentIntent.payment_method) {
-              console.log(
-                `Debug: Found payment method from payment intent: ${paymentIntent.payment_method}`
-              );
               return paymentIntent.payment_method as string;
             }
           }
         }
       } catch (subscriptionError) {
-        console.log(`Debug: Error retrieving subscription:`, subscriptionError);
+        console.error("Error retrieving subscription:", subscriptionError);
       }
     }
 
@@ -90,28 +59,10 @@ async function getFirstPaymentMethod(
       type: "card",
     });
 
-    console.log(
-      `Debug: Found ${paymentMethods.data.length} payment methods:`,
-      paymentMethods.data.map((pm) => ({
-        id: pm.id,
-        type: pm.type,
-        card: pm.card
-          ? {
-              brand: pm.card.brand,
-              last4: pm.card.last4,
-            }
-          : null,
-      }))
-    );
-
     if (paymentMethods.data.length > 0) {
-      console.log(
-        `Debug: Using first payment method: ${paymentMethods.data[0].id}`
-      );
       return paymentMethods.data[0].id;
     }
 
-    console.log(`Debug: No payment methods found for customer ${customerId}`);
     return null;
   } catch (error) {
     console.error("Error retrieving payment method:", error);

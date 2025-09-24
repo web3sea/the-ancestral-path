@@ -32,9 +32,6 @@ export async function middleware(request: NextRequest) {
   // Remove subscription validation from middleware
   // Let the SubscriptionGuard handle subscription validation instead
 
-  console.log(
-    `🔍 MIDDLEWARE: Allowing request to proceed to ${request.nextUrl.pathname}`
-  );
   return NextResponse.next();
 }
 

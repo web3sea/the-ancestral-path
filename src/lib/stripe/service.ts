@@ -488,13 +488,25 @@ export class StripeService {
       }
 
       const subscription = subscriptions.data[0];
+      const subscriptionWithPeriods = subscription as SubscriptionWithPeriods;
+
+      // Safely handle current_period_end
+      let currentPeriodEnd: Date | null = null;
+      if (subscriptionWithPeriods.current_period_end) {
+        try {
+          currentPeriodEnd = new Date(
+            subscriptionWithPeriods.current_period_end * 1000
+          );
+        } catch (error) {
+          console.error("Error converting current_period_end to Date:", error);
+        }
+      }
+
       return {
         hasSubscription: true,
         subscription,
         status: subscription.status,
-        currentPeriodEnd: new Date(
-          (subscription as SubscriptionWithPeriods).current_period_end * 1000
-        ),
+        currentPeriodEnd,
       };
     } catch (error) {
       console.error("Error getting subscription status:", error);
