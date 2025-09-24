@@ -4,6 +4,7 @@ import DescriptionVisualSection from "@/component/common/DescriptionVisualSectio
 import StickySection from "@/component/business/user/breathwork/StickySection";
 import TestimonialSection from "@/component/business/user/breathwork/TestimonialSection";
 import BreathworkDetailsSection from "@/component/business/user/breathwork/BreathworkDetailsSection";
+import { SubscriptionRequired } from "@/component/common/SubscriptionRequired";
 
 export const metadata = {
   title: "Guided Breathwork Rituals - Sand Symes",
@@ -13,21 +14,23 @@ export const metadata = {
 
 export default function BreathworkPage() {
   return (
-    <div className="min-h-screen">
-      <StickySection />
-      <BreathworkDetailsSection />
-      <BreathworkSection />
-      <TestimonialSection />
-      <FullWidthImageSection
-        imageUrl="/images/breathwork.png"
-        altText="Transform your life through conscious breathing and sacred breathwork practices"
-      />
+    <SubscriptionRequired>
+      <div className="min-h-screen">
+        <StickySection />
+        <BreathworkDetailsSection />
+        <BreathworkSection />
+        <TestimonialSection />
+        <FullWidthImageSection
+          imageUrl="/images/breathwork.png"
+          altText="Transform your life through conscious breathing and sacred breathwork practices"
+        />
 
-      <DescriptionVisualSection
-        title="BREATHE INTO TRANSFORMATION"
-        description="Every breath is a sacred opportunity to release what no longer serves you and invite in the healing energy of transformation. Through conscious breathing, you connect with your body's innate wisdom and unlock the door to profound healing and spiritual awakening."
-        visualPosition="right"
-      />
-    </div>
+        <DescriptionVisualSection
+          title="BREATHE INTO TRANSFORMATION"
+          description="Every breath is a sacred opportunity to release what no longer serves you and invite in the healing energy of transformation. Through conscious breathing, you connect with your body's innate wisdom and unlock the door to profound healing and spiritual awakening."
+          visualPosition="right"
+        />
+      </div>
+    </SubscriptionRequired>
   );
 }

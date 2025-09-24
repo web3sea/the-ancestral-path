@@ -1,6 +1,7 @@
 import MeditationsSection from "@/component/business/user/MeditationsSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
+import { SubscriptionRequired } from "@/component/common/SubscriptionRequired";
 
 export const metadata = {
   title: "Guided Meditations - Sand Symes",
@@ -10,19 +11,21 @@ export const metadata = {
 
 export default function MeditationsPage() {
   return (
-    <div className="min-h-screen">
-      <MeditationsSection />
+    <SubscriptionRequired>
+      <div className="min-h-screen">
+        <MeditationsSection />
 
-      <FullWidthImageSection
-        imageUrl="/images/meditations.png"
-        altText="Journey inward with guided meditations designed to bring peace and spiritual connection"
-      />
+        <FullWidthImageSection
+          imageUrl="/images/meditations.png"
+          altText="Journey inward with guided meditations designed to bring peace and spiritual connection"
+        />
 
-      <DescriptionVisualSection
-        title="FIND PEACE WITHIN"
-        description="In the stillness of meditation, you discover the sacred space within where healing begins. Each guided journey is a gentle invitation to explore your inner landscape, release tension, and connect with the divine wisdom that resides in your heart."
-        visualPosition="left"
-      />
-    </div>
+        <DescriptionVisualSection
+          title="FIND PEACE WITHIN"
+          description="In the stillness of meditation, you discover the sacred space within where healing begins. Each guided journey is a gentle invitation to explore your inner landscape, release tension, and connect with the divine wisdom that resides in your heart."
+          visualPosition="left"
+        />
+      </div>
+    </SubscriptionRequired>
   );
 }

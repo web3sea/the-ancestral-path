@@ -1,6 +1,7 @@
 import RetreatSection from "../../../component/business/user/RetreatSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
+import { SubscriptionRequired } from "@/component/common/SubscriptionRequired";
 
 export const metadata = {
   title: "Medicine Retreats - Sand Symes",
@@ -19,19 +20,21 @@ export const metadata = {
 
 export default function RetreatsPage() {
   return (
-    <div className="min-h-screen">
-      <RetreatSection />
+    <SubscriptionRequired>
+      <div className="min-h-screen">
+        <RetreatSection />
 
-      <FullWidthImageSection
-        imageUrl="/images/retreats.png"
-        altText="Transform your life through intimate healing journeys in sacred spaces and mystical locations"
-      />
+        <FullWidthImageSection
+          imageUrl="/images/retreats.png"
+          altText="Transform your life through intimate healing journeys in sacred spaces and mystical locations"
+        />
 
-      <DescriptionVisualSection
-        title="SACRED RETREAT EXPERIENCES"
-        description="Step away from the ordinary and into the extraordinary. Our retreats are more than just getaways—they're sacred ceremonies of transformation, healing, and awakening. In these intimate gatherings, you'll experience deep healing, connect with like-minded souls, and return home forever changed."
-        visualPosition="left"
-      />
-    </div>
+        <DescriptionVisualSection
+          title="SACRED RETREAT EXPERIENCES"
+          description="Step away from the ordinary and into the extraordinary. Our retreats are more than just getaways—they're sacred ceremonies of transformation, healing, and awakening. In these intimate gatherings, you'll experience deep healing, connect with like-minded souls, and return home forever changed."
+          visualPosition="left"
+        />
+      </div>
+    </SubscriptionRequired>
   );
 }
