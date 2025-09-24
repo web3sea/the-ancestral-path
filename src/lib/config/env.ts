@@ -68,7 +68,7 @@ export function getAppConfig(): AppConfig {
       },
     },
     stripe: {
-      publishableKey: getEnv("STRIPE_PUBLISHABLE_KEY"),
+      publishableKey: getEnv("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"),
       secretKey: getEnv("STRIPE_SECRET_KEY"),
       webhookSecret: getEnv("STRIPE_WEBHOOK_SECRET"),
     },

@@ -195,3 +195,13 @@ export function InlineLoading({ text }: { text?: string }) {
     </div>
   );
 }
+
+export function RecordingsLoading() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <LoadingSpinner key={index} size="lg" variant="primary" />
+      ))}
+    </div>
+  );
+}
