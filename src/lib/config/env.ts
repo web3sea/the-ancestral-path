@@ -31,6 +31,9 @@ export interface AppConfig {
     secretKey?: string;
     webhookSecret?: string;
   };
+  brevo: {
+    apiKey?: string;
+  };
 }
 
 /**
@@ -71,6 +74,9 @@ export function getAppConfig(): AppConfig {
       publishableKey: getEnv("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"),
       secretKey: getEnv("STRIPE_SECRET_KEY"),
       webhookSecret: getEnv("STRIPE_WEBHOOK_SECRET"),
+    },
+    brevo: {
+      apiKey: getEnv("BREVO_API_KEY"),
     },
   };
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Clapperboard } from "lucide-react";
+import { Clapperboard, Mail } from "lucide-react";
 
 export default function SidebarNav() {
   const pathname = usePathname();
@@ -12,6 +12,11 @@ export default function SidebarNav() {
       href: "/admin/abj-recordings",
       label: "ABJ Recordings",
       icon: <Clapperboard size={18} />,
+    },
+    {
+      href: "/admin/email-campaigns",
+      label: "Email Campaigns",
+      icon: <Mail size={18} />,
     },
   ];
 

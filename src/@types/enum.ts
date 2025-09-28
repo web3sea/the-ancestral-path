@@ -15,3 +15,36 @@ export enum SubscriptionStatus {
   PAUSED = "paused",
   EXPIRED = "expired",
 }
+
+export interface PaginationOutputDto {
+  /**
+   * Total number of items
+   * @example 100
+   */
+  totalItems: number;
+  /**
+   * Current page number
+   * @example 1
+   */
+  currentPage: number;
+  /**
+   * Total number of pages
+   * @example 10
+   */
+  totalPages: number;
+  /**
+   * Number of items per page
+   * @example 10
+   */
+  itemsPerPage: number;
+  /**
+   * Indicates if there is a next page
+   * @example true
+   */
+  hasNextPage: boolean;
+  /**
+   * Indicates if there is a previous page
+   * @example false
+   */
+  hasPreviousPage: boolean;
+}
