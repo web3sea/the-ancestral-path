@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Clapperboard, MessageCircle } from "lucide-react";
+import { Clapperboard, MessageCircle, Video } from "lucide-react";
 
 export default function SidebarNav() {
   const pathname = usePathname();
@@ -17,6 +17,11 @@ export default function SidebarNav() {
       href: "/admin/oracle-conversations",
       label: "Oracle Conversations",
       icon: <MessageCircle size={18} />,
+    },
+    {
+      href: "/admin/zoom-tracking",
+      label: "Zoom Tracking",
+      icon: <Video size={18} />,
     },
   ];
 
