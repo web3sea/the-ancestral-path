@@ -138,21 +138,16 @@ export async function POST(request: NextRequest) {
       .update({ updated_at: new Date().toISOString() })
       .eq("id", conversation_id);
 
-    // Get user information for n8n webhook
-    const { data: user } = await supabase
-      .from("accounts")
-      .select("email, first_name, last_name")
-      .eq("id", token.accountId)
-      .single();
+    // Check if webhook URL is configured
+    if (!process.env.N8N_RAG_AGENT_WEBHOOK_URL) {
+      console.error("N8N_RAG_AGENT_WEBHOOK_URL is not configured");
+      return NextResponse.json(
+        { error: "Webhook configuration error" },
+        { status: 500 }
+      );
+    }
 
-    // Get conversation history for context
-    const { data: conversationHistory } = await supabase
-      .from("oracle_messages")
-      .select("message, sender_type, created_at")
-      .eq("conversation_id", conversation_id)
-      .order("created_at", { ascending: true });
-
-    // Trigger n8n webhook for AO response (async)
+    // Trigger n8n webhook for AO response (awaited)
     const webhookPayload = {
       conversation_id,
       message_id: newMessage.id,
@@ -163,69 +158,84 @@ export async function POST(request: NextRequest) {
     console.log("Calling n8n webhook:", process.env.N8N_RAG_AGENT_WEBHOOK_URL);
     console.log("Webhook payload:", webhookPayload);
 
-    fetch(`${process.env.N8N_RAG_AGENT_WEBHOOK_URL}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(webhookPayload),
-    })
-      .then((response) => {
-        console.log("n8n webhook response status:", response.status);
-        return response.json();
-      })
-      .then(async (data) => {
-        console.log("n8n webhook response:", data);
-
-        // Handle the AO response directly since n8n is returning it instead of calling our webhook
-        if (data && data.output) {
-          console.log("Processing AO response directly from n8n...");
-
-          // Create AO response message in database
-          const supabaseAdmin = createSupabaseAdmin();
-          const { data: botMessage, error: botError } = await supabaseAdmin
-            .from("oracle_messages")
-            .insert({
-              conversation_id,
-              message: data.output,
-              sender_type: "bot",
-              sender_id: null,
-              metadata: {
-                sources: data.sources,
-                timestamps: data.timestamps,
-                original_message_id: newMessage.id,
-              },
-            })
-            .select()
-            .single();
-
-          if (botError) {
-            console.error("Error creating AO response message:", botError);
-          } else {
-            console.log("AO response message created:", botMessage);
-
-            // Update conversation timestamp
-            await supabaseAdmin
-              .from("oracle_conversations")
-              .update({ updated_at: new Date().toISOString() })
-              .eq("id", conversation_id);
-
-            // Mark user's message as read
-            await supabaseAdmin
-              .from("oracle_messages")
-              .update({ is_read: true })
-              .eq("id", newMessage.id);
-          }
+    try {
+      const webhookResponse = await fetch(
+        `${process.env.N8N_RAG_AGENT_WEBHOOK_URL}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(webhookPayload),
         }
-      })
-      .catch((error) => {
-        console.error("Error calling n8n webhook:", error);
-      });
+      );
 
-    return NextResponse.json({
-      success: true,
-      message: newMessage,
-    });
+      if (!webhookResponse.ok) {
+        throw new Error(
+          `Webhook request failed with status: ${webhookResponse.status}`
+        );
+      }
+
+      const data = await webhookResponse.json();
+
+      // Handle the AO response directly since n8n is returning it instead of calling our webhook
+      if (data && data.output) {
+        // Create AO response message in database
+        const { data: botMessage, error: botError } = await supabase
+          .from("oracle_messages")
+          .insert({
+            conversation_id,
+            message: data.output,
+            sender_type: "bot",
+            sender_id: null,
+            metadata: {
+              sources: data.sources,
+              timestamps: data.timestamps,
+              original_message_id: newMessage.id,
+            },
+          })
+          .select()
+          .single();
+
+        if (botError) {
+          console.error("Error creating AO response message:", botError);
+          return NextResponse.json(
+            { error: "Failed to create bot response" },
+            { status: 500 }
+          );
+        }
+
+        // Update conversation timestamp
+        await supabase
+          .from("oracle_conversations")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", conversation_id);
+
+        // Mark user message as read
+        await supabase
+          .from("oracle_messages")
+          .update({ is_read: true })
+          .eq("id", newMessage.id);
+
+        return NextResponse.json({
+          success: true,
+          message: newMessage,
+          botMessage: botMessage,
+        });
+      } else {
+        console.error("No valid output received from webhook:", data);
+        return NextResponse.json(
+          { error: "Invalid response from AI service" },
+          { status: 500 }
+        );
+      }
+    } catch (error) {
+      console.error("Error calling n8n webhook:", error);
+      return NextResponse.json(
+        { error: "Failed to process message with AI service" },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error("Error in create oracle message API:", error);
     return NextResponse.json(
