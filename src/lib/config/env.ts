@@ -52,8 +52,8 @@ export function getAppConfig(): AppConfig {
       bucketName: getEnv("GCP_BUCKET_NAME"),
     },
     database: {
-      url: getEnv("SUPABASE_URL"),
-      key: getEnv("SUPABASE_ANON_KEY"),
+      url: getEnv("NEXT_PUBLIC_SUPABASE_URL"),
+      key: getEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
       serviceKey: getEnv("SUPABASE_SERVICE_ROLE_KEY"),
     },
     app: {

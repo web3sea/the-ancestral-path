@@ -39,7 +39,7 @@ export default async function AdminLayout({
               <div className="text-sm text-primary-300/80">Admin Panel</div>
             </div>
           </header>
-          <main className="p-6">{children}</main>
+          <main className="p-6 min-h-[calc(100vh-80px)]">{children}</main>
         </section>
       </div>
     </div>

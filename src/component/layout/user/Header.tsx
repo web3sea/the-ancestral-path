@@ -9,6 +9,7 @@ import { SignOut } from "@/component/common/SignOut";
 import { ChevronDown, User, Settings } from "lucide-react";
 import { hasValidSubscriptionClient } from "@/lib/auth/session-utils";
 import { useSubscriptionStatus } from "@/component/hook/useSubscriptionStatus";
+import { useNotifications } from "@/component/provider/NotificationProvider";
 
 const alexBrush = Alex_Brush({
   subsets: ["latin"],
@@ -31,6 +32,7 @@ export default function Header() {
     isActive,
     isExpired,
   } = useSubscriptionStatus();
+  const { unreadCount } = useNotifications();
 
   const username = session?.user?.name || "sandsymes";
 
@@ -107,10 +109,10 @@ export default function Header() {
       label: "Retreats",
       href: "/retreats",
     },
-    {
-      label: "Products",
-      href: "/products",
-    },
+    // {
+    //   label: "Products",
+    //   href: "/products",
+    // },
   ];
 
   return (
@@ -205,9 +207,14 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/oracle"
-                  className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200"
+                  className="px-4 py-2 text-sm font-medium text-primary-300 hover:bg-white/10 rounded-full transition-all duration-200 relative"
                 >
                   AO
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
                 </Link>
               </>
             ) : session && !hasValidSubscription ? (
@@ -370,10 +377,15 @@ export default function Header() {
                   </Link>
                   <Link
                     href="/oracle"
-                    className="block px-6 py-2 bg-primary-300/20 text-primary-300 rounded-lg text-sm mx-3"
+                    className="block px-6 py-2 bg-primary-300/20 text-primary-300 rounded-lg text-sm mx-3 relative"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     AO
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
                   </Link>
                 </>
               ) : session && !hasValidSubscription ? (

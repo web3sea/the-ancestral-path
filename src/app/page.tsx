@@ -12,6 +12,8 @@ import TripleEMethodologySection from "@/component/business/user/home/TripleEMet
 import UniqueApproachSection from "@/component/business/user/home/UniqueApproachSection";
 import FullWidthImageSection from "@/component/common/FullWidthImageSection";
 import DescriptionVisualSection from "@/component/common/DescriptionVisualSection";
+import { NotificationProvider } from "@/component/provider/NotificationProvider";
+import { NotificationToast } from "@/component/common/NotificationToast";
 
 export const metadata: Metadata = {
   title: "The Ancestral Path - Sand Symes Wellness AO Platform",
@@ -40,7 +42,7 @@ export default async function HomePage() {
   }
 
   return (
-    <>
+    <NotificationProvider>
       <Header />
       <div className="min-h-screen">
         <SandSymesExperienceSection />
@@ -61,6 +63,7 @@ export default async function HomePage() {
         />
       </div>
       <Footer />
-    </>
+      <NotificationToast />
+    </NotificationProvider>
   );
 }

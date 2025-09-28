@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Heart, Users, Sparkles, Shield, ArrowRight } from "lucide-react";
 import Header from "@/component/layout/user/Header";
 import Footer from "@/component/layout/user/Footer";
+import { NotificationProvider } from "@/component/provider/NotificationProvider";
+import { NotificationToast } from "@/component/common/NotificationToast";
 
 export default function AboutPage() {
   const values = [
@@ -84,7 +86,7 @@ export default function AboutPage() {
   ];
 
   return (
-    <>
+    <NotificationProvider>
       <Header />
       <div className="min-h-screen bg-gradient-to-br from-black via-primary-300/10 to-black pt-20">
         {/* Hero Section */}
@@ -375,6 +377,7 @@ export default function AboutPage() {
         </section>
       </div>
       <Footer />
-    </>
+      <NotificationToast />
+    </NotificationProvider>
   );
 }

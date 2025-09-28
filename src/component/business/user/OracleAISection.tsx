@@ -1,44 +1,273 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { createSupabaseClient } from "@/lib/supabase/client";
+import { useNotifications } from "@/component/provider/NotificationProvider";
 
 interface Message {
   id: string;
   content: string;
   sender: "user" | "oracle";
   timestamp: Date;
+  isAO?: boolean;
 }
 
-const oracleResponses = [
-  "I see you're seeking guidance today, beautiful soul. What's weighing on your heart?",
-  "The universe whispers that you already know the answer within. What does your intuition tell you?",
-  "Your energy feels heavy today. Have you been carrying burdens that aren't yours to carry?",
-  "I sense a breakthrough coming for you. Are you ready to release what no longer serves?",
-  "The stars are aligning in your favor. What dreams are calling to your soul?",
-  "Your ancestors are proud of your growth. What would they want you to know right now?",
-  "I feel your heart expanding. What new love is trying to enter your life?",
-  "The sacred pause you need is here. What does your body need for healing today?",
-  "Your inner child has a message for you. Are you listening with compassion?",
-  "The path ahead is illuminated. What step feels most aligned right now?",
-];
-
 export default function OracleAISection() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content:
-        "Welcome, sacred soul. I am here to offer guidance and support on your journey. What brings you to me today?",
-      sender: "oracle",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const supabase = createSupabaseClient();
+  const { markAllAsRead } = useNotifications();
+
+  // Scroll to show the latest message from the top
+  const scrollToLatestMessage = () => {
+    if (chatContainerRef.current && messagesEndRef.current) {
+      const container = chatContainerRef.current;
+      const messageElement = messagesEndRef.current
+        .previousElementSibling as HTMLElement;
+
+      if (messageElement) {
+        // Scroll to show the top of the latest message
+        const containerRect = container.getBoundingClientRect();
+        const messageRect = messageElement.getBoundingClientRect();
+        const scrollTop =
+          container.scrollTop + (messageRect.top - containerRect.top);
+
+        container.scrollTo({
+          top: scrollTop,
+          behavior: "smooth",
+        });
+      } else {
+        // Fallback: scroll to bottom if we can't find the message element
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    scrollToLatestMessage();
+  }, [messages]);
+
+  // Auto-stop loading when conversation is ready and messages are loaded
+  useEffect(() => {
+    if (conversationId && messages.length > 0 && isLoading) {
+      // Stop loading when conversation is ready and messages are loaded
+      console.log("Conversation ready with messages, stopping loading");
+      setIsLoading(false);
+    }
+  }, [conversationId, messages.length, isLoading]);
+
+  // Initialize conversation when component mounts
+  useEffect(() => {
+    initializeConversation();
+
+    markAllAsRead();
+    const fallbackTimeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 10000);
+
+    return () => clearTimeout(fallbackTimeout);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Set up real-time subscription for AO responses
+  useEffect(() => {
+    if (!conversationId) return;
+
+    const channel = supabase
+      .channel(`oracle_messages:${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "oracle_messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload: {
+          new: {
+            id: string;
+            message: string;
+            sender_type: string;
+            created_at: string;
+            metadata?: { confidence_score?: number };
+          };
+        }) => {
+          const newMessage = payload.new;
+
+          if (newMessage.sender_type === "bot") {
+            const oracleMessage: Message = {
+              id: newMessage.id,
+              content: newMessage.message,
+              sender: "oracle",
+              timestamp: new Date(newMessage.created_at),
+              isAO: true,
+            };
+            setMessages((prev) => [...prev, oracleMessage]);
+            setIsTyping(false);
+          }
+        }
+      )
+      .subscribe(() => {});
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId, supabase]);
+
+  const initializeConversation = async () => {
+    try {
+      setIsLoading(true);
+
+      // Get existing oracle conversations for this user
+      const response = await fetch("/api/oracle/conversations", {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get conversations");
+      }
+
+      const data = await response.json();
+      let convId = conversationId;
+
+      // Each user should have only ONE oracle conversation
+      if (data.conversations && data.conversations.length > 0) {
+        // Always use the first (and should be only) conversation
+        convId = data.conversations[0].id;
+      } else {
+        const createResponse = await fetch("/api/oracle/conversations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title: "Oracle AI Guidance" }),
+        });
+
+        if (createResponse.ok) {
+          const createData = await createResponse.json();
+          convId = createData.conversation.id;
+          console.log("Created new conversation:", convId);
+        }
+      }
+
+      if (convId) {
+        setConversationId(convId);
+        // Load existing messages for this conversation
+        await loadConversationHistory(convId);
+        console.log("Conversation initialization completed successfully");
+      } else {
+        console.error("No conversation ID available");
+      }
+    } catch (error) {
+      console.error("Error initializing oracle conversation:", error);
+    } finally {
+      console.log("Setting loading to false");
+      // Use setTimeout to ensure state update happens
+      setTimeout(() => {
+        setIsLoading(false);
+        console.log("Loading state set to false");
+      }, 100);
+    }
+  };
+
+  const loadConversationHistory = async (convId: string) => {
+    try {
+      console.log("Loading conversation history for:", convId);
+      const response = await fetch(
+        `/api/oracle/messages?conversation_id=${convId}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        console.log("History response:", data);
+        const historyMessages = data.messages || [];
+        console.log("History messages count:", historyMessages.length);
+
+        // Convert database messages to UI messages
+        const uiMessages: Message[] = historyMessages.map(
+          (msg: {
+            id: string;
+            message: string;
+            sender_type: string;
+            created_at: string;
+            metadata?: { confidence_score?: number };
+          }) => ({
+            id: msg.id,
+            content: msg.message,
+            sender: msg.sender_type === "bot" ? "oracle" : "user",
+            timestamp: new Date(msg.created_at),
+            isAO: msg.sender_type === "bot",
+            confidence_score: msg.metadata?.confidence_score,
+          })
+        );
+
+        if (uiMessages.length > 0) {
+          // User has message history - show their actual messages
+          console.log("Setting UI messages:", uiMessages.length);
+          setMessages(uiMessages);
+        } else {
+          // User has no message history - show welcome message
+          const welcomeMessage: Message = {
+            id: "welcome",
+            content:
+              "Welcome, sacred soul. I am AO, your ancestral guide. I am here to offer wisdom and support on your journey. What brings you to me today?",
+            sender: "oracle",
+            timestamp: new Date(),
+            isAO: true,
+          };
+          setMessages([welcomeMessage]);
+        }
+
+        // Scroll to latest message after loading
+        setTimeout(() => scrollToLatestMessage(), 100);
+      } else {
+        console.error(
+          "Failed to load conversation history, status:",
+          response.status
+        );
+        // Fallback: show welcome message if API fails
+        const welcomeMessage: Message = {
+          id: "welcome",
+          content:
+            "Welcome, sacred soul. I am AO, your ancestral guide. I am here to offer wisdom and support on your journey. What brings you to me today?",
+          sender: "oracle",
+          timestamp: new Date(),
+          isAO: true,
+        };
+        setMessages([welcomeMessage]);
+      }
+    } catch (error) {
+      console.error("Error loading conversation history:", error);
+      // Fallback: show welcome message on error
+      const welcomeMessage: Message = {
+        id: "welcome",
+        content:
+          "Welcome, sacred soul. I am AO, your ancestral guide. I am here to offer wisdom and support on your journey. What brings you to me today?",
+        sender: "oracle",
+        timestamp: new Date(),
+        isAO: true,
+      };
+      setMessages([welcomeMessage]);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey && !isLoading) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
 
   const sendMessage = async () => {
-    if (!inputMessage.trim()) return;
+    if (!inputMessage.trim() || !conversationId) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -48,23 +277,77 @@ export default function OracleAISection() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const messageText = inputMessage;
     setInputMessage("");
     setIsTyping(true);
 
-    // Simulate Oracle AI response
-    setTimeout(() => {
-      const randomResponse =
-        oracleResponses[Math.floor(Math.random() * oracleResponses.length)];
-      const oracleMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: randomResponse,
-        sender: "oracle",
-        timestamp: new Date(),
-      };
+    try {
+      // Send message to n8n via oracle API
+      const response = await fetch("/api/oracle/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          conversation_id: conversationId,
+          message: messageText,
+        }),
+      });
 
-      setMessages((prev) => [...prev, oracleMessage]);
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      await response.json();
+
+      // The AO response will come via the real-time subscription
+      // Fallback: Poll for new messages after 3 seconds if no real-time update
+      setTimeout(() => {
+        if (isTyping) {
+          checkForNewMessages();
+        }
+      }, 3000);
+    } catch (error) {
+      console.error("Error sending message:", error);
       setIsTyping(false);
-    }, 2000);
+    }
+  };
+
+  const checkForNewMessages = async () => {
+    if (!conversationId) return;
+
+    try {
+      const response = await fetch(
+        `/api/oracle/messages?conversation_id=${conversationId}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const latestMessages = data.messages || [];
+
+        // Check if there are new bot messages
+        const botMessages = latestMessages.filter(
+          (msg: { sender_type: string }) => msg.sender_type === "bot"
+        );
+        const currentBotMessages = messages.filter(
+          (msg) => msg.sender === "oracle" && msg.isAO
+        );
+
+        if (botMessages.length > currentBotMessages.length) {
+          const newBotMessage = botMessages[botMessages.length - 1];
+          const oracleMessage: Message = {
+            id: newBotMessage.id,
+            content: newBotMessage.message,
+            sender: "oracle",
+            timestamp: new Date(newBotMessage.created_at),
+            isAO: true,
+          };
+          setMessages((prev) => [...prev, oracleMessage]);
+          setIsTyping(false);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking for new messages:", error);
+    }
   };
 
   return (
@@ -215,90 +498,116 @@ export default function OracleAISection() {
 
             {/* Chat messages */}
             <div
-              className={`transition-all duration-500 ${
-                isOpen ? "max-h-96" : "max-h-80"
-              } overflow-y-auto bg-black/20 backdrop-blur-sm`}
+              ref={chatContainerRef}
+              className={`overflow-y-auto h-[500px] transition-all duration-500 bg-black/20 backdrop-blur-sm`}
             >
               <div className="p-6 space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${
-                      message.sender === "user"
-                        ? "justify-end"
-                        : "justify-start"
-                    }`}
-                  >
-                    <div
-                      className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
-                        message.sender === "user"
-                          ? "bg-primary-300/20 backdrop-blur-sm border border-primary-300/30"
-                          : "bg-black/40 backdrop-blur-sm border border-primary-300/20"
-                      }`}
-                      style={{ color: "#d8d2c6" }}
-                    >
-                      {message.sender === "oracle" && (
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-6 h-6 bg-primary-300/30 rounded-full flex items-center justify-center">
-                            <svg
-                              className="w-3 h-3 text-primary-300"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
-                            </svg>
-                          </div>
-                          <span
-                            className="text-xs font-medium"
-                            style={{ color: "#d8d2c6", opacity: 0.7 }}
-                          >
-                            Oracle AI
-                          </span>
-                        </div>
-                      )}
-                      <p className="text-sm leading-relaxed">
-                        {message.content}
-                      </p>
-                      <p
-                        className={`text-xs mt-2 ${
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-32">
+                    <div className="flex items-center space-x-2 text-primary-300/60">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-300"></div>
+                      <span>Loading conversation...</span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${
                           message.sender === "user"
-                            ? "text-white/70"
-                            : "text-gray-500"
+                            ? "justify-end"
+                            : "justify-start"
                         }`}
                       >
-                        {message.timestamp.toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-
-                {isTyping && (
-                  <div className="flex justify-start">
-                    <div className="bg-white text-gray-800 shadow-sm border border-gray-200 px-4 py-3 rounded-2xl max-w-xs">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-6 h-6 bg-gradient-to-br from-secondary-400 to-primary-500 rounded-full flex items-center justify-center">
-                          <svg
-                            className="w-3 h-3 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
+                        <div
+                          className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
+                            message.sender === "user"
+                              ? "bg-primary-300/20 backdrop-blur-sm border border-primary-300/30"
+                              : "bg-black/40 backdrop-blur-sm border border-primary-300/20"
+                          }`}
+                          style={{ color: "#d8d2c6" }}
+                        >
+                          {message.sender === "oracle" && (
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-6 h-6 bg-primary-300/30 rounded-full flex items-center justify-center">
+                                <svg
+                                  className="w-3 h-3 text-primary-300"
+                                  fill="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
+                                </svg>
+                              </div>
+                              <span
+                                className="text-xs font-medium"
+                                style={{ color: "#d8d2c6", opacity: 0.7 }}
+                              >
+                                Oracle AI
+                              </span>
+                              {message.isAO && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-500 text-white">
+                                  AO
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <p className="text-sm leading-relaxed">
+                            {message.content}
+                          </p>
+                          <p
+                            className={`text-xs mt-2 ${
+                              message.sender === "user"
+                                ? "text-white/70"
+                                : "text-gray-500"
+                            }`}
                           >
-                            <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
-                          </svg>
+                            {message.timestamp.toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
                         </div>
-                        <span className="text-xs font-medium text-gray-500">
-                          Oracle AI
-                        </span>
                       </div>
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
+                    ))}
+
+                    {isTyping && (
+                      <div className="flex justify-start">
+                        <div className="bg-black/40 backdrop-blur-sm border border-primary-300/20 px-4 py-3 rounded-2xl max-w-xs">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 bg-primary-300/30 rounded-full flex items-center justify-center">
+                              <svg
+                                className="w-3 h-3 text-primary-300"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                              </svg>
+                            </div>
+                            <span className="text-sm text-primary-300/80 font-medium">
+                              Oracle AI
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div
+                              className="w-2 h-2 bg-primary-300/60 rounded-full animate-bounce"
+                              style={{ animationDelay: "0ms" }}
+                            ></div>
+                            <div
+                              className="w-2 h-2 bg-primary-300/60 rounded-full animate-bounce"
+                              style={{ animationDelay: "150ms" }}
+                            ></div>
+                            <div
+                              className="w-2 h-2 bg-primary-300/60 rounded-full animate-bounce"
+                              style={{ animationDelay: "300ms" }}
+                            ></div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    )}
+
+                    <div ref={messagesEndRef} />
+                  </>
                 )}
               </div>
             </div>
@@ -310,14 +619,15 @@ export default function OracleAISection() {
                   type="text"
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
                   placeholder="Share what's on your heart..."
                   className="flex-1 px-4 py-3 bg-black/30 backdrop-blur-sm border border-primary-300/30 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-300/50 focus:border-primary-300/50 placeholder-primary-300/60"
                   style={{ color: "#d8d2c6" }}
-                  disabled={isTyping}
+                  disabled={isTyping || isLoading}
                 />
                 <button
                   onClick={sendMessage}
-                  disabled={!inputMessage.trim() || isTyping}
+                  disabled={!inputMessage.trim() || isTyping || isLoading}
                   className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg
