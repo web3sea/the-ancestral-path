@@ -4,19 +4,20 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { getAppConfig } from "../config/env";
 
 /**
  * Creates a Supabase client instance
+ * Works both server-side and client-side
  */
 export function createSupabaseClient() {
-  const config = getAppConfig();
-  const url = config.database.url;
-  const anon = config.database.key;
+  // For client-side usage, use NEXT_PUBLIC_ prefixed variables
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const anon =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
   if (!url || !anon) {
     throw new Error(
-      "Missing Supabase configuration. Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables."
+      "Missing Supabase configuration. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables."
     );
   }
 

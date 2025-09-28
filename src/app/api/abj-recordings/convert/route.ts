@@ -5,6 +5,7 @@ import { createTranscoderClient } from "@/lib/gcp";
 export const runtime = "nodejs";
 
 const WEBHOOK_URL =
+  process.env.N8N_SUMMARY_WEBHOOK_URL ||
   "https://coraltriangle.app.n8n.cloud/webhook/306fac96-d39d-45cd-83eb-5514bbc78628";
 
 export async function POST(request: Request) {
