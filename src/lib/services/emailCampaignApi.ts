@@ -38,7 +38,8 @@ export const emailCampaignApi = {
   upload: async (
     data: UserEmailCampaignUploadData
   ): Promise<UserEmailCampaignUploadResponse> => {
-    const response = await fetch("/api/emai-campaigns/upload-emails", {
+    // Use bulk upload for better performance
+    const response = await fetch("/api/emai-campaigns/bulk-upload", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -52,11 +53,11 @@ export const emailCampaignApi = {
 
   delete: async (id: string): Promise<DeleteEmailCampaignResponse> => {
     const response = await fetch("/api/emai-campaigns/delete", {
-      method: "POST",
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id }),
+      body: JSON.stringify({ id: id }),
     });
 
     if (!response.ok) handleApiError(response);
@@ -81,6 +82,19 @@ export const emailCampaignApi = {
       headers: {
         "Content-Type": "application/json",
       },
+    });
+
+    if (!response.ok) handleApiError(response);
+    return response.json();
+  },
+
+  syncStatus: async (campaign_id: string, list_id: string): Promise<any> => {
+    const response = await fetch("/api/emai-campaigns/sync-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ campaign_id, list_id }),
     });
 
     if (!response.ok) handleApiError(response);

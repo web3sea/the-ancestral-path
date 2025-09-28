@@ -5,6 +5,9 @@ import { SessionProvider } from "@/component/provider/SessionProvider";
 import { SubscriptionProvider } from "@/component/provider/SubscriptionContext";
 import { ToastProvider } from "@/component/common/Toast";
 import { ConfirmDialogProvider } from "@/component/common/ConfirmDialog";
+import { ReferCodeProvider } from "@/component/provider/ReferCodeProvider";
+import { Toaster } from "sonner";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -44,11 +47,14 @@ export default function RootLayout({
       >
         <SessionProvider>
           <SubscriptionProvider>
-            <ToastProvider>
-              <ConfirmDialogProvider>
-                <main className="min-h-screen">{children}</main>
-              </ConfirmDialogProvider>
-            </ToastProvider>
+            <ReferCodeProvider>
+              <ToastProvider>
+                <Toaster />
+                <ConfirmDialogProvider>
+                  <main className="min-h-screen">{children}</main>
+                </ConfirmDialogProvider>
+              </ToastProvider>
+            </ReferCodeProvider>
           </SubscriptionProvider>
         </SessionProvider>
       </body>

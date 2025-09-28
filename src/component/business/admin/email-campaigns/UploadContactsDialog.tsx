@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Upload, Check, AlertCircle, CheckCircle } from "lucide-react";
+import { Upload, Check, AlertCircle } from "lucide-react";
+import Papa from "papaparse";
 import { Button } from "@/component/ui/button";
 import {
   Dialog,
@@ -13,20 +12,19 @@ import {
   DialogDescription,
 } from "@/component/ui/dialog";
 import { Label } from "@/component/ui/label";
-import CsvPreview from "./CsvPreview";
-import { emailCampaignSchema, type EmailCampaignFormValues } from "./schema";
-import { useEmailCampaignUpload } from "@/component/hook/useEmailCampaign";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/component/ui/select";
+import {
+  useBrevoCampaigns,
+  useBrevoLists,
+  useEmailCampaignUpload,
+} from "@/component/hook/useEmailCampaign";
 import { UserEmailCampaignUploadData } from "@/@types/email-campaign";
-
-interface BrevoList {
-  id: string;
-  name: string;
-}
-
-interface BrevoCampaign {
-  id: string;
-  name: string;
-}
 
 interface UploadResult {
   success: boolean;
@@ -38,194 +36,225 @@ interface UploadContactsDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onUploadComplete: (result: UploadResult) => void;
-  brevoLists: BrevoList[];
-  brevoCampaigns: BrevoCampaign[];
-  loadingBrevoData: boolean;
 }
+
+const CONFIG_AUTO_MAPPING = {
+  "first name": "first_name",
+  "last name": "last_name",
+  email: "email",
+  id: "kajabi_id",
+  "member id": "kajabi_member_id",
+};
 
 export function UploadContactsDialog({
   isOpen,
   onClose,
   onUploadComplete,
-  brevoLists,
-  brevoCampaigns,
-  loadingBrevoData,
 }: UploadContactsDialogProps) {
-  const [uploadStep, setUploadStep] = useState(1);
-  const [selectedBrevoList, setSelectedBrevoList] = useState<string | null>(
-    null
-  );
-  const [selectedBrevoCampaign, setSelectedBrevoCampaign] = useState<
-    string | null
-  >(null);
+  const [selectedBrevoList, setSelectedBrevoList] = useState<string>("");
+  const [selectedBrevoCampaign, setSelectedBrevoCampaign] =
+    useState<string>("");
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvPreview, setCsvPreview] = useState<string[][]>([]);
-  const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
+  const [mappedData, setMappedData] = useState<any[]>([]);
+  const [error, setError] = useState<string>("");
+
   const uploadMutation = useEmailCampaignUpload();
-  const [validRowsCount, setValidRowsCount] = useState(0);
-  const [invalidRowsCount, setInvalidRowsCount] = useState(0);
+  const { data: brevoListsData, isLoading: loadingBrevoLists } =
+    useBrevoLists();
+  const { data: brevoCampaignsData, isLoading: loadingBrevoCampaigns } =
+    useBrevoCampaigns();
 
-  const form = useForm<EmailCampaignFormValues>({
-    resolver: zodResolver(emailCampaignSchema),
-    defaultValues: {
-      campaign_name: "",
-      brevo_list_id: "",
-      brevo_campaign_id: "",
-      items: [],
-    },
-  });
+  const brevoLists = brevoListsData?.lists || [];
+  const brevoCampaigns = brevoCampaignsData?.campaigns || [];
+  const loadingBrevoData = loadingBrevoLists || loadingBrevoCampaigns;
 
-  // Reset form when dialog opens/closes
   useEffect(() => {
     if (isOpen) {
-      resetUploadModal();
+      resetForm();
     }
   }, [isOpen]);
+
+  function resetForm() {
+    setSelectedBrevoList("");
+    setSelectedBrevoCampaign("");
+    setCsvFile(null);
+    setCsvPreview([]);
+    setMappedData([]);
+    setError("");
+  }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file && file.name.endsWith(".csv")) {
       setCsvFile(file);
       parseCsvPreview(file);
+      setError("");
     } else {
-      alert("Please select a CSV file.");
+      setError("Please select a valid CSV file.");
       setCsvFile(null);
       setCsvPreview([]);
     }
   }
 
-  function parseCsvPreview(file: File) {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      const lines = text.split("\n").filter((line) => line.trim() !== "");
-      const parsed = lines.map((line) => line.split(","));
-
-      // Show first 6 rows for preview
-      setCsvPreview(parsed.slice(0, 6));
-
-      if (parsed.length > 0) {
-        const headers = parsed[0];
-        const initialMapping: Record<string, string> = {};
-        headers.forEach((header) => {
-          if (header.toLowerCase().includes("email"))
-            initialMapping[header] = "email";
-          else if (
-            header.toLowerCase().includes("first") &&
-            header.toLowerCase().includes("name")
-          )
-            initialMapping[header] = "first_name";
-          else if (
-            header.toLowerCase().includes("last") &&
-            header.toLowerCase().includes("name")
-          )
-            initialMapping[header] = "last_name";
-          else if (
-            header.toLowerCase().includes("kajabi") &&
-            header.toLowerCase().includes("id")
-          )
-            initialMapping[header] = "kajabi_id";
-          else if (
-            header.toLowerCase().includes("kajabi") &&
-            header.toLowerCase().includes("member") &&
-            header.toLowerCase().includes("id")
-          )
-            initialMapping[header] = "kajabi_member_id";
-          else initialMapping[header] = ""; // Default to no mapping
-        });
-        setFieldMapping(initialMapping);
-
-        // Count valid/invalid rows
-        const dataRows = parsed.slice(1);
-        let validCount = 0;
-        let invalidCount = 0;
-
-        dataRows.forEach((row) => {
-          const emailIndex = headers.findIndex(
-            (h) =>
-              fieldMapping[h] === "email" || h.toLowerCase().includes("email")
-          );
-          const hasEmail =
-            emailIndex >= 0 && row[emailIndex] && row[emailIndex].trim() !== "";
-
-          if (hasEmail) {
-            validCount++;
-          } else {
-            invalidCount++;
+  function parseCsvWithPapa(file: File): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results: any) => {
+          if (results.errors.length > 0) {
+            console.warn("CSV parsing warnings:", results.errors);
           }
-        });
-
-        setValidRowsCount(validCount);
-        setInvalidRowsCount(invalidCount);
-      }
-    };
-    reader.readAsText(file);
+          resolve(results.data);
+        },
+        error: (error: any) => {
+          reject(error);
+        },
+      });
+    });
   }
 
-  async function handleConfirmAndCreate() {
-    if (!selectedBrevoList || !selectedBrevoCampaign || !csvFile) {
-      alert("Please complete all steps.");
+  // Auto-mapping function using CONFIG - works with papaparse objects
+  function autoMapData(csvData: any[]): any[] {
+    if (csvData.length === 0) return [];
+
+    const mappedData = csvData.map((row) => {
+      const mappedRow: any = {
+        email: "",
+        first_name: null,
+        last_name: null,
+        kajabi_id: null,
+        kajabi_member_id: null,
+      };
+
+      // Get all column names from the first row
+      const columnNames = Object.keys(row);
+
+      columnNames.forEach((columnName) => {
+        const lowerHeader = columnName.toLowerCase().trim();
+        const value = row[columnName]?.trim() || null;
+
+        // Use CONFIG for mapping - simplified logic
+        console.log(
+          `Processing column: "${columnName}" -> "${lowerHeader}" = "${value}"`
+        );
+
+        // Direct mapping based on exact matches or patterns
+        if (lowerHeader === "first name" || lowerHeader === "firstname") {
+          mappedRow.first_name = value;
+          console.log(`✓ Mapped first_name: "${value}"`);
+        } else if (lowerHeader === "last name" || lowerHeader === "lastname") {
+          mappedRow.last_name = value;
+          console.log(`✓ Mapped last_name: "${value}"`);
+        } else if (lowerHeader === "email") {
+          mappedRow.email = value;
+          console.log(`✓ Mapped email: "${value}"`);
+        } else if (lowerHeader === "id") {
+          mappedRow.kajabi_id = value;
+          console.log(`✓ Mapped kajabi_id: "${value}"`);
+        } else if (lowerHeader === "member id" || lowerHeader === "memberid") {
+          mappedRow.kajabi_member_id = value;
+          console.log(`✓ Mapped kajabi_member_id: "${value}"`);
+        } else {
+          console.log(`✗ No mapping for: "${lowerHeader}"`);
+        }
+      });
+
+      return mappedRow;
+    });
+
+    const filteredData = mappedData.filter(
+      (row) => row.email && row.email.trim() !== ""
+    );
+    console.log("Final mapped and filtered data:", filteredData);
+    return filteredData;
+  }
+
+  async function parseCsvPreview(file: File) {
+    try {
+      const csvData = await parseCsvWithPapa(file);
+
+      // Create preview array for display (first 6 rows)
+      const previewRows = csvData.slice(0, 6);
+      const previewArray = [];
+
+      if (previewRows.length > 0) {
+        // Add headers
+        const headers = Object.keys(previewRows[0]);
+        previewArray.push(headers);
+
+        // Add data rows
+        previewRows.forEach((row) => {
+          const rowArray = headers.map((header) => row[header] || "");
+          previewArray.push(rowArray);
+        });
+      }
+
+      setCsvPreview(previewArray);
+
+      // Auto-map data
+      const mapped = autoMapData(csvData);
+      setMappedData(mapped.slice(0, 5)); // First 5 mapped rows for preview
+    } catch (error) {
+      console.error("Error parsing CSV:", error);
+      setError("Error parsing CSV file. Please check the file format.");
+    }
+  }
+
+  async function handleSubmit() {
+    setError("");
+
+    // Validation
+    if (!selectedBrevoList) {
+      setError("Please select a Brevo list.");
       return;
     }
-
-    if (!Object.values(fieldMapping).includes("email")) {
-      alert("Please map at least one field to Email (required).");
+    if (!selectedBrevoCampaign) {
+      setError("Please select a Brevo campaign.");
       return;
     }
-
-    if (validRowsCount === 0) {
-      alert(
-        "No valid contacts found. Please check your CSV file and field mapping."
-      );
+    if (!csvFile) {
+      setError("Please upload a CSV file.");
       return;
     }
 
     try {
-      // Parse CSV data for upload
-      const csvText = await readFileAsText(csvFile);
-      const lines = csvText.split("\n").filter((line) => line.trim() !== "");
-      const parsed = lines.map((line) => line.split(","));
-
-      if (parsed.length === 0) {
-        throw new Error("CSV file is empty");
+      // Use already mapped data from file parsing
+      if (mappedData.length === 0) {
+        setError(
+          "No valid contacts found. Please check your CSV file has an 'email' column."
+        );
+        return;
       }
 
-      const headers = parsed[0];
-      const dataRows = parsed.slice(1);
+      // Get all mapped data (not just preview) using papaparse
+      const csvData = await parseCsvWithPapa(csvFile);
+      const allMappedData = autoMapData(csvData);
 
-      // Map data according to field mapping and schema
-      const items = dataRows
-        .map((row) => {
-          const mappedRow: Record<string, string> = {};
-          headers.forEach((header, index) => {
-            const fieldName = fieldMapping[header];
-            if (fieldName && row[index]) {
-              mappedRow[fieldName] = row[index].trim();
-            }
-          });
-          return mappedRow;
-        })
-        .filter((row) => row.email) // Only include rows with email
-        .map((row) => ({
-          email: row.email,
-          first_name: row.first_name || null,
-          last_name: row.last_name || null,
-          kajabi_id: row.kajabi_id || null,
-          kajabi_member_id: row.kajabi_member_id || null,
-        }));
+      if (allMappedData.length === 0) {
+        setError(
+          "No valid contacts found. Please check your CSV file has an 'email' column."
+        );
+        return;
+      }
 
-      // Prepare upload data according to schema
+      // Get campaign name from selected campaign
+      const selectedCampaign = brevoCampaigns.find(
+        (c) => c.id === selectedBrevoCampaign
+      );
+
       const uploadData: UserEmailCampaignUploadData = {
-        campaign_name: `Campaign ${new Date().toISOString().split("T")[0]}`,
+        campaign_name:
+          selectedCampaign?.name ||
+          `Campaign ${new Date().toISOString().split("T")[0]}`,
         brevo_list_id: selectedBrevoList,
         brevo_campaign_id: selectedBrevoCampaign,
-        items: items,
+        items: allMappedData,
       };
 
-      // Use mutation hook
       const result = await uploadMutation.mutateAsync(uploadData);
 
-      // Show upload summary
       if (result.data.errors && result.data.errors.length > 0) {
         alert(
           `Upload completed with some errors:\n\n${result.data.errors
@@ -236,11 +265,14 @@ export function UploadContactsDialog({
         );
       } else {
         alert(
-          `Upload completed successfully!\n\nUploaded: ${result.data.uploaded_count}\nSkipped: ${result.data.skipped_count}\nTotal: ${result.data.total_processed}`
+          `Upload completed successfully!\n\nTotal contacts processed: ${
+            result.data.total_processed || result.data.uploaded_count
+          }\nSkipped/Existing contacts: ${
+            result.data.skipped_count || 0
+          }\nTotal processed: ${result.data.total_processed}`
         );
       }
 
-      // Call onUploadComplete with result data
       onUploadComplete({
         success: true,
         data: result,
@@ -249,7 +281,7 @@ export function UploadContactsDialog({
 
       onClose();
     } catch (error) {
-      alert(
+      setError(
         `Upload failed: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
@@ -257,41 +289,16 @@ export function UploadContactsDialog({
     }
   }
 
-  function readFileAsText(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        resolve(event.target?.result as string);
-      };
-      reader.onerror = () => {
-        reject(new Error("Failed to read file"));
-      };
-      reader.readAsText(file);
-    });
-  }
-
-  function resetUploadModal() {
-    setUploadStep(1);
-    setSelectedBrevoList(null);
-    setSelectedBrevoCampaign(null);
-    setCsvFile(null);
-    setCsvPreview([]);
-    setFieldMapping({});
-    setValidRowsCount(0);
-    setInvalidRowsCount(0);
-    form.reset();
-  }
-
   function handleClose() {
     onClose();
-    resetUploadModal();
+    resetForm();
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="w-full !max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>New Upload - Step {uploadStep} of 3</DialogTitle>
+          <DialogTitle>Upload CSV Contacts</DialogTitle>
           <DialogDescription>
             Upload and map your CSV contacts to Brevo lists and campaigns
           </DialogDescription>
@@ -299,105 +306,89 @@ export function UploadContactsDialog({
 
         <div className="flex-1 overflow-y-auto">
           <div className="space-y-6 w-full">
-            {/* Step 1: Brevo Selection */}
-            <div
-              className={`space-y-4 p-4 rounded-lg border ${
-                uploadStep >= 1
-                  ? "border-primary-300/30 bg-white/5"
-                  : "border-primary-300/10 bg-white/2"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    uploadStep >= 1
-                      ? "bg-primary-300 text-black"
-                      : "bg-primary-300/20 text-primary-300/60"
-                  }`}
-                >
-                  {uploadStep > 1 ? <Check className="w-4 h-4" /> : "1"}
-                </div>
-                <h3 className="text-lg font-semibold text-primary-300">
-                  Select Brevo List & Campaign
-                </h3>
-              </div>
+            {/* Brevo Selection */}
+            <div className="space-y-4 p-4 rounded-lg border border-primary-300/30 bg-white/5">
+              <h3 className="text-lg font-semibold text-primary-300">
+                Select Brevo List & Campaign
+              </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="brevo-list">Brevo List</Label>
-                  <select
-                    id="brevo-list"
-                    className="w-full px-4 py-3 rounded-lg bg-white/5 border border-primary-300/20 text-primary-300 focus:border-primary-300/40 focus:outline-none transition-colors"
-                    {...form.register("brevo_list_id")}
+                  <Select
+                    value={selectedBrevoList}
+                    onValueChange={setSelectedBrevoList}
                     disabled={loadingBrevoData}
-                    onChange={(e) => {
-                      form.setValue("brevo_list_id", e.target.value);
-                      setSelectedBrevoList(e.target.value);
-                    }}
                   >
-                    <option value="">
-                      {loadingBrevoData ? "Loading lists..." : "Select a list"}
-                    </option>
-                    {brevoLists.map((list) => (
-                      <option key={list.id} value={list.id}>
-                        {list.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={
+                          loadingBrevoData
+                            ? "Loading lists..."
+                            : "Select a list"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {brevoLists.map((list) => (
+                        <SelectItem key={list.id} value={list.id}>
+                          {list.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="brevo-campaign">Brevo Campaign</Label>
-                  <select
-                    id="brevo-campaign"
-                    className="w-full px-4 py-3 rounded-lg bg-white/5 border border-primary-300/20 text-primary-300 focus:border-primary-300/40 focus:outline-none transition-colors"
-                    {...form.register("brevo_campaign_id")}
+                  <Select
+                    value={selectedBrevoCampaign}
+                    onValueChange={setSelectedBrevoCampaign}
                     disabled={loadingBrevoData}
-                    onChange={(e) => {
-                      form.setValue("brevo_campaign_id", e.target.value);
-                      setSelectedBrevoCampaign(e.target.value);
-                    }}
                   >
-                    <option value="">
-                      {loadingBrevoData
-                        ? "Loading campaigns..."
-                        : "Select a campaign"}
-                    </option>
-                    {brevoCampaigns.map((campaign) => (
-                      <option key={campaign.id} value={campaign.id}>
-                        {campaign.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={
+                          loadingBrevoData
+                            ? "Loading campaigns..."
+                            : "Select a campaign"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {brevoCampaigns.map((campaign) => (
+                        <SelectItem key={campaign.id} value={campaign.id}>
+                          {campaign.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
 
-            {/* Step 2: CSV Upload */}
-            <div
-              className={`space-y-4 p-4 rounded-lg border ${
-                uploadStep >= 2
-                  ? "border-primary-300/30 bg-white/5"
-                  : "border-primary-300/10 bg-white/2"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    uploadStep >= 2
-                      ? "bg-primary-300 text-black"
-                      : "bg-primary-300/20 text-primary-300/60"
-                  }`}
-                >
-                  {uploadStep > 2 ? <Check className="w-4 h-4" /> : "2"}
-                </div>
+            {/* Auto-mapping info */}
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-blue-300 mb-2">
+                Auto-mapping Rules
+              </h4>
+              <div className="text-xs text-blue-300/80 space-y-1">
+                <p>• First Name → first_name</p>
+                <p>• Last Name → last_name</p>
+                <p>• Email → email</p>
+                <p>• ID → kajabi_id</p>
+                <p>• Member ID → kajabi_member_id</p>
+              </div>
+            </div>
+
+            {/* CSV Upload */}
+            {!csvFile && (
+              <div className="space-y-4 p-4 rounded-lg border border-primary-300/30 bg-white/5">
                 <h3 className="text-lg font-semibold text-primary-300">
                   Upload CSV File
                 </h3>
-              </div>
 
-              {!csvFile ? (
                 <div
-                  className={`relative rounded-xl border-2 border-dashed transition-colors ${"border-primary-300/30 bg-white/5 hover:border-primary-300/50"}`}
+                  className="relative rounded-xl border-2 border-dashed transition-colors border-primary-300/30 bg-white/5 hover:border-primary-300/50"
                   onDragEnter={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -437,86 +428,35 @@ export function UploadContactsDialog({
                     </p>
                   </label>
                 </div>
-              ) : (
-                <div className="rounded-xl border border-green-500/40 bg-green-500/5 p-4 flex items-center justify-between">
+              </div>
+            )}
+
+            {/* CSV Preview */}
+            {csvFile && (
+              <div className="space-y-4 p-4 rounded-lg border border-primary-300/30 bg-white/5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-primary-300">
+                    CSV Preview
+                  </h3>
                   <div className="flex items-center gap-3">
                     <Check className="w-5 h-5 text-green-400" />
-                    <div>
-                      <div className="text-sm text-primary-300">
-                        {csvFile.name}
-                      </div>
-                      <div className="text-xs text-primary-300/60">
-                        {(csvFile.size / 1024).toFixed(1)} KB
-                      </div>
+                    <div className="text-sm text-primary-300">
+                      {csvFile.name} ({(csvFile.size / 1024).toFixed(1)} KB)
                     </div>
                   </div>
-                  <div className="text-xs text-primary-300/70">
-                    Use Cancel to re-upload
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Step 3: CSV Preview & Mapping */}
-            {csvPreview.length > 0 && (
-              <div
-                className={`space-y-4 p-4 rounded-lg border ${
-                  uploadStep >= 3
-                    ? "border-primary-300/30 bg-white/5"
-                    : "border-primary-300/10 bg-white/2"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      uploadStep >= 3
-                        ? "bg-primary-300 text-black"
-                        : "bg-primary-300/20 text-primary-300/60"
-                    }`}
-                  >
-                    {uploadStep > 3 ? <Check className="w-4 h-4" /> : "3"}
-                  </div>
-                  <h3 className="text-lg font-semibold text-primary-300">
-                    CSV Preview & Field Mapping
-                  </h3>
                 </div>
 
-                <CsvPreview
-                  csvData={csvPreview}
-                  onFieldMappingChange={setFieldMapping}
-                  initialMapping={fieldMapping}
-                />
+                <CsvPreviewTableInline mappedData={mappedData} />
+              </div>
+            )}
 
-                {/* Validation Summary */}
-                {validRowsCount > 0 && (
-                  <div className="bg-white/5 border border-primary-300/20 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-primary-300 mb-2">
-                      Validation Summary
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-400" />
-                        <span className="text-green-300">
-                          Valid rows: {validRowsCount}
-                        </span>
-                      </div>
-                      {invalidRowsCount > 0 && (
-                        <div className="flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4 text-yellow-400" />
-                          <span className="text-yellow-300">
-                            Skipped rows: {invalidRowsCount}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    {invalidRowsCount > 0 && (
-                      <p className="text-xs text-primary-300/60 mt-2">
-                        Rows without valid email addresses will be skipped
-                        during upload.
-                      </p>
-                    )}
-                  </div>
-                )}
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-400" />
+                  <span className="text-sm text-red-300">{error}</span>
+                </div>
               </div>
             )}
 
@@ -525,61 +465,91 @@ export function UploadContactsDialog({
               <Button variant="ghost" onClick={handleClose}>
                 Cancel
               </Button>
-              <div className="flex gap-3">
-                {uploadStep < 3 && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      if (
-                        uploadStep === 1 &&
-                        selectedBrevoList &&
-                        selectedBrevoCampaign
-                      ) {
-                        setUploadStep(2);
-                      } else if (uploadStep === 2 && csvFile) {
-                        setUploadStep(3);
-                      }
-                    }}
-                    disabled={
-                      (uploadStep === 1 &&
-                        (!selectedBrevoList || !selectedBrevoCampaign)) ||
-                      (uploadStep === 2 && !csvFile)
-                    }
-                  >
-                    Next
-                  </Button>
+              <Button
+                variant="secondary"
+                onClick={handleSubmit}
+                disabled={uploadMutation.isPending}
+                className="gap-2"
+              >
+                {uploadMutation.isPending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Upload Contacts
+                  </>
                 )}
-                {uploadStep === 3 && (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={handleConfirmAndCreate}
-                    disabled={
-                      uploadMutation.isPending ||
-                      !Object.values(fieldMapping).includes("email") ||
-                      validRowsCount === 0
-                    }
-                    className="gap-2"
-                  >
-                    {uploadMutation.isPending ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      <>
-                        <Check className="w-4 h-4" />
-                        Confirm & Create ({validRowsCount} contacts)
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
+              </Button>
             </div>
           </div>
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function CsvPreviewTableInline({ mappedData }: { mappedData: any[] }) {
+  if (mappedData.length === 0) {
+    return (
+      <div className="text-center py-8 text-primary-300/60">
+        No mapped data to preview
+      </div>
+    );
+  }
+
+  // Get field names that have data
+  const fieldNames = Object.values(CONFIG_AUTO_MAPPING);
+  const displayFields = fieldNames.filter((field) =>
+    mappedData.some((row) => row[field] && row[field].trim() !== "")
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium text-primary-300">
+          Preview (First 5 rows) - Auto-mapped Data
+        </h4>
+        <div className="border border-primary-300/20 rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-black/20">
+                <tr>
+                  {displayFields.map((field, index) => (
+                    <th
+                      key={index}
+                      className="px-3 py-2 text-left text-xs font-medium text-primary-300/80 border-b border-primary-300/20"
+                    >
+                      {field.replace("_", " ")}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {mappedData.slice(0, 5).map((row, rowIndex) => (
+                  <tr key={rowIndex} className="border-b border-primary-300/10">
+                    {displayFields.map((field, colIndex) => (
+                      <td
+                        key={colIndex}
+                        className="px-3 py-2 text-sm text-primary-300/80"
+                      >
+                        {row[field] || "-"}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="text-xs text-primary-300/60">
+          <p>Showing first 5 mapped rows</p>
+          <p>Valid contacts found: {mappedData.length}</p>
+        </div>
+      </div>
+    </div>
   );
 }
 

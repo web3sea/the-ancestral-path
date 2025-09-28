@@ -74,3 +74,16 @@ export interface DeleteEmailCampaignResponse {
   success: boolean;
   message: string;
 }
+
+export interface BulkUploadRequest {
+  brevo_list_id: string;
+  brevo_campaign_id: string;
+  campaign_name: string;
+  items: Array<{
+    email: string;
+    first_name?: string;
+    last_name?: string;
+    kajabi_id?: string;
+    kajabi_member_id?: string;
+  }>;
+}

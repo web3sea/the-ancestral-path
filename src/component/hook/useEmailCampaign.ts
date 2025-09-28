@@ -72,8 +72,9 @@ export const useEmailCampaignUpload = () => {
     mutationFn: (data: UserEmailCampaignUploadData) =>
       emailCampaignApi.upload(data),
     onSuccess: () => {
+      // Invalidate all email campaign queries
       queryClient.invalidateQueries({
-        queryKey: EMAIL_CAMPAIGN_KEY_FACTORY.lists(),
+        queryKey: EMAIL_CAMPAIGN_KEY_FACTORY.all,
       });
     },
   });
@@ -85,8 +86,9 @@ export const useEmailCampaignDelete = () => {
   return useMutation({
     mutationFn: (id: string) => emailCampaignApi.delete(id),
     onSuccess: () => {
+      // Invalidate all email campaign queries
       queryClient.invalidateQueries({
-        queryKey: EMAIL_CAMPAIGN_KEY_FACTORY.lists(),
+        queryKey: EMAIL_CAMPAIGN_KEY_FACTORY.all,
       });
     },
   });

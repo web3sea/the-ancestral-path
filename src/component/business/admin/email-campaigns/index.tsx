@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { formatDate } from "@/lib/utils";
 import {
   Mail,
@@ -14,8 +14,18 @@ import {
   Trash2,
   Eye,
   Search,
+  RefreshCw,
+  Star,
+  MarsIcon,
 } from "lucide-react";
 import { Button } from "@/component/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/component/ui/select";
 import {
   Table,
   TableBody,
@@ -24,46 +34,44 @@ import {
   TableHeader,
   TableRow,
 } from "@/component/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/component/ui/dialog";
-import { Label } from "@/component/ui/label";
 import UploadContactsDialog from "./UploadContactsDialog";
-import { PaginationWrapper } from "@/component/common/PaginationWrapper";
 import {
   useEmailCampaignList,
   useEmailCampaignDelete,
-  useBrevoLists,
-  useBrevoCampaigns,
 } from "@/component/hook/useEmailCampaign";
+import { emailCampaignApi } from "@/lib/services/emailCampaignApi";
 import { UserEmailCampaignQueryParams } from "@/@types/email-campaign";
+import ViewDetailEmailDialog from "./ViewDetailEmailDialog";
 
 export function EmailCampaigns() {
-  // State management
   const [isNewUploadModalOpen, setIsNewUploadModalOpen] = useState(false);
   const [viewing, setViewing] = useState<any>(null);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [syncingAll, setSyncingAll] = useState(false);
 
-  // Query parameters
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(1);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const queryParams: UserEmailCampaignQueryParams = useMemo(
     () => ({
       page: currentPage,
       limit: pageSize,
-      search: search.trim() || undefined,
+      search: debouncedSearch.trim() || undefined,
       sortBy: "created_at",
       sortOrder: "desc",
     }),
-    [currentPage, pageSize, search]
+    [currentPage, pageSize, debouncedSearch]
   );
 
-  // React Query hooks
   const {
     data: emailCampaignsData,
     isLoading: loading,
@@ -71,27 +79,16 @@ export function EmailCampaigns() {
     refetch,
   } = useEmailCampaignList(queryParams);
 
-  const { data: brevoListsData, isLoading: loadingBrevoLists } =
-    useBrevoLists();
-
-  const { data: brevoCampaignsData, isLoading: loadingBrevoCampaigns } =
-    useBrevoCampaigns();
-
   const deleteMutation = useEmailCampaignDelete();
 
-  // Computed values
   const contacts = emailCampaignsData?.data || [];
   const pagination = emailCampaignsData?.pagination;
-  const brevoLists = brevoListsData?.lists || [];
-  const brevoCampaigns = brevoCampaignsData?.campaigns || [];
-  const loadingBrevoData = loadingBrevoLists || loadingBrevoCampaigns;
+
   const error = queryError?.message || "";
 
-  // Event handlers
   const handleUploadComplete = useCallback(
     (result: { success: boolean; data?: any; uploadData?: any }) => {
       if (result.success) {
-        // Refresh the table to show new contacts
         refetch();
       }
     },
@@ -107,6 +104,7 @@ export function EmailCampaigns() {
         if (!ok) return;
 
         await deleteMutation.mutateAsync(id);
+        // No need to refetch - React Query will automatically refetch due to invalidation
       } catch (e) {
         console.error(e);
         alert("Failed to delete contact");
@@ -121,8 +119,41 @@ export function EmailCampaigns() {
 
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
-    setCurrentPage(1); // Reset to first page when searching
   }, []);
+
+  const handlePageSizeChange = useCallback((value: string) => {
+    setPageSize(Number(value));
+    setCurrentPage(1);
+  }, []);
+
+  const handleSyncAllStatus = useCallback(async () => {
+    try {
+      setSyncingAll(true);
+
+      const uniquePairs = new Set();
+      contacts.forEach((contact) => {
+        if (contact.brevo_campaign_id && contact.brevo_list_id) {
+          uniquePairs.add(
+            `${contact.brevo_campaign_id}-${contact.brevo_list_id}`
+          );
+        }
+      });
+
+      const syncPromises = Array.from(uniquePairs).map(async (pair) => {
+        const [campaignId, listId] = (pair as string).split("-");
+        return emailCampaignApi.syncStatus(campaignId, listId);
+      });
+
+      await Promise.all(syncPromises);
+      refetch(); // Refresh the list after sync
+      alert(`Synced ${uniquePairs.size} campaigns successfully!`);
+    } catch (error: any) {
+      console.error("Sync all status error:", error);
+      alert(`Failed to sync status: ${error.message}`);
+    } finally {
+      setSyncingAll(false);
+    }
+  }, [contacts, refetch]);
 
   function getStatusIcon(status: string) {
     switch (status) {
@@ -131,7 +162,9 @@ export function EmailCampaigns() {
       case "scheduled":
         return <Clock className="w-4 h-4 text-yellow-400" />;
       case "failed":
-        return <AlertCircle className="w-4 h-4 text-red-400" />;
+        return <MarsIcon className="w-4 h-4 text-red-400" />;
+      case "freetrial":
+        return <Star className="w-4 h-4 text-blue-300/60" />;
       default:
         return <Edit3 className="w-4 h-4 text-primary-300/60" />;
     }
@@ -145,6 +178,8 @@ export function EmailCampaigns() {
         return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
       case "failed":
         return "bg-red-500/20 text-red-300 border-red-500/30";
+      case "freetrial":
+        return "bg-blue-300/20 text-blue-300 border-blue-300/30";
       default:
         return "bg-primary-300/20 text-primary-300 border-primary-300/30";
     }
@@ -174,6 +209,19 @@ export function EmailCampaigns() {
             />
           </div>
           <Button
+            variant="ghost"
+            className="gap-2 hover:bg-white/15 transition-colors"
+            onClick={handleSyncAllStatus}
+            disabled={syncingAll || contacts.length === 0}
+          >
+            {syncingAll ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            Sync All Status
+          </Button>
+          <Button
             variant="secondary"
             className="gap-2 hover:bg-white/15 transition-colors"
             onClick={() => setIsNewUploadModalOpen(true)}
@@ -191,209 +239,303 @@ export function EmailCampaigns() {
             Uploaded Contacts
           </h2>
         </div>
-        <div className="overflow-x-auto pb-2">
-          {loading && (
-            <div className="p-4">
-              <div className="h-6 w-48 bg-white/10 rounded mb-4 animate-pulse" />
-              <Table>
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-[1200px]">
+            {loading && (
+              <div className="p-4">
+                <div className="h-6 w-48 bg-white/10 rounded mb-4 animate-pulse" />
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="sticky left-0 z-20 bg-black">
+                        <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+                      </TableHead>
+                      <TableHead>
+                        <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                      </TableHead>
+                      <TableHead>
+                        <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                      </TableHead>
+                      <TableHead>
+                        <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                      </TableHead>
+                      <TableHead>
+                        <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                      </TableHead>
+                      <TableHead>
+                        <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+                      </TableHead>
+                      <TableHead>
+                        <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                      </TableHead>
+                      <TableHead>
+                        <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                      </TableHead>
+                      <TableHead className="text-right">
+                        <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Array.from({ length: 6 }).map((_, r) => (
+                      <TableRow key={r}>
+                        <TableCell className="sticky left-0 z-10 bg-black">
+                          <div className="h-4 w-32 bg-white/10 rounded animate-pulse" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-28 bg-white/10 rounded animate-pulse" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+            {error && !loading && (
+              <div className="p-6 text-red-400 text-sm">{error}</div>
+            )}
+            {!loading && !error && contacts.length === 0 && (
+              <div className="p-10 text-center">
+                <div className="mx-auto w-16 h-16 rounded-full bg-white/5 border border-primary-300/20 flex items-center justify-center">
+                  <Users className="w-7 h-7 text-primary-300/70" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-primary-300">
+                  {search ? "No contacts found" : "No contacts uploaded yet"}
+                </h3>
+                <p className="mt-1 text-sm text-primary-300/70">
+                  {search
+                    ? "Try adjusting your search criteria."
+                    : "Start by uploading your first contact CSV file."}
+                </p>
+                <div className="mt-4">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setIsNewUploadModalOpen(true)}
+                  >
+                    New Upload
+                  </Button>
+                </div>
+              </div>
+            )}
+            {contacts.length > 0 && (
+              <Table className="w-full min-w-[1200px]">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 z-20 bg-black">
-                      <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+                    <TableHead className="sticky left-0 z-20 bg-black w-[200px]">
+                      Email
                     </TableHead>
-                    <TableHead>
-                      <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                    <TableHead className="hidden sm:table-cell w-[120px]">
+                      First Name
                     </TableHead>
-                    <TableHead>
-                      <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                    <TableHead className="hidden sm:table-cell w-[120px]">
+                      Last Name
                     </TableHead>
-                    <TableHead>
-                      <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                    <TableHead className="hidden md:table-cell w-[100px]">
+                      Kajabi ID
                     </TableHead>
-                    <TableHead>
-                      <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                    <TableHead className="w-[150px]">Campaign</TableHead>
+                    <TableHead className="w-[100px]">Status</TableHead>
+                    <TableHead className="hidden xl:table-cell w-[120px]">
+                      Sent At
                     </TableHead>
-                    <TableHead>
-                      <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+                    <TableHead className="hidden xl:table-cell w-[140px]">
+                      Trial Started
                     </TableHead>
-                    <TableHead>
-                      <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                    <TableHead className="hidden xl:table-cell w-[120px]">
+                      Upgraded At
                     </TableHead>
-                    <TableHead>
-                      <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
-                    </TableHead>
-                    <TableHead className="text-right">
-                      <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+                    <TableHead className="text-right sticky right-0 z-20 bg-black w-[120px]">
+                      Actions
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {Array.from({ length: 6 }).map((_, r) => (
-                    <TableRow key={r}>
+                  {contacts.map((contact) => (
+                    <TableRow key={contact.id}>
                       <TableCell className="sticky left-0 z-10 bg-black">
-                        <div className="h-4 w-32 bg-white/10 rounded animate-pulse" />
+                        <div className="text-sm text-primary-300/80 flex items-center gap-2">
+                          <Mail className="w-4 h-4" />
+                          <span className="truncate max-w-[150px]">
+                            {contact.email}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="text-sm text-primary-300/80">
+                          {contact.first_name || "-"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="text-sm text-primary-300/80">
+                          {contact.last_name || "-"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="text-sm text-primary-300/80">
+                          {contact.kajabi_id || contact.member_kajabi_id || "-"}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+                        <div className="text-sm text-primary-300/80 truncate max-w-[120px]">
+                          {contact.campaign_name}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
+                            contact.status
+                          )}`}
+                        >
+                          {getStatusIcon(contact.status)}
+                          <span className="hidden sm:inline">
+                            {contact.status}
+                          </span>
+                        </span>
                       </TableCell>
-                      <TableCell>
-                        <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex items-center gap-2 text-sm text-primary-300/80">
+                          <Calendar className="w-4 h-4" />
+                          <span className="hidden xl:inline">
+                            {contact.sent_at
+                              ? formatDate(contact.sent_at)
+                              : "Never"}
+                          </span>
+                          <span className="xl:hidden">
+                            {contact.sent_at
+                              ? formatDate(contact.sent_at).split(" ")[0]
+                              : "Never"}
+                          </span>
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="h-4 w-28 bg-white/10 rounded animate-pulse" />
+                      <TableCell className="hidden xl:table-cell">
+                        <div className="text-sm text-primary-300/80">
+                          {contact.trial_started_at
+                            ? formatDate(contact.trial_started_at)
+                            : "Never"}
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+                      <TableCell className="hidden xl:table-cell">
+                        <div className="text-sm text-primary-300/80">
+                          {contact.upgraded_at
+                            ? formatDate(contact.upgraded_at)
+                            : "Never"}
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
-                      </TableCell>
-                      <TableCell>
-                        <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
-                      </TableCell>
-                      <TableCell>
-                        <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+                      <TableCell className="text-right sticky right-0 z-10 bg-black">
+                        <div className="flex gap-1 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setViewing(contact)}
+                            title="View Details"
+                            className="h-8 w-8"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => handleDelete(contact.id)}
+                            title="Delete"
+                            className="h-8 w-8"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
-          )}
-          {error && !loading && (
-            <div className="p-6 text-red-400 text-sm">{error}</div>
-          )}
-          {!loading && !error && contacts.length === 0 && (
-            <div className="p-10 text-center">
-              <div className="mx-auto w-16 h-16 rounded-full bg-white/5 border border-primary-300/20 flex items-center justify-center">
-                <Users className="w-7 h-7 text-primary-300/70" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold text-primary-300">
-                {search ? "No contacts found" : "No contacts uploaded yet"}
-              </h3>
-              <p className="mt-1 text-sm text-primary-300/70">
-                {search
-                  ? "Try adjusting your search criteria."
-                  : "Start by uploading your first contact CSV file."}
-              </p>
-              <div className="mt-4">
-                <Button
-                  variant="secondary"
-                  onClick={() => setIsNewUploadModalOpen(true)}
-                >
-                  New Upload
-                </Button>
-              </div>
-            </div>
-          )}
-          {contacts.length > 0 && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="sticky left-0 z-20 bg-black">
-                    Email
-                  </TableHead>
-                  <TableHead>First Name</TableHead>
-                  <TableHead>Last Name</TableHead>
-                  <TableHead>Kajabi ID</TableHead>
-                  <TableHead>Campaign</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Sent At</TableHead>
-                  <TableHead>Updated At</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {contacts.map((contact) => (
-                  <TableRow key={contact.id}>
-                    <TableCell className="sticky left-0 z-10 bg-black">
-                      <div className="text-sm text-primary-300/80 flex items-center gap-2">
-                        <Mail className="w-4 h-4" />
-                        {contact.email}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-primary-300/80">
-                        {contact.first_name || "-"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-primary-300/80">
-                        {contact.last_name || "-"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-primary-300/80">
-                        {contact.kajabi_id || contact.member_kajabi_id || "-"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-primary-300/80">
-                        {contact.campaign_name}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
-                          contact.status
-                        )}`}
-                      >
-                        {getStatusIcon(contact.status)}
-                        {contact.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-sm text-primary-300/80">
-                        <Calendar className="w-4 h-4" />
-                        {contact.sent_at
-                          ? formatDate(contact.sent_at)
-                          : "Never"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-primary-300/80">
-                        {formatDate(contact.updated_at)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2 justify-end">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setViewing(contact)}
-                          title="View Details"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => handleDelete(contact.id)}
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-primary-300/20">
-            <PaginationWrapper
-              pagination={pagination}
-              onPageChange={handlePageChange}
-            />
+        {/* Pagination - Always show */}
+        <div className="p-4 border-t border-primary-300/20">
+          <div className="flex items-center justify-between">
+            {/* Page Size Selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-primary-300/70">Show</span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={handlePageSizeChange}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2">2</SelectItem>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-primary-300/70">per page</span>
+            </div>
+
+            {/* Pagination Info */}
+            {pagination && (
+              <div className="text-sm text-primary-300/70">
+                Showing{" "}
+                {(pagination.currentPage - 1) * pagination.itemsPerPage + 1} to{" "}
+                {Math.min(
+                  pagination.currentPage * pagination.itemsPerPage,
+                  pagination.totalItems
+                )}{" "}
+                of {pagination.totalItems} results
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={!pagination.hasPreviousPage}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-primary-300/70">
+                  Page {pagination.currentPage} of {pagination.totalPages}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={!pagination.hasNextPage}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Upload Contacts Dialog */}
@@ -401,100 +543,10 @@ export function EmailCampaigns() {
         isOpen={isNewUploadModalOpen}
         onClose={() => setIsNewUploadModalOpen(false)}
         onUploadComplete={handleUploadComplete}
-        brevoLists={brevoLists}
-        brevoCampaigns={brevoCampaigns}
-        loadingBrevoData={loadingBrevoData}
       />
 
       {/* View Details Dialog */}
-      <Dialog
-        open={!!viewing}
-        onOpenChange={(open) => {
-          if (!open) setViewing(null);
-        }}
-      >
-        <DialogContent className="w-full max-w-7xl">
-          <DialogHeader>
-            <DialogTitle>Contact Details</DialogTitle>
-            <DialogDescription>
-              View detailed information about this contact
-            </DialogDescription>
-          </DialogHeader>
-          {viewing && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Email</Label>
-                  <div className="text-sm text-primary-300/80 mt-1">
-                    {viewing.email}
-                  </div>
-                </div>
-                <div>
-                  <Label>First Name</Label>
-                  <div className="text-sm text-primary-300/80 mt-1">
-                    {viewing.first_name || "N/A"}
-                  </div>
-                </div>
-                <div>
-                  <Label>Last Name</Label>
-                  <div className="text-sm text-primary-300/80 mt-1">
-                    {viewing.last_name || "N/A"}
-                  </div>
-                </div>
-                <div>
-                  <Label>Kajabi ID</Label>
-                  <div className="text-sm text-primary-300/80 mt-1">
-                    {viewing.kajabi_id || "N/A"}
-                  </div>
-                </div>
-                <div>
-                  <Label>Brevo List ID</Label>
-                  <div className="text-sm text-primary-300/80 mt-1">
-                    {viewing.brevo_list_id || "N/A"}
-                  </div>
-                </div>
-                <div>
-                  <Label>Brevo Campaign ID</Label>
-                  <div className="text-sm text-primary-300/80 mt-1">
-                    {viewing.brevo_campaign_id || "N/A"}
-                  </div>
-                </div>
-                <div>
-                  <Label>Status</Label>
-                  <div className="mt-1">
-                    <span
-                      className={`inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
-                        viewing.status
-                      )}`}
-                    >
-                      {getStatusIcon(viewing.status)}
-                      {viewing.status}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <Label>Sent At</Label>
-                  <div className="text-sm text-primary-300/80 mt-1">
-                    {viewing.sent_at ? formatDate(viewing.sent_at) : "Never"}
-                  </div>
-                </div>
-                <div>
-                  <Label>Created At</Label>
-                  <div className="text-sm text-primary-300/80 mt-1">
-                    {formatDate(viewing.created_at)}
-                  </div>
-                </div>
-                <div>
-                  <Label>Updated At</Label>
-                  <div className="text-sm text-primary-300/80 mt-1">
-                    {formatDate(viewing.updated_at)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <ViewDetailEmailDialog viewing={viewing} setViewing={setViewing} />
     </div>
   );
 }
