@@ -99,7 +99,8 @@ export async function GET(request: NextRequest) {
     const isEndDateValid = !endDate || endDate > now;
 
     const dbIsActive =
-      account.subscription_status === SubscriptionStatus.ACTIVE &&
+      (account.subscription_status === SubscriptionStatus.ACTIVE ||
+        account.subscription_status === SubscriptionStatus.CANCELLED) &&
       isEndDateValid;
 
     // Check if Stripe subscription exists and is in a valid state

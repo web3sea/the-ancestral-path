@@ -42,11 +42,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user has valid subscription
+    // Check if user has valid subscription (including cancelled subscriptions)
     const hasValidSubscription =
       [SubscriptionTier.TIER1, SubscriptionTier.TIER2].includes(
         account.subscription_tier as SubscriptionTier
-      ) && account.subscription_status === SubscriptionStatus.ACTIVE;
+      ) &&
+      (account.subscription_status === SubscriptionStatus.ACTIVE ||
+        account.subscription_status === SubscriptionStatus.CANCELLED);
 
     // Get user profile if exists
     const { data: profile } = await supabase
