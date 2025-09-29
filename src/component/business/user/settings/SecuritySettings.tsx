@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Key, Smartphone, Eye, EyeOff } from "lucide-react";
+import { Shield, Key, Smartphone, Eye } from "lucide-react";
 
 export function SecuritySettings() {
   return (

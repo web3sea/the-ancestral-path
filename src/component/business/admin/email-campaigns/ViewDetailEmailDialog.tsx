@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/component/ui/dialog";
-import { CheckCircle, AlertCircle, Clock, Stars } from "lucide-react";
+import { CheckCircle, Clock, Stars } from "lucide-react";
 
 interface ViewDetailEmailDialogProps {
   viewing: any;
@@ -97,31 +97,6 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 }
 
 function UserJourneyTimeline({ data }: { data: any }) {
-  function getStatusIcon(status: string) {
-    switch (status) {
-      case "sent":
-        return <CheckCircle className="w-4 h-4 text-green-400" />;
-      case "failed":
-        return <AlertCircle className="w-4 h-4 text-red-400" />;
-      case "freetrial":
-        return <Stars className="w-4 h-4 text-blue-300/60" />;
-      default:
-        return <Clock className="w-4 h-4 text-yellow-400" />;
-    }
-  }
-
-  function getStatusColor(status: string) {
-    switch (status) {
-      case "sent":
-        return "bg-green-500/20 text-green-300 border-green-500/30";
-      case "failed":
-        return "bg-red-500/20 text-red-300 border-red-500/30";
-      case "freetrial":
-        return "bg-blue-500/20 text-blue-300 border-blue-500/30";
-      default:
-        return "bg-primary-300/20 text-primary-300 border-primary-300/30";
-    }
-  }
   const isPending =
     !data.trial_started_at && !data.upgraded_at && data.status !== "freetrial";
   const isFreeTrial = data.status === "freetrial" && !data.upgraded_at;
@@ -168,7 +143,7 @@ function UserJourneyTimeline({ data }: { data: any }) {
       <div className="relative">
         <div className="absolute left-3 top-0 bottom-0 w-0.5"></div>
 
-        {timelineSteps.map((step, index) => (
+        {timelineSteps.map((step) => (
           <div key={step.id} className="relative flex items-center space-x-3">
             <div
               className={`relative z-10 flex items-center justify-center w-6 h-6 rounded-full border-2 flex-shrink-0 ${

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { CheckCircle, Star, Sparkles, Shield, Zap } from "lucide-react";
 import Header from "@/component/layout/user/Header";
 import Footer from "@/component/layout/user/Footer";

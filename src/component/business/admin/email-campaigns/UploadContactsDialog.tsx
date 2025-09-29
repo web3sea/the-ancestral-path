@@ -51,16 +51,14 @@ export function UploadContactsDialog({
   onUploadComplete,
 }: UploadContactsDialogProps) {
   const [selectedBrevoList, setSelectedBrevoList] = useState<string>("");
-  // Campaign selection removed
   const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [csvPreview, setCsvPreview] = useState<string[][]>([]);
+  const [, setCsvPreview] = useState<string[][]>([]);
   const [mappedData, setMappedData] = useState<any[]>([]);
   const [error, setError] = useState<string>("");
 
   const uploadMutation = useEmailCampaignUpload();
   const { data: brevoListsData, isLoading: loadingBrevoLists } =
     useBrevoLists();
-  // Campaign API removed
 
   const brevoLists = brevoListsData?.lists || [];
   const loadingBrevoData = loadingBrevoLists;
@@ -75,7 +73,6 @@ export function UploadContactsDialog({
     setSelectedBrevoList("");
     // no-op for campaign
     setCsvFile(null);
-    setCsvPreview([]);
     setMappedData([]);
     setError("");
   }
@@ -89,7 +86,6 @@ export function UploadContactsDialog({
     } else {
       setError("Please select a valid CSV file.");
       setCsvFile(null);
-      setCsvPreview([]);
     }
   }
 
@@ -171,16 +167,13 @@ export function UploadContactsDialog({
     try {
       const csvData = await parseCsvWithPapa(file);
 
-      // Create preview array for display (first 6 rows)
       const previewRows = csvData.slice(0, 6);
       const previewArray = [];
 
       if (previewRows.length > 0) {
-        // Add headers
         const headers = Object.keys(previewRows[0]);
         previewArray.push(headers);
 
-        // Add data rows
         previewRows.forEach((row) => {
           const rowArray = headers.map((header) => row[header] || "");
           previewArray.push(rowArray);
@@ -189,7 +182,6 @@ export function UploadContactsDialog({
 
       setCsvPreview(previewArray);
 
-      // Auto-map data
       const mapped = autoMapData(csvData);
       setMappedData(mapped.slice(0, 5)); // First 5 mapped rows for preview
     } catch (error) {
@@ -206,14 +198,12 @@ export function UploadContactsDialog({
       setError("Please select a Brevo list.");
       return;
     }
-    // No campaign validation needed
     if (!csvFile) {
       setError("Please upload a CSV file.");
       return;
     }
 
     try {
-      // Use already mapped data from file parsing
       if (mappedData.length === 0) {
         setError(
           "No valid contacts found. Please check your CSV file has an 'email' column."
@@ -221,7 +211,6 @@ export function UploadContactsDialog({
         return;
       }
 
-      // Get all mapped data (not just preview) using papaparse
       const csvData = await parseCsvWithPapa(csvFile);
       const allMappedData = autoMapData(csvData);
 
@@ -323,7 +312,6 @@ export function UploadContactsDialog({
                     </SelectContent>
                   </Select>
                 </div>
-                {/* Campaign selection removed */}
               </div>
             </div>
 

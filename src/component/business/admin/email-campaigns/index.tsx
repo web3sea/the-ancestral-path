@@ -9,7 +9,6 @@ import {
   Calendar,
   CheckCircle,
   Clock,
-  AlertCircle,
   Edit3,
   Trash2,
   Eye,
@@ -40,7 +39,6 @@ import {
   useEmailCampaignDelete,
   useSyncBrevoList,
 } from "@/component/hook/useEmailCampaign";
-import { emailCampaignApi } from "@/lib/services/emailCampaignApi";
 import { UserEmailCampaignQueryParams } from "@/@types/email-campaign";
 import ViewDetailEmailDialog from "./ViewDetailEmailDialog";
 

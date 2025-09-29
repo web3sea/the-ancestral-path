@@ -1,12 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CreditCard, User, Bell, Shield, HelpCircle } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import { SubscriptionSettings } from "./SubscriptionSettings";
-import { ProfileSettings } from "./ProfileSettings";
-import { NotificationSettings } from "./NotificationSettings";
-import { SecuritySettings } from "./SecuritySettings";
-import { HelpSettings } from "./HelpSettings";
 
 interface SettingsTab {
   id: string;
