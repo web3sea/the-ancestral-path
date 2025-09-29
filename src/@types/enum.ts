@@ -5,6 +5,7 @@ export enum Role {
 }
 
 export enum SubscriptionTier {
+  FREE_TRIAL = "free_trial",
   TIER1 = "tier1",
   TIER2 = "tier2",
 }

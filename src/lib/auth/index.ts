@@ -52,11 +52,12 @@ export async function requireAuth(requiredRole?: Role): Promise<Session> {
 }
 
 /**
- * Check if user has valid subscription (Tier 1 or Tier 2, active status)
+ * Check if user has valid subscription (Free Trial, Tier 1 or Tier 2, active status)
  */
 export function isValidSubscription(user: User): boolean {
   return (
-    (user.subscriptionTier === SubscriptionTier.TIER1 ||
+    (user.subscriptionTier === SubscriptionTier.FREE_TRIAL ||
+      user.subscriptionTier === SubscriptionTier.TIER1 ||
       user.subscriptionTier === SubscriptionTier.TIER2) &&
     user.subscriptionStatus === SubscriptionStatus.ACTIVE
   );

@@ -85,14 +85,6 @@ export const authOptions: NextAuthOptions = {
             token.subscriptionStatus =
               existingAccount.subscription_status as SubscriptionStatus;
             token.accountId = existingAccount.id;
-
-            console.log("JWT callback - session refreshed:", {
-              email: existingAccount.email,
-              role: token.role,
-              subscriptionTier: token.subscriptionTier,
-              subscriptionStatus: token.subscriptionStatus,
-              accountId: token.accountId,
-            });
           }
         } catch (error) {
           console.error("Error refreshing session data:", error);

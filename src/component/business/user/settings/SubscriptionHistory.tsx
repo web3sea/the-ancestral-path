@@ -24,6 +24,8 @@ export function SubscriptionHistory() {
 
   const formatTierName = (tier: string) => {
     switch (tier) {
+      case SubscriptionTier.FREE_TRIAL:
+        return "Free Trial";
       case SubscriptionTier.TIER1:
         return "Basic Plan";
       case SubscriptionTier.TIER2:
@@ -70,7 +72,7 @@ export function SubscriptionHistory() {
     try {
       await refreshHistory();
       success("History Refreshed", "Subscription history has been updated");
-    } catch (err) {
+    } catch {
       showError("Refresh Failed", "Failed to refresh subscription history");
     } finally {
       setIsRefreshing(false);

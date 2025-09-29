@@ -11,7 +11,7 @@ export interface Account {
   role_id?: string;
 
   // Subscription information
-  subscription_tier?: "tier1" | "tier2" | null;
+  subscription_tier?: "free_trial" | "tier1" | "tier2" | null;
   subscription_status?: "active" | "cancelled" | "paused" | "expired" | null;
   subscription_start_date?: string | null;
   subscription_end_date?: string | null;
@@ -20,6 +20,10 @@ export interface Account {
   stripe_customer_id?: string | null;
   stripe_subscription_id?: string | null;
   last_subscription_update?: string | null;
+
+  // Free trial tracking
+  free_trial_used?: boolean | null;
+  free_trial_used_date?: string | null;
 
   // User preferences
   preferred_platform?: "web" | "sms" | "whatsapp";

@@ -74,8 +74,15 @@ export class StripeService {
         return { success: false, error: "Invalid plan ID" };
       }
 
+      // Handle free trial subscription
+      if (planId === "free_trial") {
+        return await this.createFreeTrialSubscription(customerId, accountId);
+      }
+
       // Create Stripe price if it doesn't exist
-      const price = await this.getOrCreatePrice(plan);
+      const price = await this.getOrCreatePrice(
+        plan as typeof STRIPE_PLANS.tier1
+      );
 
       // Create subscription with payment intent
       const subscription = await stripe.subscriptions.create({
@@ -190,6 +197,78 @@ export class StripeService {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
       };
+    }
+  }
+
+  /**
+   * Create a free trial subscription (no Stripe subscription needed)
+   */
+  private async createFreeTrialSubscription(
+    customerId: string,
+    accountId: string
+  ): Promise<SubscriptionResult> {
+    try {
+      // Calculate trial end date (7 days from now)
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + 7);
+
+      // Update user subscription in database directly
+      await this.supabase
+        .from("accounts")
+        .update({
+          subscription_tier: "free_trial",
+          subscription_status: "active",
+          subscription_start_date: new Date().toISOString(),
+          subscription_end_date: trialEndDate.toISOString(),
+          stripe_customer_id: customerId,
+          last_subscription_update: new Date().toISOString(),
+          free_trial_used: true,
+          free_trial_used_date: new Date().toISOString(),
+        })
+        .eq("id", accountId);
+
+      // Record subscription history
+      await this.supabase.from("subscription_history").insert({
+        account_id: accountId,
+        tier: "free_trial",
+        status: "active",
+        start_date: new Date().toISOString(),
+        payment_method: "free_trial",
+        amount_paid: 0,
+        change_reason: "Free trial started",
+        notes: "7-day free trial with full access to Tier 1 features",
+      });
+
+      // Trigger session refresh for free trial (similar to webhook behavior)
+      await this.triggerSessionRefresh(accountId);
+
+      return {
+        success: true,
+        subscription: undefined, // No Stripe subscription for free trial
+        clientSecret: undefined,
+      };
+    } catch (error) {
+      console.error("Error creating free trial subscription:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+  /**
+   * Trigger session refresh by updating last_subscription_update timestamp
+   */
+  private async triggerSessionRefresh(accountId: string) {
+    try {
+      await this.supabase
+        .from("accounts")
+        .update({
+          last_subscription_update: new Date().toISOString(),
+        })
+        .eq("id", accountId);
+    } catch (error) {
+      console.error("Error triggering session refresh:", error);
     }
   }
 
