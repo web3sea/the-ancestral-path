@@ -3,7 +3,6 @@ import {
   UserEmailCampaignResponse,
   UserEmailCampaignUploadData,
   BrevoListResponse,
-  BrevoCampaignResponse,
 } from "@/@types/email-campaign";
 import { emailCampaignApi } from "@/lib/services/emailCampaignApi";
 import {
@@ -21,7 +20,6 @@ export const EMAIL_CAMPAIGN_KEY_FACTORY = {
   list: (params: UserEmailCampaignQueryParams) =>
     [...EMAIL_CAMPAIGN_BASE, "list", params] as const,
   brevoLists: () => [...EMAIL_CAMPAIGN_BASE, "brevo-lists"] as const,
-  brevoCampaigns: () => [...EMAIL_CAMPAIGN_BASE, "brevo-campaigns"] as const,
 } as const;
 
 export const useEmailCampaignList = (
@@ -51,19 +49,7 @@ export const useBrevoLists = (options?: UseQueryOptions<BrevoListResponse>) => {
   });
 };
 
-export const useBrevoCampaigns = (
-  options?: UseQueryOptions<BrevoCampaignResponse>
-) => {
-  return useQuery({
-    queryKey: EMAIL_CAMPAIGN_KEY_FACTORY.brevoCampaigns(),
-    queryFn: () => emailCampaignApi.getBrevoCampaigns(),
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    refetchOnReconnect: true,
-    staleTime: 1000 * 60 * 1, // 1 minute
-    ...options,
-  });
-};
+// Removed useBrevoCampaigns (no longer needed)
 
 export const useEmailCampaignUpload = () => {
   const queryClient = useQueryClient();
@@ -87,6 +73,18 @@ export const useEmailCampaignDelete = () => {
     mutationFn: (id: string) => emailCampaignApi.delete(id),
     onSuccess: () => {
       // Invalidate all email campaign queries
+      queryClient.invalidateQueries({
+        queryKey: EMAIL_CAMPAIGN_KEY_FACTORY.all,
+      });
+    },
+  });
+};
+
+export const useSyncBrevoList = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (listId: string) => emailCampaignApi.syncList(listId),
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: EMAIL_CAMPAIGN_KEY_FACTORY.all,
       });

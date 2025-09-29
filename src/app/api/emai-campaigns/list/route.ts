@@ -47,7 +47,6 @@ export async function GET(request: NextRequest) {
         last_name,
         member_kajabi_id,
         kajabi_id,
-        brevo_campaign_id,
         brevo_list_id,
         campaign_name,
         status,

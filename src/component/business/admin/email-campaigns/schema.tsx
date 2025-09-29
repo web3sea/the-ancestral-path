@@ -16,7 +16,6 @@ export const emailCampaignItemSchema = z.object({
 export const emailCampaignSchema = z.object({
   campaign_name: z.string().min(1, "Campaign name is required"),
   brevo_list_id: z.string().min(1, "Brevo list ID is required"),
-  brevo_campaign_id: z.string().min(1, "Brevo campaign ID is required"),
   items: z.array(emailCampaignItemSchema),
 });
 

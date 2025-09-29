@@ -38,6 +38,7 @@ import UploadContactsDialog from "./UploadContactsDialog";
 import {
   useEmailCampaignList,
   useEmailCampaignDelete,
+  useSyncBrevoList,
 } from "@/component/hook/useEmailCampaign";
 import { emailCampaignApi } from "@/lib/services/emailCampaignApi";
 import { UserEmailCampaignQueryParams } from "@/@types/email-campaign";
@@ -80,6 +81,7 @@ export function EmailCampaigns() {
   } = useEmailCampaignList(queryParams);
 
   const deleteMutation = useEmailCampaignDelete();
+  const syncMutation = useSyncBrevoList();
 
   const contacts = emailCampaignsData?.data || [];
   const pagination = emailCampaignsData?.pagination;
@@ -127,33 +129,26 @@ export function EmailCampaigns() {
   }, []);
 
   const handleSyncAllStatus = useCallback(async () => {
+    setSyncingAll(true);
+    const uniqueLists = new Set<string>();
+    contacts.forEach((contact) => {
+      if (contact.brevo_list_id) uniqueLists.add(contact.brevo_list_id);
+    });
     try {
-      setSyncingAll(true);
-
-      const uniquePairs = new Set();
-      contacts.forEach((contact) => {
-        if (contact.brevo_campaign_id && contact.brevo_list_id) {
-          uniquePairs.add(
-            `${contact.brevo_campaign_id}-${contact.brevo_list_id}`
-          );
-        }
-      });
-
-      const syncPromises = Array.from(uniquePairs).map(async (pair) => {
-        const [campaignId, listId] = (pair as string).split("-");
-        return emailCampaignApi.syncStatus(campaignId, listId);
-      });
-
-      await Promise.all(syncPromises);
-      refetch(); // Refresh the list after sync
-      alert(`Synced ${uniquePairs.size} campaigns successfully!`);
+      await Promise.all(
+        Array.from(uniqueLists).map((listId) =>
+          syncMutation.mutateAsync(listId)
+        )
+      );
+      refetch();
+      alert(`Synced ${uniqueLists.size} lists successfully!`);
     } catch (error: any) {
       console.error("Sync all status error:", error);
       alert(`Failed to sync status: ${error.message}`);
     } finally {
       setSyncingAll(false);
     }
-  }, [contacts, refetch]);
+  }, [contacts, refetch, syncMutation]);
 
   function getStatusIcon(status: string) {
     switch (status) {
@@ -209,16 +204,12 @@ export function EmailCampaigns() {
             />
           </div>
           <Button
-            variant="ghost"
+            variant="secondary"
             className="gap-2 hover:bg-white/15 transition-colors"
             onClick={handleSyncAllStatus}
-            disabled={syncingAll || contacts.length === 0}
+            disabled={syncingAll}
           >
-            {syncingAll ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4" />
-            )}
+            <RefreshCw className="w-4 h-4" />
             Sync All Status
           </Button>
           <Button

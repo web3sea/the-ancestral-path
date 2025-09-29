@@ -44,7 +44,7 @@ export function removeReferCodeFromStorage(): void {
 /**
  * Check if referCode is valid format
  */
-export function isValidReferCode(referCode: string): boolean {
+export function isValidReferCode(referCode: string): boolean | string {
   // Basic validation - can be extended based on your requirements
   return referCode && referCode.length > 0 && referCode.length <= 100;
 }

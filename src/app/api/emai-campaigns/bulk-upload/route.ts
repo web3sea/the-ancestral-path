@@ -9,20 +9,22 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 const loggerContext = "EmailCampaignsBulkUpload";
+const DEFAULT_LIST_FREE_TRIAL_ID = getAppConfig().brevo.list_free_trial_id;
+const BREVO_API_KEY = getAppConfig().brevo.apiKey;
 
 export async function POST(request: Request) {
   try {
-    const apiKey = getAppConfig().brevo.apiKey;
+    const apiKey = BREVO_API_KEY;
     if (!apiKey) {
       throw new Error("BREVO_API_KEY is not configured");
     }
 
-    const {
-      brevo_list_id,
-      brevo_campaign_id,
-      campaign_name,
-      items,
-    }: BulkUploadRequest = await request.json();
+    let { brevo_list_id, campaign_name, items }: BulkUploadRequest =
+      await request.json();
+
+    if (!brevo_list_id) {
+      brevo_list_id = DEFAULT_LIST_FREE_TRIAL_ID || "";
+    }
 
     Logger.log(
       `🚀 Starting bulk upload: ${items.length} contacts to list ${brevo_list_id}`,
@@ -37,24 +39,11 @@ export async function POST(request: Request) {
       loggerContext
     );
 
-    // Step 2: Move contacts to Campaign
-    Logger.log("🎯 Step 2: Moving contacts to campaign...", loggerContext);
-    const campaignResult = await addContactsToCampaign(
-      brevo_campaign_id,
-      brevo_list_id,
-      apiKey
-    );
-    Logger.log(
-      `✅ Campaign update completed: ${campaignResult} contacts added to campaign`,
-      loggerContext
-    );
-
     // Step 3: Save to Supabase (with duplicate check)
     Logger.log("💾 Step 3: Saving to Supabase...", loggerContext);
     const supabaseResult = await handleSupabaseUpload(
       items,
       brevo_list_id,
-      brevo_campaign_id,
       campaign_name
     );
     Logger.log(
@@ -68,7 +57,6 @@ export async function POST(request: Request) {
       data: {
         total_processed: items.length,
         brevo_uploaded: brevoResult.processed,
-        campaign_updated: campaignResult,
         supabase_saved: supabaseResult.saved,
         errors: [...brevoResult.errors, ...supabaseResult.errors],
         total_errors: brevoResult.errors.length + supabaseResult.errors.length,
@@ -124,41 +112,12 @@ async function uploadToBrevoList(
   };
 }
 
-// Step 2: Add contacts to Campaign
-async function addContactsToCampaign(
-  campaignId: string,
-  listId: string,
-  apiKey: string
-) {
-  const response = await fetch(
-    `https://api.brevo.com/v3/emailCampaigns/${campaignId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": apiKey,
-      },
-      body: JSON.stringify({
-        recipients: {
-          listIds: [parseInt(listId)],
-        },
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    handleApiError(response);
-    return 0;
-  }
-
-  return 1; // Campaign updated successfully
-}
+// Step 2 removed: campaign assignment no longer needed
 
 // Step 3: Save to Supabase with duplicate check
 async function handleSupabaseUpload(
   contacts: any[],
   brevo_list_id: string,
-  brevo_campaign_id: string,
   campaign_name: string
 ) {
   const supabase = createSupabaseAdmin();
@@ -183,7 +142,6 @@ async function handleSupabaseUpload(
       last_name: contact.last_name || null,
       member_kajabi_id: contact.kajabi_member_id || null,
       kajabi_id: contact.kajabi_id || null,
-      brevo_campaign_id,
       brevo_list_id,
       campaign_name,
       status: "pending",

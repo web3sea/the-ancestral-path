@@ -26,7 +26,6 @@ export interface UserEmailCampaignResponse {
 export interface UserEmailCampaignUploadData {
   campaign_name: string;
   brevo_list_id: string;
-  brevo_campaign_id: string;
   items: UserEmailCampaignUploadItem[];
 }
 
@@ -53,18 +52,13 @@ export interface BrevoList {
   name: string;
 }
 
-export interface BrevoCampaign {
-  id: string;
-  name: string;
-}
+// Removed BrevoCampaign types (no longer used)
 
 export interface BrevoListResponse {
   lists: BrevoList[];
 }
 
-export interface BrevoCampaignResponse {
-  campaigns: BrevoCampaign[];
-}
+// Removed BrevoCampaignResponse (no longer used)
 
 export interface DeleteEmailCampaignParams {
   id: string;
@@ -77,7 +71,6 @@ export interface DeleteEmailCampaignResponse {
 
 export interface BulkUploadRequest {
   brevo_list_id: string;
-  brevo_campaign_id: string;
   campaign_name: string;
   items: Array<{
     email: string;

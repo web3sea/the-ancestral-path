@@ -5,7 +5,6 @@ import {
   UserEmailCampaignUploadResponse,
   DeleteEmailCampaignResponse,
   BrevoListResponse,
-  BrevoCampaignResponse,
 } from "@/@types/email-campaign";
 import { handleApiError } from "@/lib/utils/errors";
 
@@ -75,28 +74,12 @@ export const emailCampaignApi = {
     if (!response.ok) handleApiError(response);
     return response.json();
   },
-
-  getBrevoCampaigns: async (): Promise<BrevoCampaignResponse> => {
-    const response = await fetch("/api/emai-campaigns/brevo-campaigns", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) handleApiError(response);
-    return response.json();
-  },
-
-  syncStatus: async (campaign_id: string, list_id: string): Promise<any> => {
+  syncList: async (listId: string) => {
     const response = await fetch("/api/emai-campaigns/sync-status", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ campaign_id, list_id }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ list_id: listId }),
     });
-
     if (!response.ok) handleApiError(response);
     return response.json();
   },

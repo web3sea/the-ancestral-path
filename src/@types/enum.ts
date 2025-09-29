@@ -7,6 +7,7 @@ export enum Role {
 export enum SubscriptionTier {
   TIER1 = "tier1",
   TIER2 = "tier2",
+  FREE_TRIAL = "free_trial",
 }
 
 export enum SubscriptionStatus {
@@ -14,6 +15,13 @@ export enum SubscriptionStatus {
   CANCELLED = "cancelled",
   PAUSED = "paused",
   EXPIRED = "expired",
+}
+
+export enum EmailCampaignStatus {
+  FREE_TRIAL = "freetrial",
+  PENDING = "pending",
+  SENT = "sent",
+  DONE = "done",
 }
 
 export interface PaginationOutputDto {

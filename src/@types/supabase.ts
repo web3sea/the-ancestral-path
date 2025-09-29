@@ -64,6 +64,8 @@ export type Database = {
           deleted_at: string | null
           email: string
           email_notifications: boolean | null
+          free_trial_used: boolean | null
+          free_trial_used_date: string | null
           id: string
           language: string | null
           last_active_at: string | null
@@ -95,6 +97,8 @@ export type Database = {
           deleted_at?: string | null
           email: string
           email_notifications?: boolean | null
+          free_trial_used?: boolean | null
+          free_trial_used_date?: string | null
           id?: string
           language?: string | null
           last_active_at?: string | null
@@ -126,6 +130,8 @@ export type Database = {
           deleted_at?: string | null
           email?: string
           email_notifications?: boolean | null
+          free_trial_used?: boolean | null
+          free_trial_used_date?: string | null
           id?: string
           language?: string | null
           last_active_at?: string | null
@@ -334,7 +340,6 @@ export type Database = {
       }
       user_email_campaign: {
         Row: {
-          brevo_campaign_id: string | null
           brevo_list_id: string | null
           campaign_name: string
           created_at: string
@@ -354,7 +359,6 @@ export type Database = {
           upgraded_at: string | null
         }
         Insert: {
-          brevo_campaign_id?: string | null
           brevo_list_id?: string | null
           campaign_name: string
           created_at?: string
@@ -374,7 +378,6 @@ export type Database = {
           upgraded_at?: string | null
         }
         Update: {
-          brevo_campaign_id?: string | null
           brevo_list_id?: string | null
           campaign_name?: string
           created_at?: string
@@ -546,41 +549,73 @@ export type Database = {
       zoom_attendance: {
         Row: {
           created_at: string
-          duration_minutes: number | null
           email: string | null
           id: string
-          join_time: string | null
-          leave_time: string | null
-          participant_uuid: string | null
-          reason: string | null
+          participant_user_id: string | null
           user_name: string | null
-          zoom_meeting_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          participant_user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          participant_user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: []
+      }
+      zoom_join_histories: {
+        Row: {
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          join_time: string | null
+          leave_reason: string | null
+          leave_time: string | null
+          topic: string | null
+          zoom_event: string | null
+          zoom_meeting_id: string | null
+          zoom_user_id: string | null
         }
         Insert: {
           created_at?: string
           duration_minutes?: number | null
-          email?: string | null
           id?: string
           join_time?: string | null
+          leave_reason?: string | null
           leave_time?: string | null
-          participant_uuid?: string | null
-          reason?: string | null
-          user_name?: string | null
-          zoom_meeting_id: string
+          topic?: string | null
+          zoom_event?: string | null
+          zoom_meeting_id?: string | null
+          zoom_user_id?: string | null
         }
         Update: {
           created_at?: string
           duration_minutes?: number | null
-          email?: string | null
           id?: string
           join_time?: string | null
+          leave_reason?: string | null
           leave_time?: string | null
-          participant_uuid?: string | null
-          reason?: string | null
-          user_name?: string | null
-          zoom_meeting_id?: string
+          topic?: string | null
+          zoom_event?: string | null
+          zoom_meeting_id?: string | null
+          zoom_user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "zoom_join_histories_zoom_user_id_fkey"
+            columns: ["zoom_user_id"]
+            isOneToOne: false
+            referencedRelation: "zoom_attendance"
+            referencedColumns: ["participant_user_id"]
+          },
+        ]
       }
     }
     Views: {
@@ -642,6 +677,10 @@ export type Database = {
         Args: { "": unknown[] }
         Returns: number
       }
+      has_used_free_trial: {
+        Args: { p_account_id: string }
+        Returns: boolean
+      }
       hnsw_bit_support: {
         Args: { "": unknown }
         Returns: unknown
@@ -681,6 +720,10 @@ export type Database = {
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: string
+      }
+      mark_free_trial_used: {
+        Args: { p_account_id: string }
+        Returns: boolean
       }
       match_documents: {
         Args:

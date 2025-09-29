@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from "@/component/ui/select";
 import {
-  useBrevoCampaigns,
   useBrevoLists,
   useEmailCampaignUpload,
 } from "@/component/hook/useEmailCampaign";
@@ -52,8 +51,7 @@ export function UploadContactsDialog({
   onUploadComplete,
 }: UploadContactsDialogProps) {
   const [selectedBrevoList, setSelectedBrevoList] = useState<string>("");
-  const [selectedBrevoCampaign, setSelectedBrevoCampaign] =
-    useState<string>("");
+  // Campaign selection removed
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvPreview, setCsvPreview] = useState<string[][]>([]);
   const [mappedData, setMappedData] = useState<any[]>([]);
@@ -62,12 +60,10 @@ export function UploadContactsDialog({
   const uploadMutation = useEmailCampaignUpload();
   const { data: brevoListsData, isLoading: loadingBrevoLists } =
     useBrevoLists();
-  const { data: brevoCampaignsData, isLoading: loadingBrevoCampaigns } =
-    useBrevoCampaigns();
+  // Campaign API removed
 
   const brevoLists = brevoListsData?.lists || [];
-  const brevoCampaigns = brevoCampaignsData?.campaigns || [];
-  const loadingBrevoData = loadingBrevoLists || loadingBrevoCampaigns;
+  const loadingBrevoData = loadingBrevoLists;
 
   useEffect(() => {
     if (isOpen) {
@@ -77,7 +73,7 @@ export function UploadContactsDialog({
 
   function resetForm() {
     setSelectedBrevoList("");
-    setSelectedBrevoCampaign("");
+    // no-op for campaign
     setCsvFile(null);
     setCsvPreview([]);
     setMappedData([]);
@@ -210,10 +206,7 @@ export function UploadContactsDialog({
       setError("Please select a Brevo list.");
       return;
     }
-    if (!selectedBrevoCampaign) {
-      setError("Please select a Brevo campaign.");
-      return;
-    }
+    // No campaign validation needed
     if (!csvFile) {
       setError("Please upload a CSV file.");
       return;
@@ -239,17 +232,9 @@ export function UploadContactsDialog({
         return;
       }
 
-      // Get campaign name from selected campaign
-      const selectedCampaign = brevoCampaigns.find(
-        (c) => c.id === selectedBrevoCampaign
-      );
-
       const uploadData: UserEmailCampaignUploadData = {
-        campaign_name:
-          selectedCampaign?.name ||
-          `Campaign ${new Date().toISOString().split("T")[0]}`,
+        campaign_name: `Import ${new Date().toISOString().split("T")[0]}`,
         brevo_list_id: selectedBrevoList,
-        brevo_campaign_id: selectedBrevoCampaign,
         items: allMappedData,
       };
 
@@ -300,7 +285,7 @@ export function UploadContactsDialog({
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Upload CSV Contacts</DialogTitle>
           <DialogDescription>
-            Upload and map your CSV contacts to Brevo lists and campaigns
+            Upload and map your CSV contacts to a Brevo list
           </DialogDescription>
         </DialogHeader>
 
@@ -309,7 +294,7 @@ export function UploadContactsDialog({
             {/* Brevo Selection */}
             <div className="space-y-4 p-4 rounded-lg border border-primary-300/30 bg-white/5">
               <h3 className="text-lg font-semibold text-primary-300">
-                Select Brevo List & Campaign
+                Select Brevo List
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -338,31 +323,7 @@ export function UploadContactsDialog({
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="brevo-campaign">Brevo Campaign</Label>
-                  <Select
-                    value={selectedBrevoCampaign}
-                    onValueChange={setSelectedBrevoCampaign}
-                    disabled={loadingBrevoData}
-                  >
-                    <SelectTrigger>
-                      <SelectValue
-                        placeholder={
-                          loadingBrevoData
-                            ? "Loading campaigns..."
-                            : "Select a campaign"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {brevoCampaigns.map((campaign) => (
-                        <SelectItem key={campaign.id} value={campaign.id}>
-                          {campaign.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Campaign selection removed */}
               </div>
             </div>
 

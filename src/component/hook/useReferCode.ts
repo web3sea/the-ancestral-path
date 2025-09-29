@@ -23,39 +23,42 @@ export function useReferCode() {
 
   const processReferCode = async (referCode: string, email: string) => {
     try {
-      const response = await fetch("/api/auth/process-refer-code", {
+      const response = await fetch("/api/auth/activate-free-trial", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ referCode }),
+        body: JSON.stringify({ code: referCode }),
       });
 
       const result = await response.json();
 
-      if (response.ok) {
-        console.log("ReferCode processed successfully:", result);
-        removeReferCodeFromStorage();
+      // Always remove referCode from storage after processing
+      removeReferCodeFromStorage();
 
+      if (response.ok) {
+        console.log("Free trial processing result:", result);
         if (typeof window !== "undefined") {
-          toast.success(
-            "Congratulations! You have activated a free trial with refer code: " +
-              referCode
-          );
+          if (result.alreadyUsed || result.hasSubscription) {
+            toast.info(result.message);
+          } else {
+            toast.success(result.message);
+          }
         }
       } else {
-        console.error("Error processing referCode:", result);
-
-        if (result.alreadyUsedTrial) {
-          console.log("User already used a trial");
-          removeReferCodeFromStorage();
-        } else if (result.hasSubscription) {
-          console.log("User already has a subscription");
-          removeReferCodeFromStorage();
+        console.error("Error activating free trial:", result);
+        if (typeof window !== "undefined") {
+          toast.error(
+            result.error || "Failed to activate free trial. Please try again."
+          );
         }
       }
     } catch (error) {
-      console.error("Error calling process-refer-code API:", error);
+      console.error("Error calling activate-free-trial API:", error);
+      removeReferCodeFromStorage();
+      if (typeof window !== "undefined") {
+        toast.error("Failed to activate free trial. Please try again.");
+      }
     }
   };
 
