@@ -153,7 +153,7 @@ export default function OracleConversationsPage() {
                               <LogOut className="w-4 h-4 text-red-500" />
 
                               <span className="text-red-500 font-medium">
-                                Leaved
+                                Left
                               </span>
                             </>
                           }
