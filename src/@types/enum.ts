@@ -8,7 +8,6 @@ export enum SubscriptionTier {
   FREE_TRIAL = "free_trial",
   TIER1 = "tier1",
   TIER2 = "tier2",
-  FREE_TRIAL = "free_trial",
 }
 
 export enum SubscriptionStatus {
