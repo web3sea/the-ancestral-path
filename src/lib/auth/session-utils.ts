@@ -27,7 +27,7 @@ export async function validateAdminSession(): Promise<Session> {
 }
 
 /**
- * Checks if user has valid subscription (TIER1 or TIER2 with ACTIVE status)
+ * Checks if user has valid subscription (FREE_TRIAL, TIER1 or TIER2 with ACTIVE status)
  * Note: Date-based validation is handled in middleware for better performance
  */
 export function hasValidSubscription(session: Session): boolean {
@@ -43,9 +43,11 @@ export function hasValidSubscription(session: Session): boolean {
   const hasValidTierAndStatus =
     subscriptionTier &&
     subscriptionStatus &&
-    [SubscriptionTier.TIER1, SubscriptionTier.TIER2].includes(
-      subscriptionTier
-    ) &&
+    [
+      SubscriptionTier.FREE_TRIAL,
+      SubscriptionTier.TIER1,
+      SubscriptionTier.TIER2,
+    ].includes(subscriptionTier) &&
     (subscriptionStatus === SubscriptionStatus.ACTIVE ||
       subscriptionStatus === SubscriptionStatus.CANCELLED);
 
@@ -102,9 +104,11 @@ export async function hasValidSubscriptionWithDateCheck(
   const hasValidTierAndStatus =
     subscriptionTier &&
     subscriptionStatus &&
-    [SubscriptionTier.TIER1, SubscriptionTier.TIER2].includes(
-      subscriptionTier
-    ) &&
+    [
+      SubscriptionTier.FREE_TRIAL,
+      SubscriptionTier.TIER1,
+      SubscriptionTier.TIER2,
+    ].includes(subscriptionTier) &&
     (subscriptionStatus === SubscriptionStatus.ACTIVE ||
       subscriptionStatus === SubscriptionStatus.CANCELLED);
 
@@ -142,9 +146,11 @@ export function hasValidSubscriptionClient(session: Session | null): boolean {
   const hasValidTierAndStatus =
     subscriptionTier &&
     subscriptionStatus &&
-    [SubscriptionTier.TIER1, SubscriptionTier.TIER2].includes(
-      subscriptionTier
-    ) &&
+    [
+      SubscriptionTier.FREE_TRIAL,
+      SubscriptionTier.TIER1,
+      SubscriptionTier.TIER2,
+    ].includes(subscriptionTier) &&
     (subscriptionStatus === SubscriptionStatus.ACTIVE ||
       subscriptionStatus === SubscriptionStatus.CANCELLED);
 

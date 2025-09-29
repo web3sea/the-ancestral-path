@@ -27,6 +27,22 @@ interface Plan {
 
 const PLANS: Plan[] = [
   {
+    id: "free_trial",
+    name: "Free Trial",
+    price: 0, // Free
+    period: "7 days",
+    features: [
+      "All resources access",
+      "Daily AO messaging (once per day only)",
+      "Personal dashboard",
+      "Guided breathwork sessions",
+      "Basic meditation practices",
+      "Oracle guidance",
+      "Email support",
+    ],
+    popular: true,
+  },
+  {
     id: "tier1",
     name: "Tier 1",
     price: 2900, // Price in cents for Stripe
@@ -55,7 +71,6 @@ const PLANS: Plan[] = [
       "Group workshops",
       "Priority support",
     ],
-    popular: true,
   },
 ];
 
@@ -66,6 +81,7 @@ export function SubscriptionSection() {
   const [clientSecret, setClientSecret] = useState<string>("");
   const [showPayment, setShowPayment] = useState(false);
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [hasUsedFreeTrial, setHasUsedFreeTrial] = useState(false);
   const { updateSession } = useSessionUpdate();
   const router = useRouter();
   const { success } = useToast();
@@ -77,6 +93,11 @@ export function SubscriptionSection() {
         const data = await response.json();
         if (data.success) {
           setPlans(data.plans);
+          // Check if free trial is missing (user has used it)
+          const hasFreeTrial = data.plans.some(
+            (plan: Plan) => plan.id === "free_trial"
+          );
+          setHasUsedFreeTrial(!hasFreeTrial);
         }
       } catch (error) {
         console.error("Error loading plans:", error);
@@ -119,6 +140,21 @@ export function SubscriptionSection() {
           // Set client secret and show payment form
           setClientSecret(data.clientSecret);
           setShowPayment(true);
+        } else if (selectedPlan === "free_trial") {
+          // Free trial doesn't need payment
+          success(
+            "Free Trial Started!",
+            "Your 7-day free trial has begun. Enjoy full access to all features!"
+          );
+
+          // Force session refresh for free trial
+          if (data.requiresSessionRefresh) {
+            await updateSession();
+            // Wait a moment for session to update
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+
+          router.push("/resources");
         } else {
           setError("Payment form not available. Please try again.");
         }
@@ -199,12 +235,38 @@ export function SubscriptionSection() {
             personalized wellness experience with guided practices, oracle
             guidance, and transformative content.
           </p>
+
+          {/* Free Trial Status Message */}
+          {hasUsedFreeTrial && (
+            <motion.div
+              className="mt-8 max-w-2xl mx-auto"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="bg-gold/10 border border-gold/20 rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <Heart className="w-5 h-5 text-gold" />
+                  <h3 className="text-lg font-semibold text-gold">
+                    Free Trial Already Used
+                  </h3>
+                </div>
+                <p className="text-gold/80 leading-relaxed">
+                  You&apos;ve already enjoyed your 7-day free trial! Choose from
+                  our paid plans below to continue your wellness journey with
+                  full access to all features.
+                </p>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
 
         {!showPayment && !clientSecret && (
           <>
             <motion.div
-              className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16"
+              className={`grid grid-cols-1 ${
+                hasUsedFreeTrial ? "lg:grid-cols-2" : "lg:grid-cols-3"
+              } gap-8 mb-16`}
               initial={{ y: 60, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{
@@ -253,7 +315,9 @@ export function SubscriptionSection() {
                       <div className="inline-flex items-center gap-2 bg-primary-300/10 border border-primary-300/20 rounded-full px-4 py-2">
                         <Clock className="w-4 h-4 text-primary-300/70" />
                         <span className="text-primary-300/70 text-sm font-medium">
-                          Billed monthly, cancel anytime
+                          {plan.id === "free_trial"
+                            ? "7-day free trial, no payment required"
+                            : "Billed monthly, cancel anytime"}
                         </span>
                       </div>
                     </div>

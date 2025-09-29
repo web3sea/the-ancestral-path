@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { stripeService } from "@/lib/stripe/service";
 import { STRIPE_PLANS } from "@/lib/stripe/config";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,6 +35,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user is trying to subscribe to free trial and has already used it
+    if (planId === "free_trial") {
+      const supabase = createSupabaseAdmin();
+      const { data: account, error: accountError } = await supabase
+        .from("accounts")
+        .select("free_trial_used")
+        .eq("id", token.accountId)
+        .single();
+
+      if (accountError) {
+        console.error("Error checking free trial status:", accountError);
+        return NextResponse.json(
+          { error: "Failed to check free trial status" },
+          { status: 500 }
+        );
+      }
+
+      if (account?.free_trial_used) {
+        return NextResponse.json(
+          {
+            error: "Free trial already used",
+            message:
+              "You have already used your free trial. Please choose a paid plan to continue.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     try {
       let customerId = token.stripeCustomerId as string;
 
@@ -57,6 +87,18 @@ export async function POST(request: NextRequest) {
           { error: result.error || "Failed to create subscription" },
           { status: 500 }
         );
+      }
+
+      // For free trial, no client secret is needed
+      if (planId === "free_trial") {
+        return NextResponse.json({
+          success: true,
+          message: "Free trial started successfully",
+          clientSecret: null,
+          subscription: result.subscription,
+          plan,
+          requiresSessionRefresh: true, // Flag to trigger client-side session refresh
+        });
       }
 
       if (!result.clientSecret) {

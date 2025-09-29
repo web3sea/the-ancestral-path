@@ -13,6 +13,23 @@ export const getStripePublishableKey = () => {
 
 // Subscription plans based on AO Platform Architecture
 export const STRIPE_PLANS = {
+  free_trial: {
+    id: "free_trial",
+    name: "Free Trial",
+    price: 0, // Free
+    interval: "month",
+    trial_period_days: 7, // 7-day free trial
+    features: [
+      "All resources access",
+      "Daily AO messaging (once per day only)",
+      "Personal dashboard",
+      "Guided breathwork sessions",
+      "Basic meditation practices",
+      "Oracle guidance",
+      "Email support",
+    ],
+    description: "7-day free trial with full access to Tier 1 features",
+  },
   tier1: {
     id: "tier1",
     name: "Tier 1",

@@ -8,6 +8,18 @@ export default function ResourcesSection() {
   const offerings = [
     {
       id: "01",
+      title: "AO",
+      description:
+        "AO is an innovative digital companion that provides personalized spiritual guidance and insights. This advanced AI system draws from ancient wisdom traditions and Sand's extensive knowledge to offer meaningful responses.",
+      image: "/images/oracle-ai.png",
+      backgroundImage: "/images/bg-image.png",
+      link: "/oracle",
+      category: "AI Guidance",
+      duration: "24/7",
+      format: "Digital",
+    },
+    {
+      id: "02",
       title: "Breathwork with AO",
       description:
         "Breathwork with AO provide an accessible entry point into Sand's transformational work. Through online group breathwork sessions, these bi-monthly programs help women clear generational patterns, connect with ancestral wisdom, and envision a new version of themselves.",
@@ -19,7 +31,7 @@ export default function ResourcesSection() {
       format: "Online Group",
     },
     {
-      id: "02",
+      id: "03",
       title: "Personalized Medicine Containers",
       description:
         "Sand offers three distinct approaches to highly personalized, carefully curated containers for women looking to expand, elevate, and express themselves profoundly. These containers use sacred medicines to guide you on a journey of deep transformation for long-lasting change.",
@@ -31,7 +43,7 @@ export default function ResourcesSection() {
       format: "One-on-One",
     },
     {
-      id: "03",
+      id: "04",
       title: "Medicine Retreats",
       description:
         "Our retreats are highly immersive and intimate, designed for a maximum of 10 women to ensure safety and foster deep connections. These multi-day intensives incorporate sacred medicines, enhancing creativity and strengthening self-connection.",
@@ -43,7 +55,7 @@ export default function ResourcesSection() {
       format: "In-person",
     },
     {
-      id: "04",
+      id: "05",
       title: "Wisdom Drops",
       description:
         "Wisdom Drops are bite-sized insights and teachings that deliver profound wisdom in digestible formats. These carefully curated pieces of ancestral knowledge and spiritual guidance help you integrate transformative concepts into your daily life.",
@@ -55,7 +67,7 @@ export default function ResourcesSection() {
       format: "Digital",
     },
     {
-      id: "05",
+      id: "06",
       title: "Astrological Download",
       description:
         "Astrological Download provides personalized cosmic insights and guidance based on your unique birth chart. This service offers deep understanding of your astrological blueprint, helping you align with your true purpose and navigate life's cycles.",
@@ -67,7 +79,7 @@ export default function ResourcesSection() {
       format: "One-on-One",
     },
     {
-      id: "06",
+      id: "07",
       title: "Mini Challenges",
       description:
         "Mini Challenges are short, focused transformational experiences designed to create meaningful shifts in your life. These bite-sized programs combine practical exercises, guided practices, and community support to help you break through limiting patterns.",
@@ -79,7 +91,7 @@ export default function ResourcesSection() {
       format: "Digital",
     },
     {
-      id: "07",
+      id: "08",
       title: "Guided Meditations",
       description:
         "Guided Meditations are a powerful way to connect with your inner wisdom and achieve deep relaxation. These meditations are designed to help you clear your mind, release tension, and access your inner guidance.",
@@ -91,7 +103,7 @@ export default function ResourcesSection() {
       format: "Digital",
     },
     {
-      id: "08",
+      id: "09",
       title: "ABJ Recordings",
       description:
         "Breathwork with AO Recordings allow you to experience the transformative power of breathwork at your own pace. These recordings guide you through powerful breathing techniques and ancestral connection practices.",
@@ -103,7 +115,7 @@ export default function ResourcesSection() {
       format: "Digital",
     },
     {
-      id: "09",
+      id: "10",
       title: "Dedicated Group Workshops",
       description:
         "Dedicated Group Workshops provide a supportive community environment for deep transformation. These workshops combine guided practices, group sharing, and individual reflection to create powerful collective healing experiences.",
@@ -113,18 +125,6 @@ export default function ResourcesSection() {
       category: "Workshops",
       duration: "2-4 hours",
       format: "Group",
-    },
-    {
-      id: "10",
-      title: "AO",
-      description:
-        "AO is an innovative digital companion that provides personalized spiritual guidance and insights. This advanced AI system draws from ancient wisdom traditions and Sand's extensive knowledge to offer meaningful responses.",
-      image: "/images/oracle-ai.png",
-      backgroundImage: "/images/bg-image.png",
-      link: "/oracle",
-      category: "AI Guidance",
-      duration: "24/7",
-      format: "Digital",
     },
   ];
 
@@ -214,7 +214,6 @@ export default function ResourcesSection() {
                 className="group relative overflow-hidden rounded-xl border border-[#d8d2c6] bg-black"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.8 }}
                 whileHover={{ y: -5 }}
               >
                 {/* Background Image */}

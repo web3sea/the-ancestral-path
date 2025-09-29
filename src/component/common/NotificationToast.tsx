@@ -18,12 +18,10 @@ export function NotificationToast() {
     conversation_id?: string;
   } | null>(null);
 
-  // Show toast when new notification arrives
   useEffect(() => {
     const latestUnreadNotification = notifications.find((n) => !n.read);
 
     if (latestUnreadNotification) {
-      // Only show if it's a different notification or we're not currently showing one
       if (
         !currentNotification ||
         latestUnreadNotification.id !== currentNotification.id
@@ -31,7 +29,6 @@ export function NotificationToast() {
         setCurrentNotification(latestUnreadNotification);
         setShowToast(true);
 
-        // Auto-hide after 8 seconds
         const timer = setTimeout(() => {
           setShowToast(false);
         }, 8000);

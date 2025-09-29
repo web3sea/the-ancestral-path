@@ -9,10 +9,17 @@ ADD COLUMN IF NOT EXISTS stripe_subscription_id VARCHAR(255);
 ALTER TABLE accounts 
 ADD COLUMN IF NOT EXISTS last_subscription_update TIMESTAMP WITH TIME ZONE;
 
+-- Add free trial tracking field
+ALTER TABLE accounts 
+ADD COLUMN IF NOT EXISTS free_trial_used BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS free_trial_used_date TIMESTAMP WITH TIME ZONE;
+
 -- Add indexes for the new fields for better performance
 CREATE INDEX IF NOT EXISTS idx_accounts_stripe_customer_id ON accounts(stripe_customer_id);
 CREATE INDEX IF NOT EXISTS idx_accounts_stripe_subscription_id ON accounts(stripe_subscription_id);
 CREATE INDEX IF NOT EXISTS idx_accounts_last_subscription_update ON accounts(last_subscription_update);
+CREATE INDEX IF NOT EXISTS idx_accounts_free_trial_used ON accounts(free_trial_used);
+CREATE INDEX IF NOT EXISTS idx_accounts_free_trial_used_date ON accounts(free_trial_used_date);
 
 -- Update the subscription_tier constraint to allow NULL values (for users without subscriptions)
 ALTER TABLE accounts 
@@ -20,7 +27,7 @@ DROP CONSTRAINT IF EXISTS accounts_subscription_tier_check;
 
 ALTER TABLE accounts 
 ADD CONSTRAINT accounts_subscription_tier_check 
-CHECK (subscription_tier IS NULL OR subscription_tier IN ('tier1', 'tier2'));
+CHECK (subscription_tier IS NULL OR subscription_tier IN ('free_trial', 'tier1', 'tier2'));
 
 -- Update the subscription_status constraint to allow NULL values (for users without subscriptions)
 ALTER TABLE accounts 
@@ -93,8 +100,8 @@ BEGIN
         RETURN FALSE;
     END IF;
     
-    -- Return TRUE only if user has an active subscription
-    RETURN (subscription_record.subscription_tier IN ('tier1', 'tier2') 
+    -- Return TRUE only if user has an active subscription (including free trial)
+    RETURN (subscription_record.subscription_tier IN ('free_trial', 'tier1', 'tier2') 
             AND subscription_record.subscription_status = 'active');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -190,3 +197,49 @@ CREATE TRIGGER trigger_update_subscription_timestamp
     BEFORE UPDATE ON accounts
     FOR EACH ROW
     EXECUTE FUNCTION update_subscription_timestamp();
+
+-- Add function to check if user has used free trial
+CREATE OR REPLACE FUNCTION has_used_free_trial(p_account_id UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+    trial_used BOOLEAN;
+BEGIN
+    SELECT free_trial_used INTO trial_used
+    FROM accounts 
+    WHERE id = p_account_id 
+    AND deleted_at IS NULL;
+    
+    RETURN COALESCE(trial_used, FALSE);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Add function to mark free trial as used
+CREATE OR REPLACE FUNCTION mark_free_trial_used(p_account_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    UPDATE accounts 
+    SET 
+        free_trial_used = TRUE,
+        free_trial_used_date = NOW(),
+        updated_at = NOW()
+    WHERE id = p_account_id;
+    
+    RETURN FOUND;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant permissions for the new functions
+GRANT EXECUTE ON FUNCTION has_used_free_trial(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION mark_free_trial_used(UUID) TO authenticated;
+
+-- Update subscription_history table to support free_trial tier
+ALTER TABLE subscription_history 
+DROP CONSTRAINT IF EXISTS subscription_history_tier_check;
+
+ALTER TABLE subscription_history 
+ADD CONSTRAINT subscription_history_tier_check 
+CHECK (tier IN ('free_trial', 'tier1', 'tier2'));
+
+-- Add comment for documentation
+COMMENT ON COLUMN accounts.free_trial_used IS 'Tracks if user has used their free trial (one-time use only)';
+COMMENT ON COLUMN accounts.free_trial_used_date IS 'Timestamp when user used their free trial';
