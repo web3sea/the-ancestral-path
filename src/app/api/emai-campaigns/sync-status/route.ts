@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getAppConfig } from "@/lib/config";
+import {
+  brevoAddEmailsToList,
+  brevoGetContactsFromList,
+} from "@/lib/brevo/ultils";
 import { Logger } from "@/lib/utils/log";
 
 export const runtime = "nodejs";
@@ -24,7 +28,7 @@ export async function POST(request: Request) {
       loggerContext
     );
 
-    const brevoContacts = await getBrevoListContactsLimited(list_id, 500);
+    const brevoContacts = await brevoGetContactsFromList(list_id, 500);
     const brevoEmails = new Set(brevoContacts.map((c: any) => c.email));
 
     const { data: supabaseContacts } = await supabase
@@ -41,7 +45,7 @@ export async function POST(request: Request) {
     const toAddToBrevo = Array.from(supabaseEmails).filter(
       (email) => !brevoEmails.has(email)
     );
-    await addEmailsToBrevoList(list_id, toAddToBrevo);
+    await brevoAddEmailsToList(list_id, toAddToBrevo);
 
     return NextResponse.json({
       success: true,
@@ -56,42 +60,5 @@ export async function POST(request: Request) {
     Logger.error("Sync status error:", e);
     const msg = e?.message || "Failed to sync campaign status";
     return NextResponse.json({ error: msg }, { status: 500 });
-  }
-}
-
-async function getBrevoListContactsLimited(listId: string, max: number) {
-  const limit = Math.min(500, Math.max(1, max));
-  const response = await fetch(
-    `https://api.brevo.com/v3/contacts/lists/${listId}/contacts?limit=${limit}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": apiKey as string,
-      },
-    }
-  );
-  if (!response.ok) {
-    throw new Error(`Failed to get contacts: ${response.status}`);
-  }
-  const data = await response.json();
-  return data.contacts || [];
-}
-
-async function addEmailsToBrevoList(listId: string, emails: string[]) {
-  if (!emails || emails.length === 0) return;
-  const response = await fetch(
-    `https://api.brevo.com/v3/contacts/lists/${listId}/contacts/add`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": apiKey as string,
-      },
-      body: JSON.stringify({ emails }),
-    }
-  );
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Failed to add emails to Brevo list: ${text}`);
   }
 }

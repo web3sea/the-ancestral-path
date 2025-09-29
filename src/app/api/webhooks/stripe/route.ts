@@ -8,6 +8,8 @@ import {
   EmailCampaignStatus,
 } from "@/@types/enum";
 import Stripe from "stripe";
+import { getAppConfig } from "@/lib/config/env";
+import { brevoRemoveEmailFromListIfExists } from "@/lib/brevo/ultils";
 
 async function triggerSessionRefresh(accountId: string) {
   try {
@@ -43,6 +45,8 @@ async function markEmailCampaignAsUpgradedByEmail(email: string) {
         updated_at: now,
       })
       .eq("email", email);
+
+    // remove email from reminder list handled by brevoRemoveEmailFromListIfExists at call site
   } catch (error) {
     console.error("Error marking email campaign as upgraded:", error);
   }
@@ -207,7 +211,7 @@ async function handlePaymentIntentSucceeded(
       await updateUserRole(accountId, planId as SubscriptionTier);
 
       await triggerSessionRefresh(accountId);
-      // Update email campaign to DONE if user's email exists in campaign list
+      // Update email campaign to DONE and remove from paid reminder list
       try {
         const { data: account } = await createSupabaseAdmin()
           .from("accounts")
@@ -216,6 +220,10 @@ async function handlePaymentIntentSucceeded(
           .single();
         if (account?.email) {
           await markEmailCampaignAsUpgradedByEmail(account.email);
+          await brevoRemoveEmailFromListIfExists(
+            getAppConfig().brevo.list_upgraded_to_paid_id,
+            account.email
+          );
         }
       } catch {}
     } else {
@@ -238,6 +246,10 @@ async function handlePaymentIntentSucceeded(
           .single();
         if (account?.email) {
           await markEmailCampaignAsUpgradedByEmail(account.email);
+          await brevoRemoveEmailFromListIfExists(
+            getAppConfig().brevo.list_upgraded_to_paid_id,
+            account.email
+          );
         }
       } catch {}
     }
@@ -504,7 +516,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
     );
 
     await triggerSessionRefresh(accountId);
-    // Mark user campaign as upgraded for this account's email
+    // Mark user campaign as upgraded for this account's email and remove from reminder list
     try {
       const { data: acc } = await createSupabaseAdmin()
         .from("accounts")
@@ -513,6 +525,10 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
         .single();
       if (acc?.email) {
         await markEmailCampaignAsUpgradedByEmail(acc.email);
+        await brevoRemoveEmailFromListIfExists(
+          getAppConfig().brevo.list_upgraded_to_paid_id,
+          acc.email
+        );
       }
     } catch {}
   } catch (error) {
@@ -757,9 +773,13 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     );
 
     await triggerSessionRefresh(accountId);
-    // Mark email campaign as upgraded
+    // Mark email campaign as upgraded and remove from reminder list
     if (account?.email) {
       await markEmailCampaignAsUpgradedByEmail(account.email);
+      await brevoRemoveEmailFromListIfExists(
+        getAppConfig().brevo.list_upgraded_to_paid_id,
+        account.email
+      );
     }
   } catch (error) {
     console.error("Error handling subscription creation:", error);

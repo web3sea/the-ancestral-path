@@ -9,12 +9,12 @@ import {
   SubscriptionTier,
 } from "@/@types/enum";
 import { getAppConfig } from "@/lib/config/env";
+import { brevoMoveEmailBetweenLists } from "@/lib/brevo/ultils";
 
 const loggerContext = "ActivateFreeTrial";
 const PAID_TRIAL_DAYS = 7;
 const REMINDER_TO_PAID_SUBSCRIPTION_LIST_ID =
   getAppConfig().brevo.list_upgraded_to_paid_id;
-const BREVO_API_KEY = getAppConfig().brevo.apiKey;
 
 export async function POST(request: Request) {
   try {
@@ -176,17 +176,11 @@ async function activateFreeTrial(
         .eq("id", emailCampaign.id);
     }
 
-    // Move user: ensure removed from old list (free trial/acquisition) then add to reminder list
-    await removeEmailFromBrevoList(
+    await brevoMoveEmailBetweenLists(
+      email,
       getAppConfig().brevo.list_free_trial_id,
-      email
+      REMINDER_TO_PAID_SUBSCRIPTION_LIST_ID
     );
-    await addEmailToBrevoList(REMINDER_TO_PAID_SUBSCRIPTION_LIST_ID, email);
-
-    // Persist the new Brevo list id to user_email_campaign
-    if (REMINDER_TO_PAID_SUBSCRIPTION_LIST_ID) {
-      await updateBrevoListId(email, REMINDER_TO_PAID_SUBSCRIPTION_LIST_ID);
-    }
   } catch (error: any) {
     Logger.error(
       `Error activating free trial: ${error?.message}`,
@@ -198,53 +192,4 @@ async function activateFreeTrial(
     loggerContext
   );
   return trialEndDate;
-}
-
-async function addEmailToBrevoList(listId: string | undefined, email: string) {
-  try {
-    const apiKey = BREVO_API_KEY;
-    if (!apiKey || !listId || !email) return;
-    await fetch(
-      `https://api.brevo.com/v3/contacts/lists/${listId}/contacts/add`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "api-key": apiKey },
-        body: JSON.stringify({ emails: [email] }),
-      }
-    );
-  } catch (error) {
-    Logger.error(`Failed to add email to Brevo list: ${error}`);
-  }
-}
-
-async function removeEmailFromBrevoList(
-  listId: string | undefined,
-  email: string
-) {
-  try {
-    const apiKey = BREVO_API_KEY;
-    if (!apiKey || !listId || !email) return;
-    await fetch(
-      `https://api.brevo.com/v3/contacts/lists/${listId}/contacts/remove`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "api-key": apiKey },
-        body: JSON.stringify({ emails: [email] }),
-      }
-    );
-  } catch (error) {
-    Logger.error(`Failed to remove email from Brevo list: ${error}`);
-  }
-}
-
-async function updateBrevoListId(email: string, listId: string | undefined) {
-  const supabase = createSupabaseAdmin();
-  await supabase
-    .from("user_email_campaign")
-    .update({ brevo_list_id: listId || null })
-    .eq("email", email);
-  Logger.log(
-    `Updated Brevo list id for email ${email} to ${listId || null}`,
-    loggerContext
-  );
 }
