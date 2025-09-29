@@ -8,6 +8,7 @@ import {
   DialogDescription,
 } from "@/component/ui/dialog";
 import { CheckCircle, Clock, Stars } from "lucide-react";
+import { EmailCampaignStatus } from "@/@types/enum";
 
 interface ViewDetailEmailDialogProps {
   viewing: any;
@@ -98,13 +99,17 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 
 function UserJourneyTimeline({ data }: { data: any }) {
   const isPending =
-    !data.trial_started_at && !data.upgraded_at && data.status !== "freetrial";
-  const isFreeTrial = data.status === "freetrial" && !data.upgraded_at;
+    !data.trial_started_at &&
+    !data.upgraded_at &&
+    data.status !== EmailCampaignStatus.FREE_TRIAL;
+  const isFreeTrial =
+    data.status === EmailCampaignStatus.FREE_TRIAL && !data.upgraded_at;
   const isUpgraded = !!data.upgraded_at;
+  const isSent = !!data.sent_at;
 
   const timelineSteps = [
     {
-      id: "pending",
+      id: EmailCampaignStatus.PENDING,
       label: "Pending",
       icon: <Clock className="w-3 h-3" />,
       color: "text-yellow-400",
@@ -115,7 +120,18 @@ function UserJourneyTimeline({ data }: { data: any }) {
       isActive: isPending,
     },
     {
-      id: "freetrial",
+      id: EmailCampaignStatus.SENT,
+      label: "Sent",
+      icon: <CheckCircle className="w-3 h-3" />,
+      color: "text-purple-400",
+      bgColor: "bg-purple-500/20",
+      borderColor: "border-purple-500/30",
+      date: data.sent_at,
+      isCompleted: true,
+      isActive: isSent,
+    },
+    {
+      id: EmailCampaignStatus.FREE_TRIAL,
       label: "Free Trial",
       icon: <Stars className="w-3 h-3" />,
       color: "text-blue-400",
@@ -126,7 +142,7 @@ function UserJourneyTimeline({ data }: { data: any }) {
       isActive: isFreeTrial,
     },
     {
-      id: "done",
+      id: EmailCampaignStatus.DONE,
       label: "Upgraded",
       icon: <CheckCircle className="w-3 h-3" />,
       color: "text-green-400",
@@ -143,60 +159,66 @@ function UserJourneyTimeline({ data }: { data: any }) {
       <div className="relative">
         <div className="absolute left-3 top-0 bottom-0 w-0.5"></div>
 
-        {timelineSteps.map((step) => (
-          <div key={step.id} className="relative flex items-center space-x-3">
+        <div className="flex flex-col gap-3">
+          {timelineSteps.map((step) => (
             <div
-              className={`relative z-10 flex items-center justify-center w-6 h-6 rounded-full border-2 flex-shrink-0 ${
-                step.isActive
-                  ? `${step.bgColor} ${step.borderColor} ${step.color}`
-                  : step.isCompleted
-                  ? `${step.bgColor} ${step.borderColor} ${step.color}`
-                  : "bg-white/5 border-white/20 text-white/40"
-              }`}
+              key={step.id}
+              className="relative flex items-center justify-center"
             >
-              {step.isActive || step.isCompleted ? (
-                step.icon
-              ) : (
-                <Clock className="w-3 h-3" />
-              )}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <h4
-                    className={`text-sm font-medium ${
-                      step.isActive
-                        ? "text-white font-semibold"
-                        : step.isCompleted
-                        ? "text-white"
-                        : "text-white/60"
-                    }`}
-                  >
-                    {step.label}
-                  </h4>
-                  {step.isActive && (
-                    <span className="text-xs text-blue-300">(Current)</span>
-                  )}
-                </div>
-                {step.date && (
-                  <span className="text-xs text-white/60">
-                    {formatDate(step.date)}
-                  </span>
+              <div
+                className={`relative z-10 flex items-center justify-center w-6 h-6 rounded-full border-2 flex-shrink-0 ${
+                  step.isActive
+                    ? `${step.bgColor} ${step.borderColor} ${step.color}`
+                    : step.isCompleted
+                    ? `${step.bgColor} ${step.borderColor} ${step.color}`
+                    : "bg-white/5 border-white/20 text-white/40"
+                }`}
+              >
+                {step.isActive || step.isCompleted ? (
+                  step.icon
+                ) : (
+                  <Clock className="w-3 h-3" />
                 )}
               </div>
 
-              {/* Additional info for each step */}
-              {step.id === "freetrial" && data.meta?.refer_code && (
-                <div className="mt-1 text-xs text-blue-300/80">
-                  <code className="bg-blue-500/20 px-1 rounded text-xs">
-                    {data.meta.refer_code}
-                  </code>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <h4
+                      className={`!ml-3 text-sm font-medium ${
+                        step.isActive
+                          ? "text-white font-semibold"
+                          : step.isCompleted
+                          ? "text-white"
+                          : "text-white/60"
+                      }`}
+                    >
+                      {step.label}
+                    </h4>
+                    {step.isActive && (
+                      <span className="text-xs text-blue-300">(Current)</span>
+                    )}
+                  </div>
+                  {step.date && (
+                    <span className="text-xs text-white/60">
+                      {formatDate(step.date)}
+                    </span>
+                  )}
                 </div>
-              )}
+
+                {/* Additional info for each step */}
+                {step.id === EmailCampaignStatus.FREE_TRIAL &&
+                  data.meta?.refer_code && (
+                    <div className="mt-1 text-xs text-blue-300/80">
+                      <code className="bg-blue-500/20 px-1 rounded text-xs">
+                        {data.meta.refer_code}
+                      </code>
+                    </div>
+                  )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

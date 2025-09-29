@@ -41,6 +41,7 @@ import {
 } from "@/component/hook/useEmailCampaign";
 import { UserEmailCampaignQueryParams } from "@/@types/email-campaign";
 import ViewDetailEmailDialog from "./ViewDetailEmailDialog";
+import { EmailCampaignStatus } from "@/@types/enum";
 
 export function EmailCampaigns() {
   const [isNewUploadModalOpen, setIsNewUploadModalOpen] = useState(false);
@@ -148,35 +149,31 @@ export function EmailCampaigns() {
     }
   }, [contacts, refetch, syncMutation]);
 
-  function getStatusIcon(status: string) {
-    switch (status) {
-      case "sent":
-        return <CheckCircle className="w-4 h-4 text-green-400" />;
-      case "scheduled":
-        return <Clock className="w-4 h-4 text-yellow-400" />;
-      case "failed":
-        return <MarsIcon className="w-4 h-4 text-red-400" />;
-      case "freetrial":
-        return <Star className="w-4 h-4 text-blue-300/60" />;
-      default:
-        return <Edit3 className="w-4 h-4 text-primary-300/60" />;
-    }
-  }
-
-  function getStatusColor(status: string) {
-    switch (status) {
-      case "sent":
-        return "bg-green-500/20 text-green-300 border-green-500/30";
-      case "scheduled":
-        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
-      case "failed":
-        return "bg-red-500/20 text-red-300 border-red-500/30";
-      case "freetrial":
-        return "bg-blue-300/20 text-blue-300 border-blue-300/30";
-      default:
-        return "bg-primary-300/20 text-primary-300 border-primary-300/30";
-    }
-  }
+  const STATUS_STYLE: Record<
+    string,
+    { label: string; badgeClass: string; icon: React.ReactNode }
+  > = {
+    [EmailCampaignStatus.PENDING]: {
+      label: "Pending",
+      badgeClass: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
+      icon: <Clock className="w-4 h-4" />,
+    },
+    [EmailCampaignStatus.SENT]: {
+      label: "Sent",
+      badgeClass: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+      icon: <CheckCircle className="w-4 h-4" />,
+    },
+    [EmailCampaignStatus.FREE_TRIAL]: {
+      label: "Free Trial",
+      badgeClass: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+      icon: <Star className="w-4 h-4" />,
+    },
+    [EmailCampaignStatus.DONE]: {
+      label: "Done",
+      badgeClass: "bg-green-500/20 text-green-300 border-green-500/30",
+      icon: <CheckCircle className="w-4 h-4" />,
+    },
+  };
 
   return (
     <div className="space-y-6">
@@ -389,16 +386,21 @@ export function EmailCampaigns() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
-                            contact.status
-                          )}`}
-                        >
-                          {getStatusIcon(contact.status)}
-                          <span className="hidden sm:inline">
-                            {contact.status}
-                          </span>
-                        </span>
+                        {(() => {
+                          const style =
+                            STATUS_STYLE[contact.status] ||
+                            STATUS_STYLE.pending;
+                          return (
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${style.badgeClass}`}
+                            >
+                              {style.icon}
+                              <span className="hidden sm:inline">
+                                {style.label}
+                              </span>
+                            </span>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         <div className="flex items-center gap-2 text-sm text-primary-300/80">

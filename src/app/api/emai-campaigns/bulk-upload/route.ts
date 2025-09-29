@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getAppConfig } from "@/lib/config";
 import { BulkUploadRequest } from "@/@types/email-campaign";
-import { handleApiError } from "@/lib/utils/errors";
+import { brevoImportContactsToList } from "@/lib/brevo/ultils";
 import { Logger } from "@/lib/utils/log";
 
 export const runtime = "nodejs";
@@ -75,44 +75,12 @@ async function uploadToBrevoList(
   contacts: any[],
   apiKey: string
 ) {
-  const jsonBody = contacts.map((contact) => ({
-    email: contact.email,
-    attributes: {
-      FIRSTNAME: contact.first_name || "",
-      LASTNAME: contact.last_name || "",
-      KAJABI_ID: contact.kajabi_id || "",
-      KAJABI_MEMBER_ID: contact.kajabi_member_id || "",
-    },
-  }));
-
-  const response = await fetch("https://api.brevo.com/v3/contacts/import", {
-    method: "POST",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/json",
-      "api-key": apiKey,
-    },
-    body: JSON.stringify({
-      listIds: [parseInt(listId)],
-      updateExistingContacts: true,
-      emptyContactsAttributes: false,
-      jsonBody: jsonBody,
-    }),
-  });
-
-  if (!response.ok) {
-    handleApiError(response);
-    return { processed: 0, errors: ["Brevo import failed"] };
+  const result = await brevoImportContactsToList(listId, contacts);
+  if (result.errors?.length) {
+    return { processed: 0, errors: result.errors };
   }
-
-  const result = await response.json();
-  return {
-    processed: contacts.length,
-    errors: result.errors || [],
-  };
+  return { processed: contacts.length, errors: [] };
 }
-
-// Step 2 removed: campaign assignment no longer needed
 
 // Step 3: Save to Supabase with duplicate check
 async function handleSupabaseUpload(
