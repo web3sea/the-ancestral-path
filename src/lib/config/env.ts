@@ -31,6 +31,11 @@ export interface AppConfig {
     secretKey?: string;
     webhookSecret?: string;
   };
+  brevo: {
+    apiKey?: string;
+    list_free_trial_id?: string;
+    list_upgraded_to_paid_id?: string;
+  };
 }
 
 /**
@@ -71,6 +76,13 @@ export function getAppConfig(): AppConfig {
       publishableKey: getEnv("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"),
       secretKey: getEnv("STRIPE_SECRET_KEY"),
       webhookSecret: getEnv("STRIPE_WEBHOOK_SECRET"),
+    },
+    brevo: {
+      apiKey: getEnv("BREVO_API_KEY"),
+      list_free_trial_id: getEnv("BREVO_LIST_FREE_TRIAL_ID"),
+      list_upgraded_to_paid_id: getEnv(
+        "BREVO_LIST_UPGRADED_TO_PAID_SUBSCRIPTION_ID"
+      ),
     },
   };
 }

@@ -75,22 +75,16 @@ body {
   --rdp-nav_button-height: 2.25rem !important;
   --rdp-nav_button-width: 2.25rem !important;
   --rdp-nav-height: 2.75rem !important;
-  --rdp-range_middle-background-color: var(
-    --rdp-accent-background-color
-  ) !important;
+  --rdp-range_middle-background-color: var(--rdp-accent-background-color) !important;
   --rdp-range_middle-color: inherit !important;
   --rdp-range_start-color: white !important;
-  --rdp-range_start-background: linear-gradient(
-    var(--rdp-gradient-direction),
-    transparent 50%,
-    var(--rdp-range_middle-background-color) 50%
-  ) !important;
+  --rdp-range_start-background: linear-gradient(var(--rdp-gradient-direction),
+      transparent 50%,
+      var(--rdp-range_middle-background-color) 50%) !important;
   --rdp-range_start-date-background-color: var(--rdp-accent-color) !important;
-  --rdp-range_end-background: linear-gradient(
-    var(--rdp-gradient-direction),
-    var(--rdp-range_middle-background-color) 50%,
-    transparent 50%
-  ) !important;
+  --rdp-range_end-background: linear-gradient(var(--rdp-gradient-direction),
+      var(--rdp-range_middle-background-color) 50%,
+      transparent 50%) !important;
   --rdp-range_end-color: white !important;
   --rdp-range_end-date-background-color: var(--rdp-accent-color) !important;
   --rdp-week_number-border-radius: 100% !important;
@@ -131,6 +125,7 @@ body {
   border-radius: 0.75rem;
   padding: 0.5rem 0.75rem;
 }
+
 .btn-ghost:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
@@ -237,9 +232,11 @@ html {
   0% {
     transform: rotateY(0deg);
   }
+
   50% {
     transform: rotateY(180deg);
   }
+
   100% {
     transform: rotateY(360deg);
   }

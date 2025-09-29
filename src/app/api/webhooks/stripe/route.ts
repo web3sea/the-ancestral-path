@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/config";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { subscriptionService } from "@/lib/supabase/subscription";
-import { SubscriptionStatus, SubscriptionTier } from "@/@types/enum";
+import {
+  SubscriptionStatus,
+  SubscriptionTier,
+  EmailCampaignStatus,
+} from "@/@types/enum";
 import Stripe from "stripe";
 
 async function triggerSessionRefresh(accountId: string) {
@@ -16,6 +20,31 @@ async function triggerSessionRefresh(accountId: string) {
       .eq("id", accountId);
   } catch (error) {
     console.error("Error triggering session refresh:", error);
+  }
+}
+
+// Mark user_email_campaign as upgraded (DONE) for a given email
+async function markEmailCampaignAsUpgradedByEmail(email: string) {
+  try {
+    if (!email) return;
+    const supabase = createSupabaseAdmin();
+    const now = new Date().toISOString();
+    const { data: existing } = await supabase
+      .from("user_email_campaign")
+      .select("id,status")
+      .eq("email", email);
+    if (!existing || existing.length === 0) return;
+
+    await supabase
+      .from("user_email_campaign")
+      .update({
+        status: EmailCampaignStatus.DONE,
+        upgraded_at: now,
+        updated_at: now,
+      })
+      .eq("email", email);
+  } catch (error) {
+    console.error("Error marking email campaign as upgraded:", error);
   }
 }
 
@@ -178,6 +207,17 @@ async function handlePaymentIntentSucceeded(
       await updateUserRole(accountId, planId as SubscriptionTier);
 
       await triggerSessionRefresh(accountId);
+      // Update email campaign to DONE if user's email exists in campaign list
+      try {
+        const { data: account } = await createSupabaseAdmin()
+          .from("accounts")
+          .select("email")
+          .eq("id", accountId)
+          .single();
+        if (account?.email) {
+          await markEmailCampaignAsUpgradedByEmail(account.email);
+        }
+      } catch {}
     } else {
       const supabase = createSupabaseAdmin();
       const { error: updateError } = await supabase
@@ -190,6 +230,16 @@ async function handlePaymentIntentSucceeded(
       }
 
       await triggerSessionRefresh(accountId);
+      try {
+        const { data: account } = await createSupabaseAdmin()
+          .from("accounts")
+          .select("email")
+          .eq("id", accountId)
+          .single();
+        if (account?.email) {
+          await markEmailCampaignAsUpgradedByEmail(account.email);
+        }
+      } catch {}
     }
   } catch (error) {
     console.error("Error handling payment intent success:", error);
@@ -454,6 +504,17 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
     );
 
     await triggerSessionRefresh(accountId);
+    // Mark user campaign as upgraded for this account's email
+    try {
+      const { data: acc } = await createSupabaseAdmin()
+        .from("accounts")
+        .select("email")
+        .eq("id", accountId)
+        .single();
+      if (acc?.email) {
+        await markEmailCampaignAsUpgradedByEmail(acc.email);
+      }
+    } catch {}
   } catch (error) {
     console.error("Error handling payment success:", error);
   }
@@ -696,6 +757,10 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     );
 
     await triggerSessionRefresh(accountId);
+    // Mark email campaign as upgraded
+    if (account?.email) {
+      await markEmailCampaignAsUpgradedByEmail(account.email);
+    }
   } catch (error) {
     console.error("Error handling subscription creation:", error);
   }
@@ -896,6 +961,19 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     );
 
     await triggerSessionRefresh(accountId);
+    // If subscription is active, mark email campaign as upgraded
+    if (subscription.status === SubscriptionStatus.ACTIVE) {
+      try {
+        const { data: acc } = await createSupabaseAdmin()
+          .from("accounts")
+          .select("email")
+          .eq("id", accountId)
+          .single();
+        if (acc?.email) {
+          await markEmailCampaignAsUpgradedByEmail(acc.email);
+        }
+      } catch {}
+    }
   } catch (error) {
     console.error("Error handling subscription update:", error);
   }

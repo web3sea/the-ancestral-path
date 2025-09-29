@@ -68,40 +68,6 @@ export function SubscriptionSettings() {
     }
   };
 
-  const handleRenewSubscription = async () => {
-    setIsUpdating(true);
-    try {
-      const response = await fetch("/api/subscription/renew", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        success(
-          "Subscription Renewed",
-          "Your subscription has been renewed successfully!"
-        );
-        await refreshSubscription();
-      } else {
-        error(
-          "Renewal Failed",
-          result.message || "Failed to renew subscription"
-        );
-      }
-    } catch {
-      error(
-        "Renewal Error",
-        "An error occurred while renewing your subscription"
-      );
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
   const handleCancelSubscription = async () => {
     const confirmed = await confirm({
       title: "Cancel Subscription",

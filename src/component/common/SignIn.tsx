@@ -3,6 +3,8 @@
 import { signIn } from "next-auth/react";
 import { LogIn } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { processReferCodeFromUrl } from "@/lib/utils/referCode";
+import { useEffect } from "react";
 
 interface SignInProps {
   callbackUrl?: string;
@@ -11,6 +13,14 @@ interface SignInProps {
 export function SignIn({ callbackUrl = "/" }: SignInProps) {
   const searchParams = useSearchParams();
   const nextParam = searchParams.get("next");
+
+  // Process referCode from URL when component mounts
+  useEffect(() => {
+    const referCode = processReferCodeFromUrl(searchParams);
+    if (referCode) {
+      console.log("ReferCode detected and saved:", referCode);
+    }
+  }, [searchParams]);
 
   const handleGoogleSignIn = () => {
     const redirectUrl = nextParam || callbackUrl;

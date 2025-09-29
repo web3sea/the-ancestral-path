@@ -1,0 +1,82 @@
+import { PaginationOutputDto } from "@/@types/enum";
+import { Database } from "@/@types/supabase";
+
+export type UserEmailCampaign =
+  Database["public"]["Tables"]["user_email_campaign"]["Row"];
+
+export type UserEmailCampaignInsert =
+  Database["public"]["Tables"]["user_email_campaign"]["Insert"];
+
+export type UserEmailCampaignUpdate =
+  Database["public"]["Tables"]["user_email_campaign"]["Update"];
+
+export interface UserEmailCampaignQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: "created_at" | "updated_at" | "email" | "first_name" | "last_name";
+  sortOrder?: "asc" | "desc";
+}
+
+export interface UserEmailCampaignResponse {
+  data: UserEmailCampaign[];
+  pagination: PaginationOutputDto;
+}
+
+export interface UserEmailCampaignUploadData {
+  campaign_name: string;
+  brevo_list_id: string;
+  items: UserEmailCampaignUploadItem[];
+}
+
+export interface UserEmailCampaignUploadItem {
+  email: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  kajabi_id?: string | null;
+  kajabi_member_id?: string | null;
+}
+
+export interface UserEmailCampaignUploadResponse {
+  success: boolean;
+  data: {
+    uploaded_count: number;
+    skipped_count: number;
+    total_processed: number;
+    errors: string[];
+  };
+}
+
+export interface BrevoList {
+  id: string;
+  name: string;
+}
+
+// Removed BrevoCampaign types (no longer used)
+
+export interface BrevoListResponse {
+  lists: BrevoList[];
+}
+
+// Removed BrevoCampaignResponse (no longer used)
+
+export interface DeleteEmailCampaignParams {
+  id: string;
+}
+
+export interface DeleteEmailCampaignResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface BulkUploadRequest {
+  brevo_list_id: string;
+  campaign_name: string;
+  items: Array<{
+    email: string;
+    first_name?: string;
+    last_name?: string;
+    kajabi_id?: string;
+    kajabi_member_id?: string;
+  }>;
+}
