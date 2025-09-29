@@ -191,33 +191,31 @@ export function EmailCampaigns() {
             Manage your email marketing campaigns
           </p>
         </div>
-        <div className="flex gap-3">
-          <div className="hidden md:flex items-center gap-2">
-            <Search className="w-6 h-6 text-primary-300/70" />
+        <div className="flex gap-3 items-center">
+          <div className="hidden md:flex items-center gap-2 h-10">
+            <Search className="w-8 h-8 text-primary-300/70" />
             <input
-              className="w-64 px-4 py-2 rounded-full bg-white/5 border border-primary-300/20 text-primary-300 focus:border-primary-300/40 focus:outline-none transition-colors"
+              className="h-12 w-64 px-4 rounded-full bg-white/5 border border-primary-300/20 text-primary-300 focus:border-primary-300/40 focus:outline-none transition-colors"
               placeholder="Search by email, first name, or last name"
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
-          <Button
-            variant="secondary"
-            className="gap-2 hover:bg-white/15 transition-colors"
+          <button
+            className="btn-secondary gap-2 hover:bg-white/15 transition-colors !flex items-center"
             onClick={handleSyncAllStatus}
             disabled={syncingAll}
           >
             <RefreshCw className="w-4 h-4" />
             Sync All Status
-          </Button>
-          <Button
-            variant="secondary"
-            className="gap-2 hover:bg-white/15 transition-colors"
+          </button>
+          <button
+            className="btn-secondary gap-2 hover:bg-white/15 transition-colors !flex items-center"
             onClick={() => setIsNewUploadModalOpen(true)}
           >
             <Plus className="w-4 h-4" />
             New Upload
-          </Button>
+          </button>
         </div>
       </div>
 

@@ -182,6 +182,11 @@ async function activateFreeTrial(
       email
     );
     await addEmailToBrevoList(REMINDER_TO_PAID_SUBSCRIPTION_LIST_ID, email);
+
+    // Persist the new Brevo list id to user_email_campaign
+    if (REMINDER_TO_PAID_SUBSCRIPTION_LIST_ID) {
+      await updateBrevoListId(email, REMINDER_TO_PAID_SUBSCRIPTION_LIST_ID);
+    }
   } catch (error: any) {
     Logger.error(
       `Error activating free trial: ${error?.message}`,
@@ -230,4 +235,16 @@ async function removeEmailFromBrevoList(
   } catch (error) {
     Logger.error(`Failed to remove email from Brevo list: ${error}`);
   }
+}
+
+async function updateBrevoListId(email: string, listId: string | undefined) {
+  const supabase = createSupabaseAdmin();
+  await supabase
+    .from("user_email_campaign")
+    .update({ brevo_list_id: listId || null })
+    .eq("email", email);
+  Logger.log(
+    `Updated Brevo list id for email ${email} to ${listId || null}`,
+    loggerContext
+  );
 }
